@@ -33,6 +33,9 @@ struct system_data_t{
     uint8_t buzzer_volume;
     uint8_t brightness;
     uint8_t vibro_strength;
+    uint8_t battery_levels_n;
+    float battery_levels[BATTERY_LEVELS];
+    uint16_t battery_lifetime;
 };
 
 

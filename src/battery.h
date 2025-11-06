@@ -12,6 +12,7 @@ class Gamepad_battery{
     float *voltage_levels = nullptr;
 
     bool calibrating = false;
+    uint64_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
 public:
     enum charge_mode{
@@ -19,6 +20,7 @@ public:
         ONLY_CHARHING,
         POWER_ON_CHARGING
     };
+    uint16_t lifetime = 0;
 
     Gamepad_battery() = default;
 
@@ -32,7 +34,11 @@ public:
     void start_calibration();
     float* finish_calibration();
     bool is_calibrating();
-    void calibrate_levels(float *levels);
+    bool calibration_failed();
+
+    bool calibrated();
+    float* get_calibration_data();
+    void set_calibration_data(float data[BATTERY_LEVELS]);
 };
 
 #endif

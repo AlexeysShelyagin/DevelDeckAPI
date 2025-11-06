@@ -105,7 +105,7 @@ enum buttons_id{
 #define BATTERY_CHARGING_V 4.2      // value above that would mean that device is connected to the charger
 #define BATTERY_ONLY_CHARGING_V 4.5 // voltage above that would mean that devices is connected to charger and powered off
 
-#define BATTERY_LEVELS 24  // TODO: change to 4-5
+#define BATTERY_LEVELS 4
 #define BATTERY_ZERO_LEVEL 0.05
 #define BATTERY_N_OF_MEASURES 5
 #define BATTERY_VADJ_FUNC(v) -0.1961 + 1.5359*v - 0.0767*v*v    // best fit
@@ -168,8 +168,12 @@ enum buttons_id{
 #define NOT_GAME_FOLDER_MSG "Not a game\n folder selected"
 #define NO_SD_CARD_MSG "SD card is not\ninserted"
 #define FACTORY_RESET_MSG "Perform factory\nreset?\n(Console will\n restart)"
+#define BATTERY_CALIBRATION_MSG "Battery is\ncalibrating"
+#define BATTERY_CALIBRATION_ALERT "To calibrate battery:\n 1. Make sure battery is fully charged\n 2. Do not power off gamepad until battery fully discharges\n 3. Do not connect the charger\n\n (You can use the gamepad during the calibration)"
 
 #define MSG_BOX_DEFAULT_ACTION "Ok"
+
+#define API_VERSION "0.0.1"
 
 #define NO_FLICKERING_FPS_1 30.31f
 #define NO_FLICKERING_FPS_2 20.35f

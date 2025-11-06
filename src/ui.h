@@ -28,10 +28,10 @@ public:
     file_mngr_t file_manager(bool selecting_game = false, String root = "/");
     file_mngr_t file_manager(String root);
 
-    bool settings(system_data_t &data);
+    uint8_t settings(system_data_t &data);
 
-    uint8_t message_box(String msg, std::vector < String > actions = std::vector < String > ());
-    void notification(String msg);
+    uint8_t message_box(String msg, std::vector < String > actions = std::vector < String > (), uint16_t w = 0, uint16_t h = 0, int16_t dx = 0, int16_t dy = 0);
+    bool notification(String msg);
 
     void init_game_downloading_screen(game_config_t game_data, String dir = "");
     void game_downloading_screen(uint8_t percentage);

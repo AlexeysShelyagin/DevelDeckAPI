@@ -315,7 +315,7 @@ void render_setting_param(String value, uint16_t x, uint16_t y, bool active){
     gamepad.canvas -> setTextColor(TFT_WHITE);
 }
 
-bool Gamepad_UI::settings(system_data_t &data){
+uint8_t Gamepad_UI::settings(system_data_t &data){
     bool update_disp = true;
     bool quit = false;
     bool changes = false;
@@ -329,7 +329,7 @@ bool Gamepad_UI::settings(system_data_t &data){
     gamepad.canvas -> setTextSize(2);
     gamepad.canvas -> setTextColor(TFT_WHITE);
 
-    String setting_names[] = {"Buzz. vol: ", "Brightness: ", "Vibro: ", "Factory reset"};
+    String setting_names[] = {"Buzz. vol: ", "Brightness: ", "Vibro: ", "Battery calibration", "Battery lifetime: ", "Factory reset"};
     uint8_t settings_n = sizeof(setting_names) / sizeof(String);
     selected = settings_n;
     uint8_t line_h = round(gamepad.canvas -> fontHeight() * 1.5);
@@ -394,20 +394,29 @@ bool Gamepad_UI::settings(system_data_t &data){
 
         if(quit)
             break;
-        
+        else;
+
         if(selected == 3){
+            gamepad.clear_canvas();
+            gamepad.canvas -> setCursor(0, 0);
+            gamepad.canvas -> setTextSize(2);
+            gamepad.canvas -> setTextWrap(1);
+            gamepad.canvas -> print(BATTERY_CALIBRATION_ALERT);
+            gamepad.update_display();
+
+            std::vector < String > optns = {"Cancel", "Calibrate"};
+            if(message_box("", optns, 140, 30, 0, 100))
+                return 3;
+            selected = settings_n;
+        }
+        else if(selected == 5){
             std::vector < String > optns = {"No", "Yes"};
-            if(message_box(FACTORY_RESET_MSG, optns)){
-                Gamepad_SD_card fs;
-                if(fs.init("/") == Gamepad_SD_card::SD_OK){
-                    fs.remove_file(GAMEPAD_DATA_FILE_NAME, true);
-                    ESP.restart();
-                }
-            }
+            if(message_box(FACTORY_RESET_MSG, optns))
+                return 2;
             selected = settings_n;
         }
         
-        if(change != 0){
+        else if(change != 0){
             changes = true;
             switch (selected){
             case 0:
@@ -441,11 +450,22 @@ bool Gamepad_UI::settings(system_data_t &data){
                     render_setting_param((data.buzzer_volume == 0) ? "OFF" : String(data.buzzer_volume), param_x, param_y, (i == selected));
                     break;
                 case 1:
-                    render_setting_param(String(data.brightness), SETTINGS_W - 10, (i - scroll) * line_h, (i == selected));
+                    render_setting_param(String(data.brightness), param_x, param_y, (i == selected));
                     break;
                 case 2:
                     render_setting_param((data.vibro_strength == 0) ? "OFF" : String(data.vibro_strength), param_x, param_y, (i == selected));
                     break;
+                case 4:
+                    String tmp;
+                    if(data.battery_lifetime == 0)
+                        tmp = "undef";
+                    else{
+                        uint8_t h = data.battery_lifetime / 60;
+                        uint8_t m = data.battery_lifetime % 60;
+                        tmp = String(h) + "h" + String(m) + "m";
+                    }
+                    gamepad.canvas -> setCursor(param_x - gamepad.canvas -> textWidth(tmp), param_y);
+                    gamepad.canvas -> print(tmp);
                 }
 
                 gamepad.canvas -> println();
@@ -489,12 +509,14 @@ void render_msgbox_button(Gamepad_UI_button *button, uint8_t skin, void* paramet
     params -> canvas -> drawCentreString(params -> text, button -> x + button -> w / 2, button -> y + 3, 1);
 }
 
-uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions){
+uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint16_t w, uint16_t h, int16_t dx, int16_t dy){
     bool quit = false;
     bool update_disp = true;
     uint8_t cursor = 0;
     
-    Gamepad::layer_id_t layer_id = gamepad.create_layer(200, 100, 60, 70, 1);
+    if(w == 0) w = 200;
+    if(h == 0) h = 100;
+    Gamepad::layer_id_t layer_id = gamepad.create_layer(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
     if(!gamepad.layer_exists(layer_id)){
         Serial.println("ERROR: unable to create message box");
         return 0;
@@ -513,13 +535,13 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions){
         actions.push_back(MSG_BOX_DEFAULT_ACTION);
     
     uint8_t buttons_n = actions.size();
-    uint16_t indent = round(200.0 / buttons_n);
+    uint16_t indent = round((float) w / buttons_n);
     uint16_t buttons_h = gamepad.layer(layer_id) -> fontHeight() + 4;
 
     Gamepad_UI_button buttons[buttons_n];
     for(uint8_t i = 0; i < buttons_n; i++){
         uint16_t text_w = gamepad.layer(layer_id) -> textWidth(actions[i]);
-        buttons[i] = Gamepad_UI_button(i, indent * (0.5 + i) - (text_w / 2 + 3), 78, text_w + 6, buttons_h);
+        buttons[i] = Gamepad_UI_button(i, indent * (0.5 + i) - (text_w / 2 + 3), h - buttons_h - 8, text_w + 6, buttons_h);
         buttons[i].set_neighbours(-1, -1, (i + buttons_n - 1) % buttons_n, (i + buttons_n + 1) % buttons_n);
         buttons[i].assign_render_function(render_msgbox_button);
     }
@@ -552,12 +574,12 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions){
         if(update_disp){
             gamepad.clear_layer(layer_id);
 
-            gamepad.layer(layer_id) -> drawRect(0, 0, 200, 100, TFT_WHITE);
+            gamepad.layer(layer_id) -> drawRect(0, 0, w, h, TFT_WHITE);
 
             gamepad.layer(layer_id) -> setTextSize(2);
             gamepad.layer(layer_id) -> setTextColor(TFT_WHITE);
             for(uint8_t i = 0; i < msg_lines.size(); i++)
-                gamepad.layer(layer_id) -> drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
+                gamepad.layer(layer_id) -> drawCentreString(msg_lines[i], w / 2, 5 + i * font_h, 1);
             
             for(uint8_t i = 0; i < buttons_n; i++){
                 msgbox_buttons_params_t but_params = {gamepad.layer(layer_id), actions[i]};
@@ -594,16 +616,16 @@ void notification_destructor(void* params){
     vTaskDelete(NULL);
 }
 
-void Gamepad_UI::notification(String msg){
+bool Gamepad_UI::notification(String msg){
     if(notification_handler != NULL && eTaskGetState(notification_handler) == eBlocked){
         Serial.println("ERROR: unable to create notification");
-        return;
+        return 0;
     }
 
     Gamepad::layer_id_t layer_id = gamepad.create_layer(200, 100, 60, 70, 1);
     if(!gamepad.layer_exists(layer_id)){
         Serial.println("ERROR: unable to create message box");
-        return;
+        return 0;
     }
 
     std::vector < String > msg_lines(1, "");
@@ -638,6 +660,8 @@ void Gamepad_UI::notification(String msg){
         &notification_handler,
         xPortGetCoreID()
     );
+
+    return 1;
 }
 
 void Gamepad_UI::init_game_downloading_screen(game_config_t game_data, String dir){

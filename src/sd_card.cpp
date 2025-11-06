@@ -90,7 +90,6 @@ std::vector < file_name_t > Gamepad_SD_card::list_dir(){
     while(file){
         file_name_t tmp = {file.name(), (file.isDirectory()) ? IS_FOLDER : IS_FILE, file.path()};
         list.push_back(tmp);
-        Serial.println(tmp.name);
 
         file = dir.openNextFile();
     }
@@ -129,10 +128,16 @@ bool Gamepad_SD_card::exists(String path, bool absolute){
 }
 
 bool Gamepad_SD_card::is_dir(String path, bool absolute){
-    File tmp;
-    Serial.println(root);
+    if(!initialized)
+        return 0;
+    
+    if(!process_path(path, absolute))
+        return 0;
 
-    return 1;
+    File tmp;
+    tmp = SD.open(path);
+
+    return tmp.isDirectory();
 }
 
 bool Gamepad_SD_card::open_file(String path, const char *mode, bool absolute){

@@ -88,13 +88,16 @@ void Gamepad_battery::start_calibration(){
     );
 
     calibrating = true;
+    calibration_start_time = millis();
 }
 
 float* Gamepad_battery::finish_calibration(){
-    if(!calibrating || calibr_v.size() == 0 || calibr_failed)
+    if(!calibrating || calibr_v.size() == 0 || calibr_failed){
+        calibrating = false;
         return nullptr;
+    }
     calibrating = false;
-
+        
     if(calibration_handler != NULL && eTaskGetState(calibration_handler) != eDeleted)
         vTaskSuspend(calibration_handler);
 
@@ -123,6 +126,7 @@ float* Gamepad_battery::finish_calibration(){
 
     calibr_time.clear();
     calibr_v.clear();
+    lifetime = (millis() - calibration_start_time) / 60000;
 
     return voltage_levels;
 }
@@ -131,6 +135,28 @@ bool Gamepad_battery::is_calibrating(){
     return calibrating;
 }
 
-void Gamepad_battery::calibrate_levels(float *levels){
-    voltage_levels = levels;
+bool Gamepad_battery::calibration_failed(){
+    return calibr_failed;
+}
+
+bool Gamepad_battery::calibrated(){
+    return (voltage_levels != nullptr);
+}
+
+float* Gamepad_battery::get_calibration_data(){
+    return voltage_levels;
+}
+
+void Gamepad_battery::set_calibration_data(float data[BATTERY_LEVELS]){
+    if(data == nullptr){
+        voltage_levels = nullptr;
+        return;
+    }
+
+    if(voltage_levels != nullptr)
+        delete [] voltage_levels;
+
+    voltage_levels = new float[BATTERY_LEVELS];
+    for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
+        voltage_levels[i] = data[i];
 }

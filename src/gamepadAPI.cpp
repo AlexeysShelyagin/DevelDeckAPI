@@ -33,7 +33,7 @@ void battery_listener(void *params){
                                     vTaskDelay(pdMS_TO_TICKS(2000));
                                 }
                                 else{
-                                    
+                                    gamepad.save_system_settings();
                                 }
                             }
 
@@ -61,6 +61,14 @@ void battery_listener(void *params){
                     }
                 }
             }
+
+            if(batt -> is_calibrating()){
+                if(batt -> calibration_failed()){
+                    if(ui.notification("Battery\ncalibration\nfailed"))
+                        batt -> finish_calibration();
+                }
+            }
+
             xSemaphoreGive(gamepad.semaphore);
 
             last_check = millis();
@@ -326,6 +334,13 @@ void Gamepad::apply_system_settings(system_data_t *settings){
     buzzer.change_volume(settings -> buzzer_volume);
     set_display_brightness(settings -> brightness);
     vibro.strength = settings -> vibro_strength;
+
+    if(settings -> battery_levels_n == 0)
+        batt.set_calibration_data(nullptr);
+    else{
+        batt.set_calibration_data(settings -> battery_levels);
+        batt.lifetime = settings -> battery_lifetime;
+    }
 }
 
 void Gamepad::apply_system_settings(){
@@ -336,6 +351,18 @@ void Gamepad::save_system_settings(){
     system_data -> buzzer_volume = buzzer.get_volume();
     system_data -> brightness = get_display_brightness();
     system_data -> vibro_strength = vibro.strength;
+
+    if(batt.calibrated()){
+        system_data -> battery_levels_n = BATTERY_LEVELS;
+        float* batt_data = batt.get_calibration_data();
+        for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
+            system_data -> battery_levels[i] = batt_data[i];
+    }
+    else{
+        system_data -> battery_levels_n = 0;
+        Serial.println("battery_not_callibrated");
+    }
+    system_data -> battery_lifetime = batt.lifetime;
 
     if(!sys_param(SD_ENABLED))
         return;
@@ -501,14 +528,27 @@ void Gamepad::main_menu(){
         }
         if(cursor == 1){
             system_data_t updated_data = *system_data;
-            if(ui.settings(updated_data)){
+            uint8_t resp = ui.settings(updated_data);
+            Serial.println(resp);
+            if(resp == 1){
                 *system_data = updated_data;
                 save_system_settings();
 
                 if(!sys_param(SD_ENABLED))
                     ui.notification("Settings won't\nbe saved\nafter reset");
             }
-            apply_system_settings();
+            if(resp == 1 || resp == 0)
+                apply_system_settings();
+            if(resp == 2){
+                sd_card.remove_file(GAMEPAD_DATA_FILE_NAME, true);
+                ESP.restart();
+            }
+            if(resp == 3){
+                if(!batt.is_calibrating()){
+                    batt.start_calibration();
+                    ui.notification(BATTERY_CALIBRATION_MSG);
+                }
+            }
         }
         if(cursor == 2)
             select_game_menu();
