@@ -100,12 +100,12 @@ enum buttons_id{
 #define BATTERY_DIVIDER_R2 10.0
 #define BATTERY_V_REF 3.3
 
-#define BATTERY_CRITICAL_V 3.55     // At this voltage device would turn of
-#define BATTERY_FULL_V 4.1
+#define BATTERY_CRITICAL_V 3.55     // At this voltage device would turn off
+#define BATTERY_FULL_V 4.15
 #define BATTERY_CHARGING_V 4.2      // value above that would mean that device is connected to the charger
-#define BATTERY_ONLY_CHARGING_V 4.7 // voltage above that would mean that devices it connected to charger and powered off
+#define BATTERY_ONLY_CHARGING_V 4.5 // voltage above that would mean that devices is connected to charger and powered off
 
-#define BATTERY_LEVELS 12  // TODO: change to 4-5
+#define BATTERY_LEVELS 24  // TODO: change to 4-5
 #define BATTERY_ZERO_LEVEL 0.05
 #define BATTERY_N_OF_MEASURES 5
 #define BATTERY_VADJ_FUNC(v) -0.1961 + 1.5359*v - 0.0767*v*v    // best fit
@@ -132,7 +132,7 @@ enum buttons_id{
 #define BATTERY_CHECK_TIMEOUT 2000 // TODO: change to 10000
 #define BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT 10000
 #define BATTERY_LOW_CHARGE_ALARM_TIMEOUT 30000
-#define BATTERY_CALIBRATION_TIMEOUT 300 // TODO: change to 60000
+#define BATTERY_CALIBRATION_TIMEOUT 60000
 #define DEVICE_MODE_CHECK_TIMEOUT 500
 #define SYSTEM_DATA_AUTOSAVE_TIMEOUT 10000
 #define SD_PRESENCE_CHECK_TIMEOUT 3000
@@ -141,7 +141,7 @@ enum buttons_id{
 #define NOTIFICATION_HOLD_TIME 2000
 
 #define FORCED_MENU_STACK_SIZE 4096
-#define BATTERY_LISTENER_STACK_SIZE 2048
+#define BATTERY_LISTENER_STACK_SIZE 4096 // TODO: Change
 #define NOTIFICATION_DESTRUCTOR_STACK_SIZE 2048
 #define DISPLAY_UPDATE_THREAD_STACK_SIZE 2048
 

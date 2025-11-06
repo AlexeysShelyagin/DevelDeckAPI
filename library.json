@@ -1,18 +1,22 @@
 {
     "name": "gamepad-API",
-    "version": "1.0.0",
-    "keywords": "",
-    "description": "description of the project",
+    "version": "0.0.1",
+    "keywords": "esp32, game",
+    "description": "Framework for DevelTeam gamepads",
     "repository": {
         "type": "git",
-        "url": "url to rep"
+        "url": "https://github.com/AlexeysShelyagin/gamepadAPI"
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif32",
+    "headers": "src/gamepadAPI.h",
+    "dependencies":{
+        "bodmer/TFT_eSPI": "^2.5.43",
+        "bitbank2/PNGdec": "^1.1.6"
     },
     "authors": [{
-        "name": "my name",
-        "email": "my mail",
+        "name": "DevelTeam",
+        "email": "develteam.info@gmail.com",
         "maintainer": true
-    }],
-    "frameworks": "???",
-    "platforms": "espressif32",
-    "headers": "src/gamepadAPI.h"
+    }]
 }

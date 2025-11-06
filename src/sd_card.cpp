@@ -90,6 +90,7 @@ std::vector < file_name_t > Gamepad_SD_card::list_dir(){
     while(file){
         file_name_t tmp = {file.name(), (file.isDirectory()) ? IS_FOLDER : IS_FILE, file.path()};
         list.push_back(tmp);
+        Serial.println(tmp.name);
 
         file = dir.openNextFile();
     }

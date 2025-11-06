@@ -28,18 +28,13 @@ void battery_listener(void *params){
                             if(batt -> is_calibrating()){
                                 float *levels = batt -> finish_calibration();
 
-                                if(levels == nullptr)
+                                if(levels == nullptr){
                                     ui.notification("Failed to\ncalibrate battery");
-                                else{
-                                    gamepad.game_files.open_file("battery.txt", "w");
-                                    String txt = "";
-                                    for(int i = 0; i < BATTERY_LEVELS; i++)
-                                        txt += String(levels[i]) + "\n";
-                                    ui.notification(txt);
-                                    gamepad.game_files.file_print(txt);
-                                    gamepad.game_files.close_file();
+                                    vTaskDelay(pdMS_TO_TICKS(2000));
                                 }
-                                delay(10000);
+                                else{
+                                    
+                                }
                             }
 
                             vTaskSuspend(*main_loop_handler);
