@@ -6,7 +6,7 @@ float fast_inv_sqrt(float n){
     
     x2 = n * 0.5F;
     y = n;
-    i = * (long *) &y;
+    i = * (int *) &y;
     i = 0x5f3759df - (i >> 1);
     y = * (float *) &i;
     y = y * (1.5F - (x2 * y * y));
@@ -52,10 +52,6 @@ vec2 vec2::operator-= (vec2 vec){
 
 float vec2::mod(){
     return sqrt(x*x + y*y);
-}
-
-float vec2::fast_mod(){
-    return 1.0 / fast_inv_sqrt(x*x + y*y);
 }
 
 vec2 vec2::norm(){
@@ -120,10 +116,6 @@ vec3 vec3::operator-= (vec3 vec){
 
 float vec3::mod(){
     return sqrt(x*x + y*y + z*z);
-}
-
-float vec3::fast_mod(){
-    return 1.0 / fast_inv_sqrt(x*x + y*y + z*z);
 }
 
 vec3 vec3::norm(){

@@ -19,7 +19,6 @@ public:
     vec2 operator-= (vec2 vec);
 
     float mod();
-    float fast_mod();
     vec2 norm();
     vec2 fast_norm();
 
@@ -44,7 +43,6 @@ public:
     vec3 operator-= (vec3 vec);
 
     float mod();
-    float fast_mod();
     vec3 norm();
     vec3 fast_norm();
 

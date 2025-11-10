@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "config.h"
+#include "image.h"
 
 #ifndef SD_CS_PIN
 #define SD_CS_PIN 21
@@ -21,24 +22,6 @@ struct file_name_t{
     String name;
     bool type;
     String path;
-};
-
-class PNG_raw_t{
-public:
-    uint16_t w, h;
-    bool alpha;
-    uint16_t *img_buffer = nullptr;
-    uint8_t *alpha_buffer = nullptr;
-
-    PNG_raw_t() = default;
-    ~PNG_raw_t();
-    void clear();
-
-    PNG_raw_t(const PNG_raw_t&) = delete;
-    PNG_raw_t(PNG_raw_t&& other) noexcept;
-
-    PNG_raw_t& operator=(const PNG_raw_t&) = delete;
-    PNG_raw_t& operator=(PNG_raw_t&& other) noexcept;
 };
 
 class Gamepad_SD_card{
@@ -100,9 +83,9 @@ public:
     
     bool rename(String curren_path, String new_path, bool absolute = false);
 
-    PNG_raw_t file_read_PNG(bool alpha_channel = false);
-    void write_raw_PNG(PNG_raw_t &img, int start_pos = 0);
-    PNG_raw_t read_raw_PNG(int start_pos = 0);
+    Image_raw16_t file_read_PNG(bool alpha_channel = false);
+    void write_raw_PNG(Image_raw16_t &img, int start_pos = 0);
+    Image_raw16_t read_raw_PNG(int start_pos = 0);
 };
 
 #endif

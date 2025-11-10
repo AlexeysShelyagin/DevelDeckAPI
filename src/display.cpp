@@ -3,11 +3,13 @@
 
 /***************************************************************************************
 ** ---------------Modified function from TFT_eSPI------------------
+**					- avoid display update
+**					- image bit depth
 ** Function name:           pushMaskedImage
 ** Description:             Render a 16-bit colour image to TFT with a 1bpp mask
 ***************************************************************************************/
 // Can be used with a 16bpp sprite and a 1bpp sprite for the mask
-void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask)
+void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp)
 {
   if (_vpOoB || w < 1 || h < 1) return;
 
@@ -18,6 +20,10 @@ void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t 
   uint8_t  *eptr = mask + ((w + 7) >> 3);
   uint16_t *iptr = img;
   uint32_t setCount = 0;
+
+  int32_t ptr_offset = w;
+  if(sbpp == 8)
+	ptr_offset = w / 2;
 
   // For each line in the image
   while (h--) {
@@ -69,17 +75,39 @@ void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t 
       if (setCount) {
         xp += clearCount;
         clearCount = 0;
-        pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
+		if(sbpp == 16)
+        	pushImage(x + xp, y, setCount, 1, iptr + xp);      // pushImage handles clipping
+		if(sbpp == 8){
+			uint16_t* ptr_8bit = iptr;
+			if(xp % 2 != 0)
+				ptr_8bit = (uint16_t *) ((uint8_t *) iptr + 1);				// offset the pointer by 1 byte, to get proper coordinate
+			pushImage(x + xp, y, setCount, 1, ptr_8bit + xp / 2, 8);
+		}
         if (mptr >= eptr) break;
         xp += setCount;
       }
     } while (setCount || mptr < eptr);
 
     y++;
-    iptr += w;
+    iptr += ptr_offset;
     eptr += ((w + 7) >> 3);
   }
 }
+
+void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
+	if(image.alpha)
+		pushMaskedImage(x, y, image.w, image.h, image.img_buffer, image.alpha_buffer);
+	else
+		TFT_eSprite::pushImage(x, y, image.w, image.h, image.img_buffer);
+}
+
+void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){
+	if(image.alpha)
+		pushMaskedImage(x, y, image.w, image.h, image.img_buffer, image.alpha_buffer, 8);
+	else
+		TFT_eSprite::pushImage(x, y, image.w, image.h, image.img_buffer, 8);
+}
+
 
 File *PNG_disp_file_ptr;
 PNG *png_disp;

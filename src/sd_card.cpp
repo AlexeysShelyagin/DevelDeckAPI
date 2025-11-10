@@ -278,40 +278,6 @@ bool Gamepad_SD_card::rename(String curren_path, String new_path, bool absolute)
 
 
 
-PNG_raw_t::~PNG_raw_t(){
-    clear();
-}
-
-void PNG_raw_t::clear(){
-    delete [] img_buffer;
-    delete [] alpha_buffer;
-    img_buffer = nullptr;
-    alpha_buffer = nullptr;
-}
-
-PNG_raw_t::PNG_raw_t(PNG_raw_t&& other) noexcept{
-    img_buffer = other.img_buffer;
-    alpha_buffer = other.alpha_buffer;
-    other.img_buffer = nullptr;
-    other.alpha_buffer = nullptr;
-}
-
-PNG_raw_t& PNG_raw_t::operator=(PNG_raw_t&& other) noexcept{
-    if (this != &other) {
-        w = other.w;
-        h = other.h;
-        alpha = other.alpha;
-        delete [] img_buffer;
-        delete [] alpha_buffer;
-        img_buffer = other.img_buffer;
-        alpha_buffer = other.alpha_buffer;
-        other.img_buffer = nullptr;
-        other.alpha_buffer = nullptr;
-    }
-    return *this;
-}
-
-
 
 File *PNG_SD_file_ptr;
 PNG *png_SD;
@@ -334,7 +300,7 @@ int32_t PNG_SD_seek(PNGFILE *handle, int32_t position){
 }
 
 int PNG_SD_draw(PNGDRAW *pDraw){
-    PNG_raw_t *params = (PNG_raw_t *) pDraw -> pUser;
+    Image_raw16_t *params = (Image_raw16_t *) pDraw -> pUser;
 
     uint16_t *img_buff_ptr = params -> img_buffer;
 	png_SD -> getLineAsRGB565(pDraw, img_buff_ptr + (pDraw -> y * pDraw -> iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
@@ -349,8 +315,8 @@ int PNG_SD_draw(PNGDRAW *pDraw){
 	return 1;
 }
 
-PNG_raw_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
-    PNG_raw_t img;
+Image_raw16_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
+    Image_raw16_t img;
     if(!file)
         return img;
     
@@ -366,25 +332,11 @@ PNG_raw_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
 
     int status = png_SD -> open(name.c_str(), PNG_SD_init, NULL, PNG_SD_read, PNG_SD_seek, PNG_SD_draw);
     
-    img.w = png_SD -> getWidth();
-    img.h = png_SD -> getHeight();
-    img.alpha = (alpha_channel && png_SD -> hasAlpha());
-
-    int alpha_buff_size = ((img.w + 7) >> 3) * img.h;
-    if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < img.w * img.h * 2){
-        delete png_SD;
-		return img;
-    }
-    if (alpha_channel && heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < alpha_buff_size){
-        delete png_SD;
-		return img;
-    }
-
-    img.img_buffer = new uint16_t[img.w * img.h];
-    if(img.alpha)
-        img.alpha_buffer = new uint8_t[alpha_buff_size];
-	
-
+    img.create(
+        png_SD -> getWidth(), 
+        png_SD -> getHeight(), 
+        (alpha_channel && png_SD -> hasAlpha())
+    );
 
 	if(status == PNG_SUCCESS)
 		status = png_SD -> decode(&img, 0);
@@ -393,7 +345,7 @@ PNG_raw_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
     return img;
 }
 
-void Gamepad_SD_card::write_raw_PNG(PNG_raw_t &img, int start_pos){
+void Gamepad_SD_card::write_raw_PNG(Image_raw16_t &img, int start_pos){
     if(!file)
         return;
     
@@ -410,11 +362,11 @@ void Gamepad_SD_card::write_raw_PNG(PNG_raw_t &img, int start_pos){
     file.write(img_ptr, img.w * img.h * 2);
     
     if(img.alpha)
-        file.write(a_ptr, ((img.w + 7) >> 3) * img.h);
+        file.write(a_ptr, img.alpha_buff_size);
 }
 
-PNG_raw_t Gamepad_SD_card::read_raw_PNG(int start_pos){
-    PNG_raw_t img;
+Image_raw16_t Gamepad_SD_card::read_raw_PNG(int start_pos){
+    Image_raw16_t img;
     if(!file)
         return img;
     uint64_t t = millis();
@@ -423,9 +375,11 @@ PNG_raw_t Gamepad_SD_card::read_raw_PNG(int start_pos){
     file.seek(start_pos);
     file.read(vars_ptr, 5);
 
-    img.w =  *(uint16_t *) (vars_ptr);
-    img.h = *(uint16_t *) (vars_ptr + 2);
-    img.alpha = *(bool *) (vars_ptr + 4);
+    img.create(
+        *(uint16_t *) (vars_ptr),
+        *(uint16_t *) (vars_ptr + 2),
+        *(bool *) (vars_ptr + 4)
+    );
     delete vars_ptr;
 
     uint8_t *img_ptr = new uint8_t[img.w * img.h * 2];
@@ -436,9 +390,9 @@ PNG_raw_t Gamepad_SD_card::read_raw_PNG(int start_pos){
     file.read(img_ptr, img.w * img.h * 2);
     
     if(img.alpha){
-        a_ptr = new uint8_t[((img.w + 7) >> 3) * img.h];
+        a_ptr = new uint8_t[img.alpha_buff_size];
         file.seek(start_pos + 5 + img.w * img.h * 2);
-        file.read(a_ptr, ((img.w + 7) >> 3) * img.h);
+        file.read(a_ptr, img.alpha_buff_size);
     }
 
     img.img_buffer = (uint16_t *) img_ptr;
