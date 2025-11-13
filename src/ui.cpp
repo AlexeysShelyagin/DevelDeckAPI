@@ -127,7 +127,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     Gamepad_SD_card file_manager;
     file_manager.init(root);
 
-    game_config_t *game_config = new game_config_t();
+    Game_config_t *game_config = new Game_config_t();
 
     file_mngr_t res = {"", "", nullptr};
     
@@ -315,7 +315,7 @@ void render_setting_param(String value, uint16_t x, uint16_t y, bool active){
     gamepad.canvas -> setTextColor(TFT_WHITE);
 }
 
-uint8_t Gamepad_UI::settings(system_data_t &data){
+uint8_t Gamepad_UI::settings(System_data_t &data){
     bool update_disp = true;
     bool quit = false;
     bool changes = false;
@@ -664,7 +664,7 @@ bool Gamepad_UI::notification(String msg){
     return 1;
 }
 
-void Gamepad_UI::init_game_downloading_screen(game_config_t game_data, String dir){
+void Gamepad_UI::init_game_downloading_screen(Game_config_t game_data, String dir){
     gamepad.clear_canvas();
 
     gamepad.canvas -> setTextSize(2);

@@ -7,13 +7,13 @@
 
 #include "config.h"
 
-struct game_config_t;
-struct system_data_t;
+struct Game_config_t;
+struct System_data_t;
 
 struct file_mngr_t{
     String dir;
     String file;
-    game_config_t *game_config;
+    Game_config_t *game_config;
 };
 
 
@@ -28,12 +28,12 @@ public:
     file_mngr_t file_manager(bool selecting_game = false, String root = "/");
     file_mngr_t file_manager(String root);
 
-    uint8_t settings(system_data_t &data);
+    uint8_t settings(System_data_t &data);
 
     uint8_t message_box(String msg, std::vector < String > actions = std::vector < String > (), uint16_t w = 0, uint16_t h = 0, int16_t dx = 0, int16_t dy = 0);
     bool notification(String msg);
 
-    void init_game_downloading_screen(game_config_t game_data, String dir = "");
+    void init_game_downloading_screen(Game_config_t game_data, String dir = "");
     void game_downloading_screen(uint8_t percentage);
 
     void on_charge_screen(bool invert = false);

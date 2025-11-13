@@ -19,7 +19,9 @@
 typedef DEFAULT_CANVAS_T Gamepad_canvas_t;
 #endif
 
-struct game_config_t{
+
+
+struct Game_config_t{
     String name;
     String description;
     String game_path;
@@ -27,7 +29,7 @@ struct game_config_t{
     uint8_t minimum_flash;
 };
 
-struct system_data_t{
+struct System_data_t{
     uint8_t game_path_size;
     char game_path[255];
     uint8_t buzzer_volume;
@@ -37,6 +39,7 @@ struct system_data_t{
     float battery_levels[BATTERY_LEVELS];
     uint16_t battery_lifetime;
 };
+
 
 
 class Gamepad{
@@ -55,7 +58,7 @@ class Gamepad{
     uint16_t system_params = 0;
 
     uint8_t brightness = DEFAULT_BRIGHTNESS;
-    system_data_t *system_data;
+    System_data_t *system_data;
     String game_path;
 
     TaskHandle_t battery_listener_handler = NULL;
@@ -75,9 +78,6 @@ class Gamepad{
 
     void (*game_func)();
 
-    bool sys_param(sys_param_t id);
-    void sys_param(sys_param_t id, bool val);
-
     bool init_buttons();
     void init_display();
     bool init_SD();
@@ -86,31 +86,41 @@ class Gamepad{
     bool init_vibro();
     void init_battery();
 
+    bool sys_param(sys_param_t id);
+    void sys_param(sys_param_t id, bool val);
+
     void init_system_settings();
     void apply_system_settings();
     void locate_game_folder();
-    
 
-    void on_charge();
+    void on_charge_screen();
+
 public:
     typedef layer_t* layer_id_t;
 
     SemaphoreHandle_t semaphore = NULL;
 
+    Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;
     Gamepad_buzzer buzzer;
     Gamepad_vibro vibro;
     Gamepad_accel accel;
     Gamepad_SD_card game_files;
-    
-    Gamepad_canvas_t *canvas = nullptr;
 
     Gamepad() = default;
 
+
     void main_loop();
+
+    void give_access_to_subprocess();
+
 
     void init(void (*game_func_)());
     void game_files_required();
+
+    
+    uint8_t get_battery_charge();
+
 
     void clear_canvas();
     void update_display();
@@ -120,6 +130,7 @@ public:
     void set_display_brightness(uint8_t brightness_);
     uint8_t get_display_brightness();
 
+
     Gamepad::layer_id_t create_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 8);
     bool layer_exists(layer_id_t id);
     Gamepad_canvas_t* layer(layer_id_t id);
@@ -127,21 +138,19 @@ public:
     void clear_layer(layer_id_t id);
     void delete_layer(layer_id_t id);
 
+
     void main_menu();
     void select_game_menu();
     String file_manager();
     void game_downloading_screen(uint8_t percentage);
 
-    uint8_t get_battery_charge();
 
-    game_config_t read_game_config(String &config);
-
+    // ----------- API-only functions ------------
 
     void save_system_settings();
-    void apply_system_settings(system_data_t *settings);
+    void apply_system_settings(System_data_t *settings);
 
-    void give_access_to_subprocess();
-
+    Game_config_t read_game_config(String &config);
 };
 
 
