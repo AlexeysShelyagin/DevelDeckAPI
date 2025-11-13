@@ -55,11 +55,16 @@ class Gamepad{
     uint16_t system_params = 0;
 
     uint8_t brightness = DEFAULT_BRIGHTNESS;
+    system_data_t *system_data;
+    String game_path;
 
-    void (*game_func)();
+    TaskHandle_t battery_listener_handler = NULL;
+    TaskHandle_t system_data_updater_handler = NULL;
+    TaskHandle_t forced_main_menu_handler = NULL;
+    TaskHandle_t display_updater_handler = NULL;
 
     Gamepad_display *disp;
-
+    Gamepad_battery batt;
     Gamepad_SD_card sd_card;
 
     struct layer_t{
@@ -67,14 +72,8 @@ class Gamepad{
         uint16_t x, y;
     };
     std::vector < layer_t* > layers;
-    
-    TaskHandle_t battery_listener_handler = NULL;
-    TaskHandle_t system_data_updater_handler = NULL;
-    TaskHandle_t forced_main_menu_handler = NULL;
-    TaskHandle_t display_updater_handler = NULL;
 
-    system_data_t *system_data;
-    String game_path;
+    void (*game_func)();
 
     bool sys_param(sys_param_t id);
     void sys_param(sys_param_t id, bool val);
@@ -96,17 +95,15 @@ class Gamepad{
 public:
     typedef layer_t* layer_id_t;
 
+    SemaphoreHandle_t semaphore = NULL;
+
     Gamepad_buttons buttons;
     Gamepad_buzzer buzzer;
     Gamepad_vibro vibro;
     Gamepad_accel accel;
-
     Gamepad_SD_card game_files;
-    Gamepad_battery batt; // TODO: move to private
     
     Gamepad_canvas_t *canvas = nullptr;
-
-    SemaphoreHandle_t semaphore = NULL;
 
     Gamepad() = default;
 

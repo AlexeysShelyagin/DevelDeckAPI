@@ -106,7 +106,7 @@ float* Gamepad_battery::finish_calibration(){
     voltage_levels = new float[BATTERY_LEVELS];
 
     uint16_t n = calibr_v.size();
-    float period = (float) (calibr_time[n - 1] - calibr_time[0]) * (1.0 - BATTERY_ZERO_LEVEL) / (float) BATTERY_LEVELS;
+    float period = (float) (calibr_time[n - 1] - calibr_time[0]) * (1.0 - BATTERY_ZERO_PERCENTAGE) / (float) BATTERY_LEVELS;
     uint8_t iteration = 1;
 
     for(int i = 0; i < n; i++){

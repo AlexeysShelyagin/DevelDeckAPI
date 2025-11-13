@@ -53,12 +53,12 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
         while(gamepad.buttons.event_available()){
             uint8_t* event = gamepad.buttons.get_button_event();
 
-            if(event[L_LEFT_BUT_ID] == BUT_PRESSED)
+            if(event[LEFT_BUT_ID] == BUT_PRESSED)
                 cursor = buttons[cursor].left_id;
-            if(event[L_RIGHT_BUT_ID] == BUT_PRESSED)
+            if(event[RIGHT_BUT_ID] == BUT_PRESSED)
                 cursor = buttons[cursor].right_id;
 
-            if(event[R_UP_BUT_ID] == BUT_PRESSED)
+            if(event[A_BUT_ID] == BUT_PRESSED)
                 quit = true;
             if(event[MENU_BUT_ID] == BUT_PRESSED){
                 cursor = 0;
@@ -136,7 +136,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
             uint8_t* buttons = gamepad.buttons.get_button_event();
             
             if(items_n != 0){
-                if(buttons[L_DOWN_BUT_ID] == BUT_PRESSED){
+                if(buttons[DOWN_BUT_ID] == BUT_PRESSED){
                     cursor.top() = (cursor.top() + items_n + 1) % items_n;
 
                     if(cursor.top() >= scroll.top() + max_items)
@@ -145,7 +145,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                         scroll.top() = 0;
                 }
 
-                if(buttons[L_UP_BUT_ID] == BUT_PRESSED){
+                if(buttons[UP_BUT_ID] == BUT_PRESSED){
                     cursor.top() = (cursor.top() + items_n - 1) % items_n;
 
                     if(cursor.top() < scroll.top())
@@ -154,7 +154,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                         scroll.top() = max((int) items_n - max_items, 0);
                 }
 
-                if(buttons[L_RIGHT_BUT_ID] == BUT_PRESSED || buttons[R_UP_BUT_ID] == BUT_PRESSED){
+                if(buttons[RIGHT_BUT_ID] == BUT_PRESSED || buttons[A_BUT_ID] == BUT_PRESSED){
                     if(is_game_folder){
                         res = {file_manager.current_dir(), GAME_CONFIG_FILE_NAME, game_config};
                         quit = true;
@@ -174,7 +174,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                 }
             }
 
-            if(buttons[L_LEFT_BUT_ID] == BUT_PRESSED || buttons[R_DOWN_BUT_ID] == BUT_PRESSED){
+            if(buttons[LEFT_BUT_ID] == BUT_PRESSED || buttons[B_BUT_ID] == BUT_PRESSED){
                 if(file_manager.open_root_dir()){
                     update_dir = true;
                     cursor.pop();
@@ -189,7 +189,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                     res = {file_manager.current_dir(), dir[cursor.top()].name, nullptr};
                 quit = true;
             }
-            if(buttons[R_UP_BUT_ID] == BUT_PRESSED && !selecting_game && dir[cursor.top()].type == IS_FOLDER){
+            if(buttons[A_BUT_ID] == BUT_PRESSED && !selecting_game && dir[cursor.top()].type == IS_FOLDER){
                 res = {file_manager.current_dir(), dir[cursor.top()].name, nullptr};
                 quit = true;
             }
@@ -340,7 +340,7 @@ uint8_t Gamepad_UI::settings(system_data_t &data){
         while(gamepad.buttons.event_available()){
             uint8_t* buttons = gamepad.buttons.get_button_event();
 
-            if(buttons[L_DOWN_BUT_ID] == BUT_PRESSED){
+            if(buttons[DOWN_BUT_ID] == BUT_PRESSED){
                 if(selected == settings_n){
                     cursor = (cursor + settings_n + 1) % settings_n;
 
@@ -351,7 +351,7 @@ uint8_t Gamepad_UI::settings(system_data_t &data){
                 }
             }
 
-            if(buttons[L_UP_BUT_ID] == BUT_PRESSED){
+            if(buttons[UP_BUT_ID] == BUT_PRESSED){
                 if(selected == settings_n){
                     cursor = (cursor + settings_n - 1) % settings_n;
 
@@ -362,17 +362,17 @@ uint8_t Gamepad_UI::settings(system_data_t &data){
                 }
             }
 
-            if(buttons[L_LEFT_BUT_ID] == BUT_PRESSED){
+            if(buttons[LEFT_BUT_ID] == BUT_PRESSED){
                 if(selected != settings_n)
                     change -= 1;
             }
 
-            if(buttons[L_RIGHT_BUT_ID] == BUT_PRESSED){
+            if(buttons[RIGHT_BUT_ID] == BUT_PRESSED){
                 if(selected != settings_n)
                     change += 1;
             }
 
-            if(buttons[R_DOWN_BUT_ID] == BUT_PRESSED || buttons[MENU_BUT_ID] == BUT_PRESSED){
+            if(buttons[B_BUT_ID] == BUT_PRESSED || buttons[MENU_BUT_ID] == BUT_PRESSED){
                 if(selected == settings_n){
                     if(changes){
                         std::vector < String > optns = {"Save", "Discard"};
@@ -384,7 +384,7 @@ uint8_t Gamepad_UI::settings(system_data_t &data){
                     selected = settings_n;
             }
 
-            if(buttons[R_UP_BUT_ID] == BUT_PRESSED){
+            if(buttons[A_BUT_ID] == BUT_PRESSED){
                 if(selected == settings_n)
                     selected = cursor;
             }
@@ -554,16 +554,16 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
         while(gamepad.buttons.event_available()){
             uint8_t* event = gamepad.buttons.get_button_event();
             
-            if(event[L_LEFT_BUT_ID] == BUT_PRESSED){
+            if(event[LEFT_BUT_ID] == BUT_PRESSED){
                 cursor = buttons[cursor].left_id;
                 update_disp = true;
             }
-            if(event[L_RIGHT_BUT_ID] == BUT_PRESSED){
+            if(event[RIGHT_BUT_ID] == BUT_PRESSED){
                 cursor = buttons[cursor].right_id;
                 update_disp = true;
             }
 
-            if(event[R_UP_BUT_ID] == BUT_PRESSED)
+            if(event[A_BUT_ID] == BUT_PRESSED)
                 quit = true;
             
         }
