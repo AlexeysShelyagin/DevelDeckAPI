@@ -10,6 +10,12 @@
 const float g_const = 9.81;
 
 class Gamepad_accel{
+    enum chip_type_t{
+        BMI160_ID = 0xD1,
+        BMI323_ID = 0x43
+    };
+    uint8_t chip = 0;
+
     TwoWire accelWire = TwoWire(0);
     vec3 invert_mask;
     uint8_t mode = 0;

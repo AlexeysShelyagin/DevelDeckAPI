@@ -3,7 +3,7 @@
 void Gamepad_accel::init(int sda_pin, int scl_pin){
     accelWire.begin(sda_pin, scl_pin);
 
-    accelWire.beginTransmission(BMI160_I2C_ADDRESS);
+    accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
 	accelWire.write(0x7E); // Command register
 	accelWire.write(0x11); // Set accelerometer to normal mode
 	accelWire.endTransmission();
@@ -18,10 +18,19 @@ void Gamepad_accel::init(int sda_pin, int scl_pin){
 }
 
 void Gamepad_accel::auto_calibrate(){
-    accelWire.beginTransmission(BMI160_I2C_ADDRESS);
+    accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
     accelWire.write(0x7E); // Command register
     accelWire.write(0x37); // Start accelerometer offset calibration
     accelWire.endTransmission();
+
+    accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
+    accelWire.write(0x00);                  // TODO: get the chip_id   0xD1 for BMI160, 0x43 for BMI323
+                                            // TODO: add chip recognition, using different register map
+    accelWire.endTransmission();
+
+    accelWire.requestFrom(ACCEL_I2C_ADDRESS, 1);
+    if(accelWire.available())
+        chip = accelWire.read();
 }
 
 void Gamepad_accel::set_vertical_mode(){
@@ -33,18 +42,24 @@ void Gamepad_accel::set_horizontal_mode(){
 }
 
 vec3 Gamepad_accel::get_accel(){
-	// Read accelerometer data
-	accelWire.beginTransmission(BMI160_I2C_ADDRESS);
-	accelWire.write(0x12); // Start register for accelerometer data
-	accelWire.endTransmission(false);
-	accelWire.requestFrom(BMI160_I2C_ADDRESS, 6);
-	
-    int16_t ax, ay, az;
-	if (accelWire.available() == 6) {
-        ax = accelWire.read() | (accelWire.read() << 8);
-        ay = accelWire.read() | (accelWire.read() << 8);
-        az = accelWire.read() | (accelWire.read() << 8);
-	}
+    int16_t ax = 0, ay = 0, az = 0;
+    if(chip == BMI160_ID){
+        accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
+        accelWire.write(0x12); // Start register for accelerometer data
+        accelWire.endTransmission(false);
+        accelWire.requestFrom(ACCEL_I2C_ADDRESS, 6);
+        
+        
+        if (accelWire.available() == 6) {
+            ax = accelWire.read() | (accelWire.read() << 8);
+            ay = accelWire.read() | (accelWire.read() << 8);
+            az = accelWire.read() | (accelWire.read() << 8);
+        }
+    }
+    
+    if(chip == BMI323_ID){
+        // TODO:
+    }
 
     vec3 data(ax, ay, az);
     data *= (g_const / ACCEL_SENSITIVITY);
