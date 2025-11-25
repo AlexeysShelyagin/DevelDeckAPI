@@ -30,10 +30,10 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
     bool update_disp = true;
     bool quit = false;
 
-    uint8_t cursor = init_cursor % 3;
+    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    gamepad.canvas -> setDefaultGraphicsParams();
 
-    uint8_t text_size = gamepad.canvas -> textsize;
-    uint32_t text_color = gamepad.canvas -> textcolor;
+    uint8_t cursor = init_cursor % 3;
 
     uint16_t dims[][4] = {
         {120, 100, 80, 40},
@@ -91,8 +91,7 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
         gamepad.give_access_to_subprocess();
     }
 
-    gamepad.canvas -> setTextSize(text_size);
-    gamepad.canvas -> setTextColor(text_color);
+    gamepad.canvas -> setGraphicsParams(init_graphics);
 
     return cursor;
 }
@@ -103,13 +102,13 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     bool is_game_folder = false;
     bool quit = false;
 
-    uint8_t initial_text_size = gamepad.canvas -> textsize;
-    uint32_t initial_color = gamepad.canvas -> textcolor;
-    uint8_t initial_font = gamepad.canvas -> getFontID();
+    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    gamepad.canvas -> setDefaultGraphicsParams();
     gamepad.canvas -> setFont(0);
     gamepad.canvas -> setTextWrap(false);
     gamepad.canvas -> setTextSize(1);
     gamepad.canvas -> setTextColor(TFT_WHITE);
+
     uint16_t orig_x = (gamepad.canvas -> width() - FILE_MANAGER_W) / 2;
     uint16_t orig_y = (gamepad.canvas -> height() - FILE_MANAGER_H) / 2;
     gamepad.canvas -> setOrigin(orig_x, orig_y);
@@ -292,10 +291,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     if(!is_game_folder)
         delete game_config;
     
-    gamepad.canvas -> setFont(initial_font);
-    gamepad.canvas -> setTextSize(initial_text_size);
-    gamepad.canvas -> setTextColor(initial_color);
-    gamepad.canvas -> setOrigin(0, 0);
+    gamepad.canvas -> setGraphicsParams(init_graphics);
 
     return res;
 }
@@ -324,8 +320,8 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
     uint8_t scroll = 0;
     uint8_t selected;
 
-    uint8_t initial_text_size = gamepad.canvas -> textsize;
-    uint32_t initial_text_color = gamepad.canvas -> textcolor;
+    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    gamepad.canvas -> setDefaultGraphicsParams();
     gamepad.canvas -> setTextSize(2);
     gamepad.canvas -> setTextColor(TFT_WHITE);
 
@@ -488,6 +484,8 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
 
         gamepad.give_access_to_subprocess();
     }
+
+    gamepad.canvas -> setGraphicsParams(init_graphics);
 
     return changes;
 }
@@ -667,8 +665,8 @@ bool Gamepad_UI::notification(String msg){
 void Gamepad_UI::init_game_downloading_screen(Game_config_t game_data, String dir){
     gamepad.clear_canvas();
 
+    gamepad.canvas -> setDefaultGraphicsParams();
     gamepad.canvas -> setTextSize(2);
-    gamepad.canvas -> setTextColor(TFT_WHITE);
 
     uint16_t cursor_x = (gamepad.canvas -> width() - gamepad.canvas -> textWidth(game_data.name)) / 2;
     uint16_t y0 = 20;
@@ -715,8 +713,8 @@ void Gamepad_UI::game_downloading_screen(uint8_t percentage){
 }
 
 void Gamepad_UI::on_charge_screen(bool invert){
-    uint8_t initial_font_size = gamepad.canvas -> textsize;
-    uint32_t initial_text_color = gamepad.canvas -> textcolor;
+    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    gamepad.canvas -> setDefaultGraphicsParams();
 
     gamepad.canvas -> fillSprite((invert) ? TFT_WHITE : TFT_BLACK);
 
@@ -727,9 +725,10 @@ void Gamepad_UI::on_charge_screen(bool invert){
     
     gamepad.update_display();
 
-    gamepad.canvas -> setTextSize(initial_font_size);
-    gamepad.canvas -> setTextColor(initial_text_color);
+    gamepad.canvas -> setGraphicsParams(init_graphics);
 }
+
+
 
 
 

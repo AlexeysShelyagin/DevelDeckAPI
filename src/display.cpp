@@ -251,6 +251,37 @@ void Gamepad_canvas_t::setLineSpacing(float multiplier){
 	gFont.yAdvance = multiplier * font_h;
 }
 
+void Gamepad_canvas_t::setDefaultGraphicsParams(){
+	setFont(0);
+    setTextSize(1);
+    setTextColor(TFT_WHITE);
+	setCursor(0, 0);
+	setTextWrap(true, false);
+    setOrigin(0, 0);
+}
+
+void Gamepad_canvas_t::setGraphicsParams(graphics_params_t params){
+	setFont(params.font_id);
+    setTextSize(params.text_size);
+    setTextColor(params.text_color);
+	setCursor(params.cur_x, params.cur_y);
+	setTextWrap(params.wrap_x, params.wrap_y);
+    setOrigin(params.orig_x, params.orig_y);
+}
+
+Gamepad_canvas_t::graphics_params_t Gamepad_canvas_t::graphicsParams(){
+	graphics_params_t res;
+
+	res.font_id = font_id;
+	res.text_size = textsize;
+	res.text_color = textcolor;
+	res.cur_x = cursor_x; res.cur_y = cursor_y;
+	res.wrap_x = textwrapX; res.wrap_y = textwrapY;
+	res.orig_x = _xDatum; res.orig_y = _yDatum;
+
+	return res;
+}
+
 
 
 bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_channel){
