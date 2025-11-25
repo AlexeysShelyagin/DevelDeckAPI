@@ -1,15 +1,15 @@
 {
-    "name": "gamepad-API",
+    "name": "DevelDeck-API",
     "version": "0.0.1",
     "keywords": "esp32, game",
-    "description": "Framework for DevelTeam gamepads",
+    "description": "Framework for DevelDeck by DevelTeam",
     "repository": {
         "type": "git",
-        "url": "https://github.com/AlexeysShelyagin/gamepadAPI"
+        "url": "https://github.com/AlexeysShelyagin/DevelDeckAPI"
     },
     "frameworks": "arduino",
     "platforms": "espressif32",
-    "headers": "src/gamepadAPI.h",
+    "headers": "src/DevelDeckAPI.h",
     "dependencies":{
         "bodmer/TFT_eSPI": "^2.5.43",
         "bitbank2/PNGdec": "^1.1.6"
