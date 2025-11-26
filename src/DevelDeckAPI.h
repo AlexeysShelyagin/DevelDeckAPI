@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_API_H
-#define GAMEPAD_API_H
+#ifndef DEVEL_DECK_API_H
+#define DEVEL_DECK_API_H
 
 #include <Arduino.h>
 #include <vector>
