@@ -11,11 +11,11 @@ Add your content using ``reStructuredText`` syntax. See the
 documentation for details.
 
 
-Section
+Sections
 ===========
 
 .. toctree::
    :maxdepth: 2
 
-   section/index*
+   section/index.rst
 
