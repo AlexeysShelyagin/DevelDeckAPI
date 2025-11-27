@@ -17,5 +17,5 @@ Section
 .. toctree::
    :maxdepth: 2
 
-   section/index
+   section/index*
 
