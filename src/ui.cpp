@@ -211,7 +211,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                         quit = true;
                     }
                     else{
-                        if(dir[cursor.top()].type == IS_FOLDER){
+                        if(dir[cursor.top()].type == IS_DIR){
                             file_manager.open_dir(dir[cursor.top()].name);
                             update_dir = true;
                             cursor.push(0);
@@ -226,7 +226,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
             }
 
             if(buttons[LEFT_BUT_ID] == BUT_PRESSED || buttons[B_BUT_ID] == BUT_PRESSED){
-                if(file_manager.open_root_dir()){
+                if(file_manager.open_parent_dir()){
                     update_dir = true;
                     cursor.pop();
                     scroll.pop();
@@ -240,7 +240,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                     res = {file_manager.current_dir(), dir[cursor.top()].name, nullptr};
                 quit = true;
             }
-            if(buttons[A_BUT_ID] == BUT_PRESSED && !selecting_game && dir[cursor.top()].type == IS_FOLDER){
+            if(buttons[A_BUT_ID] == BUT_PRESSED && !selecting_game && dir[cursor.top()].type == IS_DIR){
                 res = {file_manager.current_dir(), dir[cursor.top()].name, nullptr};
                 quit = true;
             }

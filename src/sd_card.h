@@ -14,7 +14,7 @@
 #endif
 
 enum file_type{
-    IS_FOLDER,
+    IS_DIR,
     IS_FILE
 };
 
@@ -45,11 +45,11 @@ public:
     uint8_t init(String root_limit = "/");
 
     bool open_dir(String path, bool absolute = false);
-    bool open_root_dir();
+    bool open_parent_dir();
     std::vector < file_name_t > list_dir();
     String current_dir();
     bool make_dir(String path, bool absolute = false);
-    bool remove_dir(String path, bool absolute = false);
+    bool remove_dir(String path, bool recursive = false, bool absolute = false);
 
     bool exists(String path, bool absolute = false);
     bool is_dir(String path, bool absolute = false);
@@ -84,8 +84,8 @@ public:
     bool rename(String curren_path, String new_path, bool absolute = false);
 
     Image_raw16_t file_read_PNG(bool alpha_channel = false);
-    void write_raw_PNG(Image_raw16_t &img, int start_pos = 0);
-    Image_raw16_t read_raw_PNG(int start_pos = 0);
+    void write_raw16(Image_raw16_t &img, int start_pos = 0);
+    Image_raw16_t read_raw16(int start_pos = 0);
 };
 
 #endif

@@ -52,6 +52,9 @@ bool Gamepad_SD_card::open_dir(String path, bool absolute){
     
     if(!process_path(path, absolute))
         return 0;
+
+    if(path == "/..")
+        return open_parent_dir();
     
     dir = SD.open(path);
     
@@ -60,7 +63,7 @@ bool Gamepad_SD_card::open_dir(String path, bool absolute){
     return dir.isDirectory();
 }
 
-bool Gamepad_SD_card::open_root_dir(){
+bool Gamepad_SD_card::open_parent_dir(){
     if(!initialized)
         return 0;
     
@@ -88,7 +91,7 @@ std::vector < file_name_t > Gamepad_SD_card::list_dir(){
 
     File file = dir.openNextFile();
     while(file){
-        file_name_t tmp = {file.name(), (file.isDirectory()) ? IS_FOLDER : IS_FILE, file.path()};
+        file_name_t tmp = {file.name(), (file.isDirectory()) ? IS_DIR : IS_FILE, file.path()};
         list.push_back(tmp);
 
         file = dir.openNextFile();
@@ -111,12 +114,36 @@ bool Gamepad_SD_card::make_dir(String path, bool absolute){
     return SD.mkdir(path);
 }
 
-bool Gamepad_SD_card::remove_dir(String path, bool absolute){
+bool rmdir_recursive(File &dir){
+    File obj_to_remove = dir.openNextFile();
+
+    while(obj_to_remove){
+        if(obj_to_remove.isDirectory()){
+            if(!rmdir_recursive(obj_to_remove))
+                return 0;
+        }
+        else{
+            if(!SD.remove(obj_to_remove.path()))
+                return 0;
+        }
+
+        obj_to_remove = dir.openNextFile();
+    }
+    
+    return SD.rmdir(dir.path());
+}
+
+bool Gamepad_SD_card::remove_dir(String path, bool recursive, bool absolute){
     if(!initialized)
         return 0;
     
     if(!process_path(path, absolute))
         return 0;
+
+    if(recursive){
+        File dir_to_remove = SD.open(path);
+        return rmdir_recursive(dir_to_remove);
+    }
 
     return SD.rmdir(path);
 }
@@ -345,7 +372,7 @@ Image_raw16_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
     return img;
 }
 
-void Gamepad_SD_card::write_raw_PNG(Image_raw16_t &img, int start_pos){
+void Gamepad_SD_card::write_raw16(Image_raw16_t &img, int start_pos){
     if(!file)
         return;
     
@@ -365,7 +392,7 @@ void Gamepad_SD_card::write_raw_PNG(Image_raw16_t &img, int start_pos){
         file.write(a_ptr, img.alpha_buff_size);
 }
 
-Image_raw16_t Gamepad_SD_card::read_raw_PNG(int start_pos){
+Image_raw16_t Gamepad_SD_card::read_raw16(int start_pos){
     Image_raw16_t img;
     if(!file)
         return img;
