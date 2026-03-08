@@ -14,6 +14,11 @@
 // set the type of canvas for external use
 #define GAMEPAD_CANVAS_T_DEFINED
 
+
+/**
+ * @brief Graphics styles and parameters container
+ * 
+ */
 struct Graphics_params_t{
         uint8_t font_id;
         uint8_t text_size;

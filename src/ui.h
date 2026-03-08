@@ -10,10 +10,15 @@
 struct Game_config_t;
 struct System_data_t;
 
+
+/**
+ * @brief File manager returned data container
+ * 
+ */
 struct File_mngr_t{
-    String dir;
-    String file;
-    Game_config_t *game_config;
+    String dir;                     /** Path to selected dir */
+    String file;                    /** Path to selected file */
+    Game_config_t *game_config;     /** Parsed `game.ini` if selected */
 };
 
 

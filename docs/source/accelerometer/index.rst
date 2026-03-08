@@ -69,6 +69,8 @@ Custom zero orientation
 
 Any orientation can be set as the zero orientation using :cpp:func:`Gamepad_accel::set_current_as_zero`. This is useful for adapting to the player's holding style. The function also allows **blocking the X (roll) axis** to maintain a stable horizontal reference in some games.
 
+Orientation can be set also from acceleration value saved before using :cpp:func:`Gamepad_accel::set_as_zero`.
+
 
 Common examples
 ^^^^^^^^^^^^^^^^^^
@@ -147,6 +149,7 @@ Functions
 .. doxygenfunction:: Gamepad_accel::set_vertical_mode
 .. doxygenfunction:: Gamepad_accel::set_horizontal_mode
 .. doxygenfunction:: Gamepad_accel::set_current_as_zero
+.. doxygenfunction:: Gamepad_accel::set_as_zero
 .. doxygenfunction:: Gamepad_accel::get_angles()
 .. doxygenfunction:: Gamepad_accel::get_angles(vec3 &accel)
 .. doxygenfunction:: Gamepad_accel::get_accel

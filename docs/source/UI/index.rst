@@ -79,6 +79,14 @@ Game selection menu
 Game can be changed to another without main menu call, but directly with a use of :cpp:func:`Gamepad::Gamepad::select_game_menu`.
 
 
+
+Settings menu
+-------------------
+
+Gamepad settings menu can be opened without main menu call, but directly with a use of :cpp:func:`Gamepad::Gamepad::settings_menu`.
+
+
+
 API reference
 -------------------
 
@@ -88,3 +96,4 @@ Functions
 .. doxygenfunction:: Gamepad::main_menu
 .. doxygenfunction:: Gamepad::file_manager
 .. doxygenfunction:: Gamepad::select_game_menu
+.. doxygenfunction:: Gamepad::settings_menu

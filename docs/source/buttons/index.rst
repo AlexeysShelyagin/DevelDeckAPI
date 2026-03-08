@@ -178,5 +178,5 @@ Functions
 Enumerations
 ^^^^^^^^^^^^^^^^
 
-.. doxygenenum:: buttons_id
-.. doxygenenum:: button_state_t
+.. doxygenenum:: Buttons_id_t
+.. doxygenenum:: Button_state_t

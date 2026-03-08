@@ -53,6 +53,13 @@ public:
      * @param hold_x_axis does not reset roll (gamepad x axis) if true
      */
     void set_current_as_zero(bool hold_x_axis = false);
+
+    /**
+     * @brief Set zero from acceleration vector
+     * 
+     * @param accel 
+     * @param hold_x_axis 
+     */
     void set_as_zero(vec3 accel, bool hold_x_axis = false);
 
 

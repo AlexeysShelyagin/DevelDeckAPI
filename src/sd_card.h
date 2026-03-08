@@ -18,10 +18,15 @@ enum FS_obj_type{
     IS_FILE
 };
 
+
+/**
+ * @brief FS object data container
+ * 
+ */
 struct File_name_t{
     String name;
-    bool type;
-    String path;
+    bool type;      /** Type according to `FS_obj_type` */
+    String path;    /** Absolute path */
 };
 
 class Gamepad_SD_card{
@@ -92,6 +97,7 @@ public:
      * @brief Delete directory
      * 
      * @param path path to directory
+     * @param recursive set true for recursive deletion
      * @param absolute set true if path is absolute
      * @return true: success
      * @return false: failed

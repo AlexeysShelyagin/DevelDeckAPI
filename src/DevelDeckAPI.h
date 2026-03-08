@@ -20,13 +20,16 @@ typedef DEFAULT_CANVAS_T Gamepad_canvas_t;
 #endif
 
 
-
+/**
+ * @brief Game info for loading screen container
+ * 
+ */
 struct Game_config_t{
-    String name;
-    String description;
-    String game_path;
-    String icon_path;
-    uint8_t minimum_flash;
+    String name;                /** Game name */
+    String description;         /** Game description text */
+    String game_path;           /** Path to `game.ini` */
+    String icon_path;           /** Path to game icon */
+    uint8_t minimum_flash;      /** Minimum required flash for installation */
 };
 
 struct System_data_t{

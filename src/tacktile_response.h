@@ -6,6 +6,11 @@
 
 #include "config.h"
 
+
+/**
+ * @brief Element of buzzer sequence
+ * 
+ */
 struct Buzzer_element_t{
     uint16_t freq;
     uint16_t timing;

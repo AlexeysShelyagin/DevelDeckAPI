@@ -36,7 +36,7 @@ Open directory
 ^^^^^^^^^^^^^^^^^^^
 
 - :cpp:func:`Gamepad_SD_card::open_dir`
-- :cpp:func:`Gamepad_SD_card::open_root_dir`
+- :cpp:func:`Gamepad_SD_card::open_parent_dir`
 
 
 Open / close file
@@ -86,7 +86,7 @@ Reading files
 - :cpp:func:`Gamepad_SD_card::file_getline`
 - :cpp:func:`Gamepad_SD_card::file_read_variable`
 - :cpp:func:`Gamepad_SD_card::file_read_PNG`
-- :cpp:func:`Gamepad_SD_card::read_raw_PNG`
+- :cpp:func:`Gamepad_SD_card::read_raw16`
 - :cpp:func:`Gamepad_SD_card::file_available`
 
 
@@ -97,7 +97,7 @@ Writing files
 - :cpp:func:`Gamepad_SD_card::file_write`
 - :cpp:func:`Gamepad_SD_card::file_print`
 - :cpp:func:`Gamepad_SD_card::file_println`
-- :cpp:func:`Gamepad_SD_card::write_raw_PNG`
+- :cpp:func:`Gamepad_SD_card::write_raw16`
 - :cpp:func:`Gamepad_SD_card::save_file`
 
 
@@ -110,3 +110,9 @@ Functions
 
 .. doxygenclass:: Gamepad_SD_card
     :members:
+
+.. doxygenstruct:: File_name_t
+    :members:
+    :undoc-members:
+
+.. doxygenenum:: FS_obj_type

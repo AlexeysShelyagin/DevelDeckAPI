@@ -71,9 +71,9 @@ Sequences can be stored either in a ``std::vector`` or in a ``uint16_t[]`` array
 Vector sequence
 ^^^^^^^^^^^^^^^^
 
-In this approach, the sequence is stored in ``std::vector < Gamepad_buzzer::sequence_element >``
+In this approach, the sequence is stored in ``std::vector < Buzzer_element_t >``
 
-The :cpp:struct:`Gamepad_buzzer::sequence_element` structure contains  ``freq`` and ``timing`` fields.
+The :cpp:struct:`Buzzer_element_t` structure contains  ``freq`` and ``timing`` fields.
 
 This method is useful for dynamically building or modifying melodies.
 
@@ -82,14 +82,14 @@ Piano example
 .. code-block:: cpp
 
    // Define sequence vector to store melody
-   std::vector < Gamepad_buzzer::sequence_element > notes;
+   std::vector < Buzzer_element_t > notes;
 
    void main_loop(){
       // Reading player inputs
       while(gamepad.buttons.event_available()){
          uint8_t *event = gamepad.buttons.get_button_event();
          
-         Gamepad_buzzer::sequence_element note;
+         Buzzer_element_t note;
          note.timing = 200;   // Each note lasts 200 ms
 
 
@@ -190,13 +190,13 @@ Functions
 .. doxygenfunction:: Gamepad_buzzer::play_tone
 .. doxygenfunction:: Gamepad_buzzer::stop
 .. doxygenfunction:: Gamepad_buzzer::play_for_time
-.. doxygenfunction:: Gamepad_buzzer::play_sequence(std::vector<sequence_element> sequence)
+.. doxygenfunction:: Gamepad_buzzer::play_sequence(std::vector<Buzzer_element_t> sequence)
 .. doxygenfunction:: Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size)
 .. doxygenfunction:: Gamepad_buzzer::change_volume
 .. doxygenfunction:: Gamepad_buzzer::get_volume
 
 Structures
 ^^^^^^^^^^^^^^^^
-.. doxygenstruct:: Gamepad_buzzer::sequence_element
+.. doxygenstruct:: Buzzer_element_t
    :members:
    :undoc-members:
