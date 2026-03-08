@@ -48,10 +48,17 @@ struct System_data_t{
     uint16_t battery_lifetime;
 };
 
+struct Layer_t{
+    Gamepad_canvas_t *canvas;
+    uint16_t x, y;
+};
+
+typedef Layer_t* Layer_id_t;
+
 
 
 class Gamepad{
-    enum sys_param_t{
+    enum Sys_param_t{
         DISPLAY_ENABLED,
         BUTTONS_ENABLED,
         BUZZER_ENABLED,
@@ -79,11 +86,7 @@ class Gamepad{
     
     Gamepad_SD_card sd_card;
 
-    struct layer_t{
-        Gamepad_canvas_t *canvas;
-        uint16_t x, y;
-    };
-    std::vector < layer_t* > layers;
+    std::vector < Layer_t* > layers;
 
     void (*game_func)();
 
@@ -96,8 +99,8 @@ class Gamepad{
     void init_battery();
     bool init_SPIFFS();
 
-    bool sys_param(sys_param_t id);
-    void sys_param(sys_param_t id, bool val);
+    bool sys_param(Sys_param_t id);
+    void sys_param(Sys_param_t id, bool val);
 
     void locate_game();
     void init_system_data();
@@ -107,7 +110,6 @@ class Gamepad{
     void on_charge_screen();
 
 public:
-    typedef layer_t* layer_id_t;
 
     SemaphoreHandle_t semaphore = NULL;
 
@@ -144,12 +146,12 @@ public:
     uint8_t get_display_brightness();
 
 
-    Gamepad::layer_id_t create_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 8);
-    bool layer_exists(layer_id_t id);
-    Gamepad_canvas_t* layer(layer_id_t id);
-    void move_layer(layer_id_t id, uint16_t new_x, uint16_t new_y);
-    void clear_layer(layer_id_t id);
-    void delete_layer(layer_id_t id);
+    Layer_id_t create_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 8);
+    bool layer_exists(Layer_id_t id);
+    Gamepad_canvas_t* layer(Layer_id_t id);
+    void move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y);
+    void clear_layer(Layer_id_t id);
+    void delete_layer(Layer_id_t id);
 
 
     void board_selection_menu();

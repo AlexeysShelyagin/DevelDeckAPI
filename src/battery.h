@@ -19,7 +19,7 @@ class Gamepad_battery{
     uint64_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
 public:
-    enum charge_mode{
+    enum Charge_mode_t{
         POWER_ON,
         ONLY_CHARHING,
         POWER_ON_CHARGING
@@ -34,7 +34,7 @@ public:
     float get_battery_voltage();
     uint8_t get_battery_charge();
 
-    charge_mode get_device_mode();
+    Charge_mode_t get_device_mode();
 
     void start_calibration();
     float* finish_calibration();

@@ -2,7 +2,7 @@
 
 #include "DevelDeckAPI.h"
 
-String file_mngr_trim(String filename, uint16_t max_len){
+String File_mngr_trim(String filename, uint16_t max_len){
     if(filename.length() <= max_len)
         return filename;
     
@@ -22,7 +22,7 @@ uint8_t Gamepad_UI::board_selection_menu(){
     int8_t cursor = 0;
     const uint8_t optns_n = 2;
 
-    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    Graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
     gamepad.canvas -> setDefaultGraphicsParams();
 
     while(!quit){
@@ -82,7 +82,7 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
     bool update_disp = true;
     bool quit = false;
 
-    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    Graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
     gamepad.canvas -> setDefaultGraphicsParams();
 
     uint8_t cursor = init_cursor % 3;
@@ -148,13 +148,13 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
     return cursor;
 }
 
-file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
+File_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     bool update_disp = true;
     bool update_dir = true;
     bool is_game_folder = false;
     bool quit = false;
 
-    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    Graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
     gamepad.canvas -> setDefaultGraphicsParams();
     gamepad.canvas -> setFont(0);
     gamepad.canvas -> setTextWrap(false);
@@ -165,7 +165,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     uint16_t orig_y = (gamepad.canvas -> height() - FILE_MANAGER_H) / 2;
     gamepad.canvas -> setOrigin(orig_x, orig_y);
 
-    std::vector < file_name_t > dir;
+    std::vector < File_name_t > dir;
     std::stack < uint16_t > cursor;
     std::stack < uint16_t > scroll;
     cursor.push(0);
@@ -180,7 +180,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
 
     Game_config_t *game_config = new Game_config_t();
 
-    file_mngr_t res = {"", "", nullptr};
+    File_mngr_t res = {"", "", nullptr};
     
     while (!quit){
         while(gamepad.buttons.event_available()){
@@ -312,7 +312,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
                     if(i == cursor.top())
                         gamepad.canvas -> print("> ");
                     gamepad.canvas -> print((dir[i].type) ? "FILE:   " : "DIR:    ");
-                    gamepad.canvas -> println(file_mngr_trim(dir[i].name, (i == cursor.top()) ? max_len - 2 : max_len));
+                    gamepad.canvas -> println(File_mngr_trim(dir[i].name, (i == cursor.top()) ? max_len - 2 : max_len));
                 }
 
                 if(items_n == 0)
@@ -348,7 +348,7 @@ file_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
     return res;
 }
 
-file_mngr_t Gamepad_UI::file_manager(String root){
+File_mngr_t Gamepad_UI::file_manager(String root){
     return file_manager(false, root);
 }
 
@@ -372,7 +372,7 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
     uint8_t scroll = 0;
     uint8_t selected;
 
-    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    Graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
     gamepad.canvas -> setDefaultGraphicsParams();
     gamepad.canvas -> setTextSize(2);
     gamepad.canvas -> setTextColor(TFT_WHITE);
@@ -566,7 +566,7 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
     
     if(w == 0) w = 200;
     if(h == 0) h = 100;
-    Gamepad::layer_id_t layer_id = gamepad.create_layer(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
+    Layer_id_t layer_id = gamepad.create_layer(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
     if(!gamepad.layer_exists(layer_id)){
         Serial.println(TEXT_UNABLE_CREATE_MSGBOX);
         return 0;
@@ -650,7 +650,7 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
 }
 
 void notification_destructor(void* params){
-    Gamepad::layer_id_t *layer_id = (Gamepad::layer_id_t *) params;
+    Layer_id_t *layer_id = (Layer_id_t *) params;
 
     vTaskDelay(pdTICKS_TO_MS(NOTIFICATION_HOLD_TIME));
 
@@ -672,7 +672,7 @@ bool Gamepad_UI::notification(String msg){
         return 0;
     }
 
-    Gamepad::layer_id_t layer_id = gamepad.create_layer(200, 100, 60, 70, 1);
+    Layer_id_t layer_id = gamepad.create_layer(200, 100, 60, 70, 1);
     if(!gamepad.layer_exists(layer_id)){
         Serial.println(TEXT_UNABLE_CREATE_MSGBOX);
         return 0;
@@ -699,7 +699,7 @@ bool Gamepad_UI::notification(String msg){
     
     gamepad.update_display();
 
-    Gamepad::layer_id_t *layer_id_param = new Gamepad::layer_id_t;
+    Layer_id_t *layer_id_param = new Layer_id_t;
     *layer_id_param = layer_id;
     xTaskCreatePinnedToCore(
         notification_destructor,
@@ -765,7 +765,7 @@ void Gamepad_UI::game_downloading_screen(uint8_t percentage){
 }
 
 void Gamepad_UI::on_charge_screen(bool invert){
-    Gamepad_canvas_t::graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
+    Graphics_params_t init_graphics = gamepad.canvas -> graphicsParams();
     gamepad.canvas -> setDefaultGraphicsParams();
 
     gamepad.canvas -> fillSprite((invert) ? TFT_WHITE : TFT_BLACK);

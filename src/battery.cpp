@@ -62,7 +62,7 @@ uint8_t Gamepad_battery::get_battery_charge(){
     return BATTERY_LEVELS - i;
 }
 
-Gamepad_battery::charge_mode Gamepad_battery::get_device_mode(){
+Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(){
     float v = get_battery_voltage();
     if(v > only_charging_v)
         return ONLY_CHARHING;

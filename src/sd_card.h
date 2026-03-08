@@ -13,12 +13,12 @@
 #define SD_CS_PIN 21
 #endif
 
-enum file_type{
+enum FS_obj_type{
     IS_DIR,
     IS_FILE
 };
 
-struct file_name_t{
+struct File_name_t{
     String name;
     bool type;
     String path;
@@ -33,7 +33,7 @@ class Gamepad_SD_card{
     bool check_root_level(String path);
     bool process_path(String &path, bool absolute);
 public:
-    enum SD_status{
+    enum SD_status_t{
         SD_OK,
         SD_FAILED,
         SD_DISCONNECT
@@ -46,7 +46,7 @@ public:
 
     bool open_dir(String path, bool absolute = false);
     bool open_parent_dir();
-    std::vector < file_name_t > list_dir();
+    std::vector < File_name_t > list_dir();
     String current_dir();
     bool make_dir(String path, bool absolute = false);
     bool remove_dir(String path, bool recursive = false, bool absolute = false);

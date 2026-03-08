@@ -1,7 +1,7 @@
 #include "tacktile_response.h"
 
 
-struct buzzer_sequence_t{
+struct Buzzer_sequence_t{
 	uint32_t size;
 	uint8_t channel;
 	uint8_t *volume;
@@ -9,7 +9,7 @@ struct buzzer_sequence_t{
 };
 
 void play_tone_seq_task(void *params){
-	buzzer_sequence_t *seq = (buzzer_sequence_t *) params;
+	Buzzer_sequence_t *seq = (Buzzer_sequence_t *) params;
 
 	for(uint32_t i = 0; i < seq -> size; i++){
 		ledcChangeFrequency(seq -> channel, seq -> data[i * 2], 8);
@@ -62,11 +62,11 @@ void Gamepad_buzzer::play_for_time(uint16_t freq, uint16_t time){
 	play_sequence(seq_data, 1);
 }
 
-void Gamepad_buzzer::play_sequence(std::vector < sequence_element > sequence){
+void Gamepad_buzzer::play_sequence(std::vector < Buzzer_element_t > sequence){
 	if(buzz_task_handler != NULL && eTaskGetState(buzz_task_handler) == eBlocked)
 		return;
 	
-	buzzer_sequence_t *seq = new buzzer_sequence_t();
+	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
 	seq -> size = sequence.size();
 	seq -> channel = channel;
 	seq -> volume = &volume;
@@ -92,7 +92,7 @@ void Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size){
 	if(buzz_task_handler != NULL && eTaskGetState(buzz_task_handler) == eBlocked)
 		return;
 	
-	buzzer_sequence_t *seq = new buzzer_sequence_t();
+	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
 	seq -> size = size;
 	seq -> channel = channel;
 	seq -> volume = &volume;
@@ -116,7 +116,7 @@ void Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size){
 
 
 
-struct period_task_param_t{
+struct Period_task_param_t{
 	uint16_t t1, t2;
 	uint8_t n;
 	uint8_t strength_;
@@ -124,7 +124,7 @@ struct period_task_param_t{
 };
 
 void vib_periodic_task(void *parameters){
-	period_task_param_t *params = (period_task_param_t *) parameters;
+	Period_task_param_t *params = (Period_task_param_t *) parameters;
 
 	for(uint8_t i = 0; i < params -> n; i++){
 		ledcWrite(params -> channel, params -> strength_);
@@ -164,8 +164,8 @@ void Gamepad_vibro::enable_for_time(uint16_t time, uint8_t strength_){
 	if(vib_task_handler != NULL && eTaskGetState(vib_task_handler) == eBlocked)
 		return;
 	
-	period_task_param_t *params = new period_task_param_t();
-	*params = (period_task_param_t){time, 0, 1, calc_strength(strength_), channel};
+	Period_task_param_t *params = new Period_task_param_t();
+	*params = (Period_task_param_t){time, 0, 1, calc_strength(strength_), channel};
 	xTaskCreatePinnedToCore(
 		vib_periodic_task,
 		"vib",
@@ -182,8 +182,8 @@ void Gamepad_vibro::enable_periodic(uint16_t time_enabled, uint16_t time_disable
 		return;
 
 	
-	period_task_param_t *params = new period_task_param_t();
-	*params = (period_task_param_t){time_enabled, time_disabled, repeat_times, calc_strength(strength_), channel};
+	Period_task_param_t *params = new Period_task_param_t();
+	*params = (Period_task_param_t){time_enabled, time_disabled, repeat_times, calc_strength(strength_), channel};
 	xTaskCreatePinnedToCore(
 		vib_periodic_task,
 		"vib",

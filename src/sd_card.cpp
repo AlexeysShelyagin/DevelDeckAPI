@@ -83,15 +83,15 @@ bool Gamepad_SD_card::open_parent_dir(){
     return open_dir(res_path, 1);
 } 
 
-std::vector < file_name_t > Gamepad_SD_card::list_dir(){
-    std::vector < file_name_t > list;
+std::vector < File_name_t > Gamepad_SD_card::list_dir(){
+    std::vector < File_name_t > list;
 
     if(!initialized)
         return list;
 
     File file = dir.openNextFile();
     while(file){
-        file_name_t tmp = {file.name(), (file.isDirectory()) ? IS_DIR : IS_FILE, file.path()};
+        File_name_t tmp = {file.name(), (file.isDirectory()) ? IS_DIR : IS_FILE, file.path()};
         list.push_back(tmp);
 
         file = dir.openNextFile();
@@ -129,7 +129,7 @@ bool rmdir_recursive(File &dir){
 
         obj_to_remove = dir.openNextFile();
     }
-    
+
     return SD.rmdir(dir.path());
 }
 
