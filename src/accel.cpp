@@ -14,6 +14,8 @@ void Gamepad_accel::init(int sda_pin, int scl_pin){
         (ACCEL_INVERT_Z_AXIS) ? -1 : 1
     );
 
+    set_vertical_mode();
+
     auto_calibrate();
 }
 
@@ -50,6 +52,11 @@ void Gamepad_accel::set_current_as_zero(bool hold_x_axis){
         basis_z += get_accel();
         delay(1);
     }
+    
+    set_as_zero(basis_z);
+}
+
+void Gamepad_accel::set_as_zero(vec3 basis_z, bool hold_x_axis){
     if(hold_x_axis)
         basis_z.y = 0;
     basis_z = basis_z.norm();

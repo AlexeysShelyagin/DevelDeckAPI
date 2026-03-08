@@ -19,8 +19,8 @@ class Gamepad_accel{
     TwoWire accelWire = TwoWire(0);
     vec3 invert_mask;
 
-    vec3 basis_x = vec3(0, 1, 0);
-    vec3 basis_y = vec3(-1, 0, 0);
+    vec3 basis_x;
+    vec3 basis_y;
 
 public:
     Gamepad_accel() = default;
@@ -32,6 +32,7 @@ public:
     void set_vertical_mode();
     void set_horizontal_mode();
     void set_current_as_zero(bool hold_x_axis = false);
+    void set_as_zero(vec3 accel, bool hold_x_axis = false);
 
     vec3 get_accel();
     vec2 get_angles(vec3 &accel);
