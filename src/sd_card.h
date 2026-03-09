@@ -45,7 +45,7 @@ public:
     uint8_t init(String root_limit = "/");
 
     bool open_dir(String path, bool absolute = false);
-    bool open_parent_dir();
+    bool open_parent_dir(uint8_t levels = 1);
     std::vector < File_name_t > list_dir();
     String current_dir();
     bool make_dir(String path, bool absolute = false);

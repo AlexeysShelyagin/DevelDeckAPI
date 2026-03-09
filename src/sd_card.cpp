@@ -52,9 +52,6 @@ bool Gamepad_SD_card::open_dir(String path, bool absolute){
     
     if(!process_path(path, absolute))
         return 0;
-
-    if(path == "/..")
-        return open_parent_dir();
     
     dir = SD.open(path);
     
@@ -63,24 +60,31 @@ bool Gamepad_SD_card::open_dir(String path, bool absolute){
     return dir.isDirectory();
 }
 
-bool Gamepad_SD_card::open_parent_dir(){
+bool Gamepad_SD_card::open_parent_dir(uint8_t levels){
     if(!initialized)
         return 0;
+
+    String res_path = dir.path();
     
-    String current_path = dir.path();
-    uint16_t i = current_path.length() - 1;
+    for(uint8_t lvl = 0; lvl < levels; lvl++){
+        String current_path = dir.path();
+        uint16_t i = current_path.length() - 1;
 
-    while(i != -1 && current_path[i] != '/')
-        i--;
+        while(i != -1 && current_path[i] != '/')
+            i--;
 
-    if(i < 0)
-        return 0;
+        if(i < 0)
+            return 0;
 
-    String res_path = current_path.substring(0, i);
-    if(!check_root_level(res_path))
-        return 0;
+        String res_path = current_path.substring(0, i);
+        if(!check_root_level(res_path))
+            return 0;
+
+        if(!open_dir(res_path, 1))
+            return 0;
+    }
     
-    return open_dir(res_path, 1);
+    return 1;
 } 
 
 std::vector < File_name_t > Gamepad_SD_card::list_dir(){
@@ -96,11 +100,16 @@ std::vector < File_name_t > Gamepad_SD_card::list_dir(){
 
         file = dir.openNextFile();
     }
+    
+    dir = SD.open(dir.path());
 
     return list;
 }
 
 String Gamepad_SD_card::current_dir(){
+    if (!initialized)
+        return "";
+    
     return dir.path();
 }
 
@@ -149,9 +158,13 @@ bool Gamepad_SD_card::remove_dir(String path, bool recursive, bool absolute){
 }
 
 bool Gamepad_SD_card::exists(String path, bool absolute){
-    if(absolute)
-        return SD.exists(path);
-    return SD.exists(dir.path() + path);
+    if(!initialized)
+        return 0;
+
+    if(!process_path(path, absolute))
+        return 0;
+    
+    return SD.exists(path);
 }
 
 bool Gamepad_SD_card::is_dir(String path, bool absolute){
