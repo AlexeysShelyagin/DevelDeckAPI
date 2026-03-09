@@ -287,16 +287,19 @@ Functions
 .. doxygenfunction:: Gamepad_SD_card::list_dir
 .. doxygenfunction:: Gamepad_SD_card::get_file_size
 .. doxygenfunction:: Gamepad_SD_card::get_file_reference
+
 .. doxygenfunction:: Gamepad_SD_card::seek
 .. doxygenfunction:: Gamepad_SD_card::pos
 .. doxygenfunction:: Gamepad_SD_card::file_available
 .. doxygenfunction:: Gamepad_SD_card::save_file
+    
 .. doxygenfunction:: Gamepad_SD_card::file_read
 .. doxygenfunction:: Gamepad_SD_card::file_read_variable
 .. doxygenfunction:: Gamepad_SD_card::file_read_string
 .. doxygenfunction:: Gamepad_SD_card::file_getline
 .. doxygenfunction:: Gamepad_SD_card::file_read_PNG
 .. doxygenfunction:: Gamepad_SD_card::file_read_raw16
+
 .. doxygenfunction:: Gamepad_SD_card::file_write
 .. doxygenfunction:: Gamepad_SD_card::file_print
 .. doxygenfunction:: Gamepad_SD_card::file_println

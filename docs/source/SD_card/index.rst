@@ -5,5 +5,5 @@ SD card
 .. toctree::
    :maxdepth: 2
 
-   fs/index.rst 
+   fs.rst 
    structure.rst
