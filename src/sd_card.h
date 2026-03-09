@@ -62,8 +62,9 @@ public:
     bool open_dir(String path, bool absolute = false);
 
     /**
-     * @brief Open root dir
+     * @brief Open parent dir 
      * 
+     * @param levels number of levels going up in the file tree
      * @return true: success
      * @return false: failed
      */
@@ -330,7 +331,7 @@ public:
      * @param img image data
      * @param start_pos position in file to write (inb bytes)
      */
-    void write_raw16(Image_raw16_t &img, int start_pos = -1);
+    void file_write_raw16(Image_raw16_t &img, int start_pos = -1);
 
     /**
      * @brief Read already decoded PNG from file
@@ -338,7 +339,7 @@ public:
      * @param start_pos data chunk start position (in bytes)
      * @return Image_raw16_t: resulting image
      */
-    Image_raw16_t read_raw16(int start_pos = -1);
+    Image_raw16_t file_read_raw16(int start_pos = -1);
 };
 
 #endif
