@@ -1,0 +1,15 @@
+/* Target the official Sphinx logo container */
+.wy-side-nav-search img.logo {
+    max-height: 100px;       /* Adjust to your preference */
+    width: auto;
+    background-color: transparent; /* Ensures no weird white boxes */
+    margin-bottom: 10px;
+    border-radius: 5px;      /* Optional: rounds the corners */
+}
+
+/* If you want the logo and text to sit side-by-side */
+.wy-side-nav-search > a {
+    display: flex;
+    flex-direction: column; /* Stacked: Logo on top, Text below */
+    align-items: center;
+}
