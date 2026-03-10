@@ -44,7 +44,7 @@ static int16_t buttons_map[] = {
                                 MENU_BUT_PIN
                             };
 
-enum buttons_id{
+enum Buttons_id_t{
     LEFT_BUT_ID,
     UP_BUT_ID,
     RIGHT_BUT_ID,
@@ -85,9 +85,9 @@ enum buttons_id{
 #define ACCEL_SCL_PIN 27
 #define ACCEL_I2C_ADDRESS 0x68
 
-#define ACCEL_INVERT_X_AXIS true
-#define ACCEL_INVERT_Y_AXIS true
-#define ACCEL_INVERT_Z_AXIS false
+#define ACCEL_INVERT_X_AXIS false
+#define ACCEL_INVERT_Y_AXIS false
+#define ACCEL_INVERT_Z_AXIS true
 
 
 
@@ -169,12 +169,6 @@ enum buttons_id{
 #define BATTERY_DIVIDER_R2 10.0
 #define BATTERY_V_REF 3.3                               // Logical 1 voltage
 
-#define BATTERY_CRITICAL_V 3.55                         // At this voltage device would turn off
-#define BATTERY_FULL_V 4.15                             // Voltage considered as fully charged battery, for proportional charge level calculations
-#define BATTERY_CHARGING_V 4.3                          // value above that would mean that device is connected to the charger
-#define BATTERY_ONLY_CHARGING_V 4.5                     // voltage above that would mean that devices is connected to charger and powered off (VCC pulled to 5v)
-
-
 
 // Battery voltage is converted to the charge level
 // Levels are presented as:
@@ -192,11 +186,29 @@ enum buttons_id{
 
 
 
+// =============== HARDWARE ID: 0 =================
+
+#define BATTERY_CRITICAL_V_0 3.25                         // At this voltage device would turn off
+#define BATTERY_FULL_V_0 4.15                             // Voltage considered as fully charged battery, for proportional charge level calculations
+#define BATTERY_CHARGING_V_0 4.4                          // value above that would mean that device is connected to the charger
+#define BATTERY_ONLY_CHARGING_V_0 4.8                     // voltage above that would mean that devices is connected to charger and powered off (VCC pulled to 5v)
+
+
 // Battery voltage is calculated from analog value and converted to RAW voltage
 // However, adjustment function is needed, due to internal resistanse, nonlinearity of ADC etc.
-#define BATTERY_VADJ_FUNC(v) -0.1961 + 1.5359*v - 0.0767*v*v    // best experimental fit
-//#define BATTERY_VADJ_FUNC(v) 0.890 * v + 1.158                // theor approx  
+#define BATTERY_VADJ_FUNC_0(v) 1.0824*v + 0.4005
 
+
+
+// =============== HARDWARE ID: 1 =================
+
+#define BATTERY_CRITICAL_V_1 3.55
+#define BATTERY_FULL_V_1 4.15
+#define BATTERY_CHARGING_V_1 4.3
+#define BATTERY_ONLY_CHARGING_V_1 4.5
+
+#define BATTERY_VADJ_FUNC_1(v) -0.1961 + 1.5359*v - 0.0767*v*v    // best experimental fit
+//#define BATTERY_VADJ_FUNC_1(v) 0.890 * v + 1.158                // theor approx 
 
 
 // ##################################################################################
@@ -217,6 +229,7 @@ enum buttons_id{
 
 // Sensitivity for ±2g in LSB/g
 #define ACCEL_SENSITIVITY 16384.0       // (float) 2^14
+#define ACCEL_CALIBRATION_MEASURE_N 10
 
 
 
@@ -277,12 +290,12 @@ const char BATTERY_CALIBRATION_ALERT[] PROGMEM = "To calibrate battery:\n 1. Mak
 // ================= UI text =======================
 
 const char TXT_FAILED_CALIBR[] PROGMEM = "Failed to\ncalibrate battery";
-const char TXT_UNABLE_LOAD_SYS_SETTINGS[] PROGMEM = "Unable to load\nsystem settings";
 const char TXT_DISPAY_FAILED[] PROGMEM = "ERROR: unable to initialize display";
 const char TXT_SD_FAILED[] PROGMEM = "ERROR: failed to init SD card";
 const char TXT_SD_DISCONNECT[] PROGMEM = "ERROR: SD is disconnected";
 const char TXT_SETTINGS_SAVE_WARINING[] PROGMEM = "Settings won't\nbe saved\nafter reset";
 const char TXT_UNSUPPORTED_DEVICE[] PROGMEM = "Unsupported on\nyour device\n";
+const char TXT_SPIFFS_FAILED[] PROGMEM = "ERROR: failed to init SPIFFS";
 
 const char TXT_USUPPORTED_ON_DEVICE[] PROGMEM = "Unsupported on your device";
 const char TXT_BUZZ_VOL[] PROGMEM = "Buzz. vol:";

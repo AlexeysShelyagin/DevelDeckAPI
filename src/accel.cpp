@@ -14,6 +14,8 @@ void Gamepad_accel::init(int sda_pin, int scl_pin){
         (ACCEL_INVERT_Z_AXIS) ? -1 : 1
     );
 
+    set_vertical_mode();
+
     auto_calibrate();
 }
 
@@ -34,11 +36,33 @@ void Gamepad_accel::auto_calibrate(){
 }
 
 void Gamepad_accel::set_vertical_mode(){
-    mode = 0;
+    basis_x = vec3(0, 1, 0);
+    basis_y = vec3(0, 0, -1);
 }
 
 void Gamepad_accel::set_horizontal_mode(){
-    mode = 1;
+    basis_x = vec3(0, 1, 0);
+    basis_y = vec3(1, 0, 0);
+}
+
+void Gamepad_accel::set_current_as_zero(bool hold_x_axis){
+    vec3 basis_z;
+
+    for(uint8_t i = 0; i < ACCEL_CALIBRATION_MEASURE_N; i++){
+        basis_z += get_accel();
+        delay(1);
+    }
+    
+    set_as_zero(basis_z);
+}
+
+void Gamepad_accel::set_as_zero(vec3 basis_z, bool hold_x_axis){
+    if(hold_x_axis)
+        basis_z.y = 0;
+    basis_z = basis_z.norm();
+
+    basis_x = vec3(basis_z.y, -basis_z.x, 0).norm();
+    basis_y = basis_z.cross(basis_x).norm();
 }
 
 vec3 Gamepad_accel::get_accel(){
@@ -69,24 +93,10 @@ vec3 Gamepad_accel::get_accel(){
 }
 
 vec2 Gamepad_accel::get_angles(vec3 &accel){
-    vec2 ang;
-
-    vec3 a_x = vec3(0, accel.y, accel.z).norm();
-    vec3 a_y = vec3(accel.x, 0, accel.z).norm();
-    vec3 a_z = vec3(accel.x, accel.y, 0).norm();
-    
-    if(mode == 0){
-        ang.x = acos(a_z.dot(vec3(1, 0, 0))) * ((accel.y < 0) ? -1 : 1);    // inverted z
-        ang.y = acos(a_y.dot(vec3(1, 0, 0))) * ((accel.z > 0) ? -1 : 1);
-    }
-    if(mode == 1){
-        ang.x = acos(a_x.dot(vec3(0, 0, 1))) * ((accel.y < 0) ? -1 : 1);    // inverted x
-        ang.y = acos(a_y.dot(vec3(0, 0, 1))) * ((accel.x < 0) ? -1 : 1);    // inverted y
-    }
-    if(mode == 2){
-        ang.x = acos(a_x.dot(vec3(0, 1, 0))) * ((accel.z > 0) ? -1 : 1);
-        ang.y = acos(a_z.dot(vec3(0, 1, 0))) * ((accel.x > 0) ? -1 : 1);
-    }
+    vec2 ang = vec2(
+        acos(accel.fast_norm().dot(basis_x)) - HALF_PI,
+        acos(accel.fast_norm().dot(basis_y)) - HALF_PI
+    );
 
     return ang * RAD_TO_DEG;
 }

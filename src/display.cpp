@@ -260,7 +260,7 @@ void Gamepad_canvas_t::setDefaultGraphicsParams(){
     setOrigin(0, 0);
 }
 
-void Gamepad_canvas_t::setGraphicsParams(graphics_params_t params){
+void Gamepad_canvas_t::setGraphicsParams(Graphics_params_t params){
 	setFont(params.font_id);
     setTextSize(params.text_size);
     setTextColor(params.text_color);
@@ -269,8 +269,8 @@ void Gamepad_canvas_t::setGraphicsParams(graphics_params_t params){
     setOrigin(params.orig_x, params.orig_y);
 }
 
-Gamepad_canvas_t::graphics_params_t Gamepad_canvas_t::graphicsParams(){
-	graphics_params_t res;
+Graphics_params_t Gamepad_canvas_t::graphicsParams(){
+	Graphics_params_t res;
 
 	res.font_id = font_id;
 	res.text_size = textsize;

@@ -6,7 +6,7 @@
 
 #include "config.h"
 
-enum button_state_t{
+enum Button_state_t{
     BUT_NONE,
     BUT_PRESSED,
     BUT_RELEASED,

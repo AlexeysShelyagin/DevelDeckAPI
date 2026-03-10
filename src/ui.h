@@ -10,7 +10,7 @@
 struct Game_config_t;
 struct System_data_t;
 
-struct file_mngr_t{
+struct File_mngr_t{
     String dir;
     String file;
     Game_config_t *game_config;
@@ -23,10 +23,12 @@ class Gamepad_UI{
 public:
     Gamepad_UI() = default;
 
+    uint8_t board_selection_menu();
+
     uint8_t main_menu(bool game_active = true, bool game_select_active = true, uint8_t init_cursor = 0);
 
-    file_mngr_t file_manager(bool selecting_game = false, String root = "/");
-    file_mngr_t file_manager(String root);
+    File_mngr_t file_manager(bool selecting_game = false, String root = "/");
+    File_mngr_t file_manager(String root);
 
     uint8_t settings(System_data_t &data);
 

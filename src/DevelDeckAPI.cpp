@@ -1,5 +1,7 @@
 #include "DevelDeckAPI.h"
 
+#include "SPIFFS.h"
+
 
 // ================================== GLOBAL GAMEPAD VARIABLE ====================================
 
@@ -14,6 +16,24 @@ Gamepad gamepad;
 TaskHandle_t *main_loop_handler = nullptr;
 Gamepad_UI ui;
 uint64_t last_disp_update = 0;
+float battery_critical_v;
+
+// ===============================================================================================
+
+
+
+// ============================= BATTERY ADJUSTMENT FUNCTIONS ====================================
+
+// Battery voltage is calculated from analog value and converted to RAW voltage
+// However, adjustment function is needed, due to internal resistanse, nonlinearity of ADC etc.
+
+float batt_v_adj_0(float v){
+    return BATTERY_VADJ_FUNC_0(v);
+}
+
+float batt_v_adj_1(float v){
+    return BATTERY_VADJ_FUNC_1(v); 
+}
 
 // ===============================================================================================
 
@@ -35,7 +55,7 @@ void battery_listener(void *params){
                     bool suspended = false;
                     float threshold = 0;
                     uint8_t disp_brightness = gamepad.get_display_brightness();
-                    while(batt -> get_battery_voltage() <= BATTERY_CRITICAL_V + threshold){
+                    while(batt -> get_battery_voltage() <= battery_critical_v + threshold){
                         if(!suspended){
                             if(batt -> is_calibrating()){
                                 float *levels = batt -> finish_calibration();
@@ -188,6 +208,9 @@ void Gamepad::init(void (*game_func_)()){
     semaphore = xSemaphoreCreateBinary();
     xSemaphoreGive(semaphore);
 
+    init_SPIFFS();
+    init_system_data();
+
     init_display();
     init_buttons();
 
@@ -195,20 +218,24 @@ void Gamepad::init(void (*game_func_)()){
     init_buzzer();
     init_accel();
     
-    init_battery();
-    
     init_SD();
 
-    init_system_settings();
-    if(sys_param(SYSTEM_SETTINGS_TO_DEFAULT) || !sys_param(SD_ENABLED)){
-        ui.notification(TXT_UNABLE_LOAD_SYS_SETTINGS);
+    locate_game();
+    if(sys_param(GAME_FILES_REQ))
+        sys_param(READY_TO_PLAY, sys_param(GAME_FILES_LOCATED));
+    
+    if(sys_param(SYSTEM_SETTINGS_TO_DEFAULT)){
+        board_selection_menu();
         save_system_settings();
     }
     else
         apply_system_settings();
+
+    if(buttons.read_state(MENU_BUT_ID))
+        main_menu();
     
-    if(sys_param(GAME_FILES_REQ))
-        sys_param(READY_TO_PLAY, sys_param(GAME_FILES_LOCATED));
+    init_battery();
+    battery_critical_v = system_data -> battery_critical_v;
     
     xTaskCreatePinnedToCore(
         forced_main_menu_listener,
@@ -219,9 +246,10 @@ void Gamepad::init(void (*game_func_)()){
         &forced_main_menu_handler,
         xPortGetCoreID()
     );
-    
-    if(buttons.read_state(MENU_BUT_ID) || !sys_param(READY_TO_PLAY))
+
+    if(!sys_param(READY_TO_PLAY))
         main_menu();
+
 }
 
 
@@ -229,6 +257,10 @@ void Gamepad::init(void (*game_func_)()){
 void Gamepad::init_display(){
     disp = new Gamepad_display();
 
+    if(system_data -> brightness == 0){
+        system_data -> brightness = BRIGHTNESS_LEVELS;
+        brightness = BRIGHTNESS_LEVELS;
+    }
     set_display_brightness(brightness);
 
     canvas = disp -> get_canvas_reference();
@@ -285,7 +317,17 @@ bool Gamepad::init_accel(){
 
 
 void Gamepad::init_battery(){
-    batt.init();
+    batt.init(
+        system_data -> battery_critical_v,
+        system_data -> battery_full_v,
+        system_data -> battery_charging_v,
+        system_data -> battery_only_charging_v
+    );
+
+    switch (system_data -> hardware_config_id){
+        case 0: batt.set_voltage_adjustment(batt_v_adj_0); break;
+        case 1: batt.set_voltage_adjustment(batt_v_adj_1); break;
+    }
 
     if(batt.get_device_mode() == Gamepad_battery::ONLY_CHARHING)
         on_charge_screen();
@@ -316,6 +358,16 @@ bool Gamepad::init_SD(){
     }
 
     sys_param(SD_ENABLED, 1);
+    return 1;
+}
+
+bool Gamepad::init_SPIFFS(){
+    if(!SPIFFS.begin(true)){
+        Serial.println(TXT_SPIFFS_FAILED);
+        return 0;
+    }
+    
+    sys_param(SPIFFS_ENABLED, 1);
     return 1;
 }
 
@@ -412,12 +464,12 @@ uint8_t Gamepad::get_display_brightness(){
 
 // --------------------- Display layers --------------------------
 
-Gamepad::layer_id_t Gamepad::create_layer(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
+Layer_id_t Gamepad::create_layer(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
     Gamepad_canvas_t *layer_canvas = disp -> create_sprite(width, height, color_depth);
     if(layer_canvas == nullptr)
         return nullptr;
     
-    layer_t *layer = new layer_t;
+    Layer_t *layer = new Layer_t;
     layer -> canvas = layer_canvas;
     layer -> x = x;
     layer -> y = y;
@@ -426,15 +478,15 @@ Gamepad::layer_id_t Gamepad::create_layer(uint16_t width, uint16_t height, uint1
     return layer;
 }
 
-bool Gamepad::layer_exists(layer_id_t id){
+bool Gamepad::layer_exists(Layer_id_t id){
     return (id != nullptr);
 }
 
-Gamepad_canvas_t* Gamepad::layer(layer_id_t id){
+Gamepad_canvas_t* Gamepad::layer(Layer_id_t id){
     return id -> canvas;
 }
 
-void Gamepad::delete_layer(layer_id_t id){
+void Gamepad::delete_layer(Layer_id_t id){
     disp -> delete_sprite(id -> canvas);
     for(uint8_t i = 0; i < layers.size(); i++){
         if(layers[i] == id){
@@ -447,11 +499,11 @@ void Gamepad::delete_layer(layer_id_t id){
 
 
 
-void Gamepad::clear_layer(layer_id_t id){
+void Gamepad::clear_layer(Layer_id_t id){
     disp -> clear_sprite(id ->canvas);
 }
 
-void Gamepad::move_layer(layer_id_t id, uint16_t new_x, uint16_t new_y){
+void Gamepad::move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y){
     id -> x = new_x;
     id -> y = new_y;
 }
@@ -463,6 +515,30 @@ void Gamepad::move_layer(layer_id_t id, uint16_t new_x, uint16_t new_y){
 
 // ------------------------ UI backend ---------------------------
 
+void Gamepad::board_selection_menu(){
+    buttons.clear_queue();
+
+    system_data -> hardware_config_id = ui.board_selection_menu();
+    switch (system_data -> hardware_config_id){
+    case 0:
+        system_data -> battery_critical_v = BATTERY_CRITICAL_V_0;
+        system_data -> battery_full_v = BATTERY_FULL_V_0;
+        system_data -> battery_charging_v = BATTERY_CHARGING_V_0;
+        system_data -> battery_only_charging_v = BATTERY_ONLY_CHARGING_V_0;
+        break;
+    case 1:
+        system_data -> battery_critical_v = BATTERY_CRITICAL_V_1;
+        system_data -> battery_full_v = BATTERY_FULL_V_1;
+        system_data -> battery_charging_v = BATTERY_CHARGING_V_1;
+        system_data -> battery_only_charging_v = BATTERY_ONLY_CHARGING_V_1;
+        break;
+    }
+
+    save_system_settings();
+
+    buttons.clear_queue();
+}
+
 void Gamepad::main_menu(){
     buttons.clear_queue();
     uint8_t cursor = 0;
@@ -473,7 +549,7 @@ void Gamepad::main_menu(){
 
         if(cursor == 0){
             if(sys_param(READY_TO_PLAY))
-                break;
+                break;  
             else{
                 std::vector < String > buttons = {"Ok", "Cancel"};
                 uint8_t response = ui.message_box(GAME_FILES_NOT_FOUND_MSG, buttons);
@@ -481,34 +557,13 @@ void Gamepad::main_menu(){
                     if(!sys_param(SD_ENABLED))
                         ui.message_box(NO_SD_CARD_MSG);
                     else{
-                        locate_game_folder();
+                        user_locate_game_folder();
                     }
                 }
             }
         }
         if(cursor == 1){
-            System_data_t updated_data = *system_data;
-            uint8_t resp = ui.settings(updated_data);
-            Serial.println(resp);
-            if(resp == 1){
-                *system_data = updated_data;
-                save_system_settings();
-
-                if(!sys_param(SD_ENABLED))
-                    ui.notification(TXT_SETTINGS_SAVE_WARINING);
-            }
-            if(resp == 1 || resp == 0)
-                apply_system_settings();
-            if(resp == 2){
-                sd_card.remove_file(GAMEPAD_DATA_FILE_NAME, true);
-                ESP.restart();
-            }
-            if(resp == 3){
-                if(!batt.is_calibrating()){
-                    batt.start_calibration();
-                    ui.notification(BATTERY_CALIBRATION_MSG);
-                }
-            }
+            settings_menu();
         }
         if(cursor == 2)
             select_game_menu();
@@ -519,6 +574,35 @@ void Gamepad::main_menu(){
     update_display();
 }
 
+void Gamepad::settings_menu(){
+    buttons.clear_queue();
+
+    System_data_t updated_data = *system_data;
+    uint8_t resp = ui.settings(updated_data);
+
+    if(resp == 1){
+        *system_data = updated_data;
+        save_system_settings();
+
+        if(!sys_param(SD_ENABLED))
+            ui.notification(TXT_SETTINGS_SAVE_WARINING);
+    }
+    if(resp == 1 || resp == 0)
+        apply_system_settings();
+    if(resp == 2){
+        SPIFFS.remove(GAMEPAD_DATA_FILE_NAME);
+        ESP.restart();
+    }
+    if(resp == 3){
+        if(!batt.is_calibrating()){
+            batt.start_calibration();
+            ui.notification(BATTERY_CALIBRATION_MSG);
+        }
+    }
+
+    buttons.clear_queue();
+}
+
 
 
 void Gamepad::select_game_menu(){
@@ -527,7 +611,7 @@ void Gamepad::select_game_menu(){
         return;
     }
 
-    file_mngr_t file = ui.file_manager(true);
+    File_mngr_t file = ui.file_manager(true);
     if(file.file == "")
         return;
 
@@ -561,7 +645,7 @@ String Gamepad::file_manager(){
     
     buttons.clear_queue();
 
-    file_mngr_t file = ui.file_manager(game_path);
+    File_mngr_t file = ui.file_manager(game_path);
     String target = file.dir.substring(game_path.length(), file.dir.length());
     target += "/" + file.file;
 
@@ -580,45 +664,19 @@ String Gamepad::file_manager(){
 
 // -------------- Gamepad settings and parameters ----------------
 
-bool Gamepad::sys_param(sys_param_t id){
+bool Gamepad::sys_param(Sys_param_t id){
     return system_params >> id & 1;
 }
 
-void Gamepad::sys_param(sys_param_t id, bool val){
+void Gamepad::sys_param(Sys_param_t id, bool val){
     system_params &= ~(1 << id);
     system_params |= ((uint8_t) val) << id;
 }
 
 
 
-void Gamepad::init_system_settings(){
-    if(!sys_param(SD_ENABLED)){
-        system_data = new System_data_t;
-        return;
-    }
-
-    if(!sd_card.exists(GAMEPAD_DATA_FILE_NAME, true)){
-        sd_card.create_file(GAMEPAD_DATA_FILE_NAME, true);
-    }
-
-    sd_card.open_file(GAMEPAD_DATA_FILE_NAME, true);
-    system_data = sd_card.file_read_variable < System_data_t > ();
-    if(system_data == nullptr){
-        delete system_data;
-
-        sd_card.close_file();
-        sd_card.open_file(GAMEPAD_DATA_FILE_NAME, "w", true);
-
-        System_data_t *empty_data = new System_data_t;
-        sd_card.file_write(empty_data, sizeof(System_data_t));
-        system_data = empty_data;
-
-        sys_param(SYSTEM_SETTINGS_TO_DEFAULT, 1);
-    }
-
-    sd_card.close_file();
-
-    if(sys_param(GAME_FILES_REQ)){
+void Gamepad::locate_game(){
+    if(sys_param(GAME_FILES_REQ) && sys_param(SD_ENABLED)){
         game_path = "";
         for (uint8_t i = 0; i < system_data -> game_path_size; i++)
             game_path += system_data -> game_path[i];
@@ -630,6 +688,34 @@ void Gamepad::init_system_settings(){
 
         sys_param(GAME_FILES_LOCATED, (init_status == Gamepad_SD_card::SD_OK));
     }
+}
+
+
+
+void Gamepad::init_system_data(){
+    system_data = new System_data_t;
+
+    if(!sys_param(SPIFFS_ENABLED))
+        return;
+
+    File sys_data = SPIFFS.open(GAMEPAD_DATA_FILE_NAME);
+    
+    if(sys_data.size() < sizeof(System_data_t)){
+        delete system_data;
+
+        sys_data.close();
+        sys_data = SPIFFS.open(GAMEPAD_DATA_FILE_NAME, "w");
+
+        System_data_t *empty_data = new System_data_t;
+        sys_data.write((uint8_t *) empty_data, sizeof(System_data_t));
+        system_data = empty_data;
+
+        sys_param(SYSTEM_SETTINGS_TO_DEFAULT, 1);
+    }
+    else
+        sys_data.read((uint8_t *) system_data, sizeof(System_data_t));
+
+    sys_data.close();
 }
 
 
@@ -672,19 +758,16 @@ void Gamepad::save_system_settings(){
     }
     system_data -> battery_lifetime = batt.lifetime;
 
-    if(!sys_param(SD_ENABLED))
-        return;
-    
-    sd_card.open_file(GAMEPAD_DATA_FILE_NAME, "w", true);
-    sd_card.file_write(system_data, sizeof(System_data_t));
-    sd_card.close_file();
+    File sys_data = SPIFFS.open(GAMEPAD_DATA_FILE_NAME, "w");
+    sys_data.write((uint8_t *) system_data, sizeof(System_data_t));
+    sys_data.close();
 }
 
 
 
-void Gamepad::locate_game_folder(){
+void Gamepad::user_locate_game_folder(){
     while(true){
-        file_mngr_t selected = ui.file_manager();
+        File_mngr_t selected = ui.file_manager();
         
         sd_card.open_dir(selected.dir, true);
         sd_card.open_file(GAME_CONFIG_FILE_NAME);

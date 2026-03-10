@@ -2,21 +2,38 @@
 
 const float batt_inv_divider_val = (float) (BATTERY_DIVIDER_R1 + BATTERY_DIVIDER_R2) / BATTERY_DIVIDER_R1;
 
-#ifndef BATTERY_VADJ_FUNC
-#define BATTERY_VADJ_FUNC(v) v
-#endif
-
 std::vector < uint16_t > calibr_time;
 std::vector < float > calibr_v;
 bool calibr_failed = false;
+float CRITICAL_V;
 
 float clamp(float val, float min_ = 0, float max_ = 1){
     return max(min(val, max_), min_);
 }
 
-void Gamepad_battery::init(){
+float default_v_adj(float v){
+    return v;
+}
+
+
+
+Gamepad_battery::Gamepad_battery(){
+    v_adj_func = default_v_adj;
+}
+
+void Gamepad_battery::init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_){
+    critical_v = critical_v_;
+    full_v = full_v_;
+    charging_v = charging_v_;
+    only_charging_v = only_charging_v_;
+    CRITICAL_V = critical_v;
+
     adcAttachPin(BATTERY_V_PIN);
     analogReadResolution(12);
+}
+
+void Gamepad_battery::set_voltage_adjustment(float (*v_adj_func_ptr)(float)){
+    v_adj_func = v_adj_func_ptr;
 }
 
 
@@ -28,14 +45,14 @@ float Gamepad_battery::get_battery_voltage(){
 
     float v_raw = pin_val * BATTERY_V_REF * batt_inv_divider_val / 4096.0;
 
-    return BATTERY_VADJ_FUNC(v_raw); 
+    return v_adj_func(v_raw); 
 }
 
 uint8_t Gamepad_battery::get_battery_charge(){
     float v = get_battery_voltage();
 
     if(voltage_levels == nullptr){
-        return round(clamp((v - BATTERY_CRITICAL_V) / (BATTERY_FULL_V - BATTERY_CRITICAL_V)) * BATTERY_LEVELS);
+        return round(clamp((v - critical_v) / (full_v - critical_v)) * BATTERY_LEVELS);
     }
 
     uint8_t i = 0;
@@ -45,11 +62,11 @@ uint8_t Gamepad_battery::get_battery_charge(){
     return BATTERY_LEVELS - i;
 }
 
-Gamepad_battery::charge_mode Gamepad_battery::get_device_mode(){
+Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(){
     float v = get_battery_voltage();
-    if(v > BATTERY_ONLY_CHARGING_V)
+    if(v > only_charging_v)
         return ONLY_CHARHING;
-    if(v > BATTERY_CHARGING_V)
+    if(v > charging_v)
         return POWER_ON_CHARGING;
     return POWER_ON;
 }
@@ -57,7 +74,7 @@ Gamepad_battery::charge_mode Gamepad_battery::get_device_mode(){
 void battery_callibration(void *params){
     Gamepad_battery *batt = (Gamepad_battery *) params;
     float v = batt -> get_battery_voltage();
-    while(v > BATTERY_CRITICAL_V){
+    while(v > CRITICAL_V){
         if(batt -> get_device_mode() != Gamepad_battery::POWER_ON){
             calibr_failed = true;
             break;

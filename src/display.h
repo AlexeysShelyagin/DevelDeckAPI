@@ -14,6 +14,15 @@
 // set the type of canvas for external use
 #define GAMEPAD_CANVAS_T_DEFINED
 
+struct Graphics_params_t{
+        uint8_t font_id;
+        uint8_t text_size;
+        uint32_t text_color;
+        bool wrap_x, wrap_y;
+        int16_t cur_x, cur_y;
+        int16_t orig_x, orig_y;
+    };
+
 class Gamepad_canvas_t : public TFT_eSprite{
     using TFT_eSprite::TFT_eSprite;
 
@@ -22,14 +31,6 @@ class Gamepad_canvas_t : public TFT_eSprite{
     uint8_t dynamic_mem_font = 0;
     uint8_t font_id = 0;
 public:
-    struct graphics_params_t{
-        uint8_t font_id;
-        uint8_t text_size;
-        uint32_t text_color;
-        bool wrap_x, wrap_y;
-        int16_t cur_x, cur_y;
-        int16_t orig_x, orig_y;
-    };
     void pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp = 16);
 
     using TFT_eSprite::pushImage;
@@ -47,8 +48,8 @@ public:
     void setLineSpacing(float multiplier);
 
     void setDefaultGraphicsParams();
-    void setGraphicsParams(graphics_params_t params);
-    graphics_params_t graphicsParams();
+    void setGraphicsParams(Graphics_params_t params);
+    Graphics_params_t graphicsParams();
 };
 
 

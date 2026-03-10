@@ -134,8 +134,8 @@ float vec3::dot(vec3 vec){
 
 vec3 vec3::cross(vec3 vec){
     return vec3(
-        y*vec.z - vec.z*y,
-        z*vec.x - vec.x*z,
-        x*vec.y - vec.y*x
+        y*vec.z - z*vec.y,
+        z*vec.x - x*vec.z,
+        x*vec.y - y*vec.x
     );
 }

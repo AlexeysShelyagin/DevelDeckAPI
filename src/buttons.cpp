@@ -16,7 +16,14 @@ void Gamepad_buttons::init(){
         attachInterrupt(buttons_map[i], handle_button_interrupt, CHANGE);
         
     }
-    Serial.println();
+
+    uint8_t init_state = 0;
+    for(uint8_t i = 0; i < BUTTONS_N; i++){
+        init_state |= read_state(i) << i;
+    }
+    if(INVERT_BUTTONS_STATE)
+        init_state = ~init_state;
+    add_button_event(init_state);
 }
 
 bool Gamepad_buttons::get_latest_state(uint8_t id){

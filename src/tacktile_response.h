@@ -6,6 +6,11 @@
 
 #include "config.h"
 
+struct Buzzer_element_t{
+    uint16_t freq;
+    uint16_t timing;
+};
+
 class Gamepad_buzzer{
     uint8_t channel;
     uint8_t volume;
@@ -13,10 +18,6 @@ class Gamepad_buzzer{
 
     TaskHandle_t buzz_task_handler = NULL;
 public:
-    struct sequence_element{
-        uint16_t freq;
-        uint16_t timing;
-    };
 
     Gamepad_buzzer() = default;
 
@@ -29,7 +30,7 @@ public:
     uint8_t get_volume();
 
     void play_for_time(uint16_t freq, uint16_t time);
-    void play_sequence(std::vector < sequence_element > sequence);
+    void play_sequence(std::vector < Buzzer_element_t > sequence);
     void play_sequence(uint16_t *data, uint32_t size);
 };
 

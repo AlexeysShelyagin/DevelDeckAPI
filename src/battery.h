@@ -7,29 +7,34 @@
 #include "config.h"
 
 class Gamepad_battery{
-    float slope_adj_k;
-    float v_offset;
+    float critical_v;
+    float full_v;
+    float charging_v;
+    float only_charging_v;
+
+    float (*v_adj_func)(float);
     float *voltage_levels = nullptr;
 
     bool calibrating = false;
     uint64_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
 public:
-    enum charge_mode{
+    enum Charge_mode_t{
         POWER_ON,
         ONLY_CHARHING,
         POWER_ON_CHARGING
     };
     uint16_t lifetime = 0;
 
-    Gamepad_battery() = default;
+    Gamepad_battery();
 
-    void init();
+    void init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_);
+    void set_voltage_adjustment(float (*v_adj_func_ptr)(float));
 
     float get_battery_voltage();
     uint8_t get_battery_charge();
 
-    charge_mode get_device_mode();
+    Charge_mode_t get_device_mode();
 
     void start_calibration();
     float* finish_calibration();
