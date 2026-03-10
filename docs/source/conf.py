@@ -41,6 +41,12 @@ html_static_path = ["_static"]
 html_css_files = ["css/extra.css"]
 templates_path = ["_templates"]
 
+html_logo = "_static/images/DevelDeck.png"
+html_theme_options = {
+    'logo_only': False, # Set to True if you don't want the project name text
+    'display_version': True,
+}
+
 # Optional: set theme options for nicer defaults
 html_theme_options = {
     "navigation_depth": 4,
