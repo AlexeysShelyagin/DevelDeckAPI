@@ -10,9 +10,6 @@
     "frameworks": "arduino",
     "platforms": "espressif32",
     "headers": "src/DevelDeckAPI.h",
-    "extraScripts":[
-        "scripts/user_setup_build.py"
-    ],
     "dependencies":{
         "bodmer/TFT_eSPI": "^2.5.43",
         "bitbank2/PNGdec": "^1.1.6"
@@ -21,5 +18,13 @@
         "name": "DevelTeam",
         "email": "develteam.info@gmail.com",
         "maintainer": true
-    }]
+    }],
+
+    "build": {
+        "includeDir": "src",
+        "flags": [
+            "-DUSER_SETUP_LOADED",
+            "-include UserSetup_override.h"
+        ]
+    }
 }
