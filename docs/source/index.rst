@@ -5,37 +5,38 @@
 
 
 ##################################################
-gamepadAPI documentation
+DevelDeck-API documentation
 ##################################################
 
 Add your content using ``reStructuredText`` syntax. See the
 `reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
 documentation for details.
 
-General overview
-==================
+
 
 .. toctree::
+   :caption: Getting Started
    :maxdepth: 2
 
    overview.rst
    user_guide/index.rst
+   getting_started/index.rst
 
 
-
-API documentation
-===================
 
 .. toctree::
+   :caption: General
    :maxdepth: 2
 
-   
-   getting_started/index.rst
-   buttons/index.rst
    display/index.rst
    UI/index.rst
+   SD_card/index.rst
+
+.. toctree::
+   :caption: Periphery
+   :maxdepth: 2
+
+   buttons/index.rst
    buzzer/index.rst
    vibro/index.rst
    accelerometer/index.rst
-   SD_card/index.rst
-

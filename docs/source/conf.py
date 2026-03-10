@@ -17,6 +17,7 @@ author = 'DevelTeam'
 
 extensions = [
     "breathe",
+    "sphinx_copybutton"
 ]
 
 breathe_projects = {
@@ -28,12 +29,16 @@ breathe_default_project = "DevelDeck-docs"
 templates_path = ['_templates']
 exclude_patterns = []
 
+pygments_style = "pastie"
+
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_static_path = ["_static"]
+html_css_files = ["css/extra.css"]
 
 # Optional: set theme options for nicer defaults
 html_theme_options = {

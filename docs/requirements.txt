@@ -6,3 +6,4 @@ recommonmark
 sphinx-autobuild
 rstcheck>=6.1.0
 breathe
+sphinx-copybutton
