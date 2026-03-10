@@ -21,7 +21,9 @@
     }],
 
     "build": {
-        "includeDir": "src",
+        "includeDir": "src"
+    },
+    "export": {
         "flags": [
             "-DUSER_SETUP_LOADED",
             "-include UserSetup_override.h"
