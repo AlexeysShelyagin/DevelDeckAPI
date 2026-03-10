@@ -2,13 +2,22 @@
 
 {% block sidebar1 %}
 <div class="wy-side-scroll">
-    <!-- Home link with logo -->
-    <a href="{{ pathto(master_doc) }}" class="icon icon-home">
-        DevelDeck
-        <img src="{{ pathto('_static/images/DevelDeck.png', 1) }}"
-             alt="DevelDeck Logo"
-             class="sidebar-logo">
-    </a>
+    <div class="wy-side-nav-search">
+        <a href="{{ pathto(master_doc) }}" class="icon icon-home">
+            gamepadAPI
+            <img src="{{ pathto('_static/images/DevelDeck.png', 1) }}" 
+                 alt="DevelDeck Logo"
+                 style="max-height:40px; width:auto; display:inline-block; margin-left:5px;">
+        </a>
+
+        <div role="search">
+            <form id="rtd-search-form" class="wy-form" action="{{ pathto('search.html') }}" method="get">
+                <input type="text" name="q" placeholder="Search docs" aria-label="Search docs">
+                <input type="hidden" name="check_keywords" value="yes">
+                <input type="hidden" name="area" value="default">
+            </form>
+        </div>
+    </div>
 
     {{ super() }}
 </div>
