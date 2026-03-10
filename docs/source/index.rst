@@ -25,7 +25,7 @@ documentation for details.
 
 
 .. toctree::
-   :caption: General
+   :caption: API - General
    :maxdepth: 2
 
    display/index.rst
@@ -33,7 +33,7 @@ documentation for details.
    SD_card/index.rst
 
 .. toctree::
-   :caption: Periphery
+   :caption: API - Periphery
    :maxdepth: 2
 
    buttons/index.rst
