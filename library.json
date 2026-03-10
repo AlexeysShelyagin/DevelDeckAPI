@@ -1,6 +1,6 @@
 {
     "name": "DevelDeck-API",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "keywords": "esp32, game",
     "description": "Framework for DevelDeck by DevelTeam",
     "repository": {
@@ -21,6 +21,6 @@
     }],
 
     "build": {
-        "extraScript": "scripts/extra_script.py"
+        "extraScript": "scripts/user_setup_build.py"
     }
 }
