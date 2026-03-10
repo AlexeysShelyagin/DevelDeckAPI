@@ -1,8 +1,9 @@
 import os
+from SCons.Script import Import, DefaultEnvironment, Dir
 
 Import("env")
 
-lib_directory = os.path.dirname(os.path.realpath(__file__))
+lib_directory = Dir('.').abspath
 
 header_path = os.path.join(lib_directory, "..", "src", "UserSetup_override.h")
 
