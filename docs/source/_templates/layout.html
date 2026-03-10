@@ -4,18 +4,3 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ pathto('_static/css/extra.css', 1) }}" type="text/css" />
 {% endblock %}
-
-{% block sidebar1 %}
-<div class="wy-side-scroll">
-
-    <div class="sidebar-logo" style="padding: 10px; text-align: center;">
-        <a href="{{ pathto(master_doc) }}">
-            <img src="{{ pathto('_static/images/DevelDeck.png', 1) }}"
-                 alt="DevelDeck Logo"
-                 style="max-height: 50px; width: auto; display: inline-block;">
-        </a>
-    </div>
-
-    {{ super() }}
-</div>
-{% endblock %}

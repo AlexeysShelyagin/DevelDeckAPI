@@ -1,0 +1,15 @@
+{% extends "!sidebar.html" %}
+
+{% block sidebar1 %}
+<div class="wy-side-scroll">
+    <!-- Home link with logo -->
+    <a href="{{ pathto(master_doc) }}" class="icon icon-home">
+        DevelDeck
+        <img src="{{ pathto('_static/images/DevelDeck.png', 1) }}"
+             alt="DevelDeck Logo"
+             class="sidebar-logo">
+    </a>
+
+    {{ super() }}
+</div>
+{% endblock %}
