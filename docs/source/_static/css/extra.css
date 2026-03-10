@@ -1,3 +1,5 @@
-.navbar-header .navbar-brand {
-    background-color: red !important;
+.wy-side-nav-header img {
+    max-height: 50px;  /* match sidebar header */
+    width: auto;       /* maintain aspect ratio */
+    display: block;
 }
