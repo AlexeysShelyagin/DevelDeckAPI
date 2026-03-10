@@ -9,12 +9,6 @@ build:
   apt_packages:
     - doxygen
   commands:
-    # Remove build cache for proper update
-    - rm -rf $READTHEDOCS_OUTPUT/html
-    - mkdir -p $READTHEDOCS_OUTPUT/html
-    - rm -rf docs/build
-    - rm -rf docs/source/xml 
-
     - cd docs/doxygen; doxygen Doxyfile
     #
     - python -m pip install -r docs/requirements.txt
@@ -24,7 +18,3 @@ build:
 sphinx:
    configuration: docs/source/conf.py
    builder: html
-
-formats:
-  - htmlzip
-  - pdf
