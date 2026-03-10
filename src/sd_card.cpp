@@ -401,7 +401,7 @@ Image_raw16_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
     return img;
 }
 
-void Gamepad_SD_card::write_raw16(Image_raw16_t &img, int start_pos){
+void Gamepad_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
     if(!file)
         return;
     
@@ -423,7 +423,7 @@ void Gamepad_SD_card::write_raw16(Image_raw16_t &img, int start_pos){
         file.write(a_ptr, img.alpha_buff_size);
 }
 
-Image_raw16_t Gamepad_SD_card::read_raw16(int start_pos){
+Image_raw16_t Gamepad_SD_card::file_read_raw16(int start_pos){
     Image_raw16_t img;
     if(!file)
         return img;
