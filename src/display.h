@@ -14,6 +14,12 @@
 // set the type of canvas for external use
 #define GAMEPAD_CANVAS_T_DEFINED
 
+
+// Make possible user color depth override
+extern uint8_t CANVAS_COLOR_DEPTH __attribute__((weak));
+
+
+
 struct Graphics_params_t{
         uint8_t font_id;
         uint8_t text_size;

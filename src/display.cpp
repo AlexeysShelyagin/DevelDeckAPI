@@ -2,6 +2,10 @@
 
 
 
+uint8_t CANVAS_COLOR_DEPTH __attribute__((weak)) = DEFAULT_COLOR_DEPTH;
+
+
+
 /***************************************************************************************
 ** ---------------Modified function from TFT_eSPI------------------
 **					- avoid display update
@@ -293,14 +297,21 @@ bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_ch
 	disp.setRotation(DISP_ROTATION);
 	disp.invertDisplay(false);
 	disp.fillScreen(TFT_WHITE);
-
-	canvas.setColorDepth(DEFAULT_COLOR_DEPTH);
-	Serial.println(heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) * 8);
-	Serial.println(DEFAULT_COLOR_DEPTH * w * h);
-	if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < (float) DEFAULT_COLOR_DEPTH / 8.0 * w * h){
+	
+	canvas.setColorDepth(CANVAS_COLOR_DEPTH);
+	float memory_bitdepth_fit_rate = (float) heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) * 8 / (w * h);
+	if (memory_bitdepth_fit_rate < 4){
 		canvas.createSprite(1, 1);					// make sure canvas is not nullptr, marking initializaion as failed
 		Serial.println(TXT_DISPLAY_ALLOC_FAILED);
 		return false;
+	}
+	if(memory_bitdepth_fit_rate < 8 && CANVAS_COLOR_DEPTH > 4){
+		canvas.setColorDepth(4);
+		Serial.printf(TXT_DEFAULT_BITDEPTH_FAILED, 4, CANVAS_COLOR_DEPTH);
+	}
+	if(memory_bitdepth_fit_rate < 16 && CANVAS_COLOR_DEPTH > 8){
+		canvas.setColorDepth(8);
+		Serial.printf(TXT_DEFAULT_BITDEPTH_FAILED, 8, CANVAS_COLOR_DEPTH);
 	}
 	sprite_buffer_ptr = (uint8_t *) canvas.createSprite(w, h);
 	canvas.fillSprite(0);
