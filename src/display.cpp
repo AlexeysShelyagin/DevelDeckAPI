@@ -318,8 +318,12 @@ bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_ch
 	canvas.setTextFont(1);
 
 	channel = backlight_channel;
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+	ledcAttach(DISP_BACKLIGHT_PIN, 10000, 8);
+#else
 	ledcSetup(channel, 10000, 8);
 	ledcAttachPin(DISP_BACKLIGHT_PIN, channel);
+#endif
 	ledcWrite(channel, brightness);
 
 	initialized = true;
