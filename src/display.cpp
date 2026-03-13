@@ -319,7 +319,8 @@ bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_ch
 
 	channel = backlight_channel;
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
-	ledcAttachChannel(DISP_BACKLIGHT_PIN, 10000, 8, channel);
+	ledcAttach(DISP_BACKLIGHT_PIN, 10000, 8);
+	channel = DISP_BACKLIGHT_PIN;
 #else
 	ledcSetup(channel, 10000, 8);
 	ledcAttachPin(DISP_BACKLIGHT_PIN, channel);

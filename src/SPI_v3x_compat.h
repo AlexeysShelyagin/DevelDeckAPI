@@ -78,19 +78,6 @@ static inline spi_dev_t* _spi_dev(uint8_t port) {
 
 #define SPI_USR (1<<18)
 
-
-
-// ledc fix 
-
-
-inline void ledcWrite(uint8_t channel, uint32_t duty) {
-    ledcWriteChannel(channel, duty);
-}
-
-inline uint32_t ledcChangeFrequency(uint8_t channel, uint32_t freq, uint8_t res) {
-    return ledcChangeFrequencyChannel(channel, freq, res);
-}
-
 #endif
 
 #endif
