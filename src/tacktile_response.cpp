@@ -149,8 +149,8 @@ void Gamepad_vibro::init(uint16_t pin, uint8_t channel_){
 	ledcAttach(pin, 25000, 8);
 	channel = pin;
 #else
-    ledcSetup(channel, 25000, 8);
-	ledcAttachPin(pin, channel);
+    ledcSetup(channel_, 25000, 8);
+	ledcAttachPin(pin, channel_);
 	channel = channel_;
 #endif
 	ledcWrite(channel, 0);
