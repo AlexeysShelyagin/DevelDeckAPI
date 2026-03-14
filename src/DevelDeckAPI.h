@@ -61,6 +61,7 @@ typedef Layer_t* Layer_id_t;
 
 class Gamepad{
     enum Sys_param_t{
+        INITIALIZED,
         DISPLAY_ENABLED,
         BUTTONS_ENABLED,
         BUZZER_ENABLED,
@@ -70,12 +71,9 @@ class Gamepad{
         ACCEL_ENABLED,
         GAME_FILES_LOCATED,
         SYSTEM_SETTINGS_TO_DEFAULT,
-        GAME_FILES_REQ,
         READY_TO_PLAY
     };
     uint16_t system_params = 0;
-
-    bool initialized = false;
 
     uint8_t brightness = DEFAULT_BRIGHTNESS;
     System_data_t *system_data;
@@ -135,8 +133,6 @@ public:
 
     void init__();
 
-    void game_files_required();
-
     
     uint8_t get_battery_charge();
 
@@ -176,9 +172,11 @@ public:
 
 
 
-// ---------- GLOBAL GAMEPAD VARIABLE ------------
+// ---------- GLOBAL GAMEPAD VARIABLES -----------
 
 extern Gamepad gamepad;
+
+extern bool GAME_FILES_REQUIRED;
 
 // -----------------------------------------------
 
