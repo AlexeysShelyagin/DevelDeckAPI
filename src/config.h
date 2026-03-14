@@ -70,6 +70,7 @@ enum Buttons_id_t{
 
 #define SD_CS_PIN 21
 
+#define SD_SPI_FREQUENCY 80000000
 
 
 // ================ BUZZER =======================

@@ -3,9 +3,11 @@
 #include "SPIFFS.h"
 
 
-// ================================== GLOBAL GAMEPAD VARIABLE ====================================
+// ================================= GLOBAL GAMEPAD VARIABLES ====================================
 
 Gamepad gamepad;
+
+bool __attribute__((weak)) GAME_FILES_REQUIRED = false;
 
 // ===============================================================================================
 
@@ -209,13 +211,12 @@ void Gamepad::give_access_to_subprocess(){
 // ================================ TINITIALIZATION ROUTINE ======================================
 
 void Gamepad::init__(){
-    if(initialized)
+    if(sys_param(INITIALIZED))
         return;
-    initialized = true;
+    sys_param(INITIALIZED, 1);
+    sys_param(READY_TO_PLAY, 1);
 
     Serial.begin(115200);
-
-    sys_param(READY_TO_PLAY, 1);
 
     main_loop_handler = new TaskHandle_t;
     *main_loop_handler = xTaskGetCurrentTaskHandle();
@@ -235,7 +236,7 @@ void Gamepad::init__(){
     init_SD();
 
     locate_game();
-    if(sys_param(GAME_FILES_REQ))
+    if(GAME_FILES_REQUIRED)
         sys_param(READY_TO_PLAY, sys_param(GAME_FILES_LOCATED));
     
     if(sys_param(SYSTEM_SETTINGS_TO_DEFAULT)){
@@ -386,10 +387,6 @@ bool Gamepad::init_SPIFFS(){
 }
 
 
-
-void Gamepad::game_files_required(){
-    sys_param(GAME_FILES_REQ, 1);
-}
 
 // ===============================================================================================
 
@@ -654,7 +651,7 @@ void Gamepad::select_game_menu(){
 
 
 String Gamepad::file_manager(){
-    if(!sys_param(GAME_FILES_REQ))
+    if(!GAME_FILES_REQUIRED)
         return "";
     
     buttons.clear_queue();
@@ -690,7 +687,7 @@ void Gamepad::sys_param(Sys_param_t id, bool val){
 
 
 void Gamepad::locate_game(){
-    if(sys_param(GAME_FILES_REQ) && sys_param(SD_ENABLED)){
+    if(GAME_FILES_REQUIRED && sys_param(SD_ENABLED)){
         game_path = "";
         for (uint8_t i = 0; i < system_data -> game_path_size; i++)
             game_path += system_data -> game_path[i];

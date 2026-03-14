@@ -1,5 +1,9 @@
 #include <sd_card.h>
 
+// =================== SPI from TFT_eSPI ====================
+extern SPIClass spi;
+// ==========================================================
+
 Gamepad_SD_card::~Gamepad_SD_card(){
     dir.close();
     file.close();
@@ -29,7 +33,7 @@ uint8_t Gamepad_SD_card::init(String root_limit){
     if(initialized)
         return SD_OK;
 
-    if(!SD.begin(SD_CS_PIN))
+    if(!SD.begin(SD_CS_PIN, spi, SD_SPI_FREQUENCY))     // Use the same SPI bus as display
         return SD_FAILED;
         
     if(SD.cardType() == CARD_NONE)
