@@ -90,7 +90,7 @@ Common examples
 
 .. code-block:: cpp
 
-   void game_loop(){
+   void loop(){
 
       // Process all button events since the previous loop iteration
       while(gamepad.buttons.event_available()){
@@ -150,7 +150,7 @@ Common examples
       gamepad.buttons.clear_queue();
    }
 
-   void main_loop(){
+   void loop(){
       some_func();
       /// ...
       uint8_t *initial_A_state = gamepad.buttons.get_latest_state(A_BUT_ID);

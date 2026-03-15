@@ -14,7 +14,7 @@ Overview
 To access files on the SD card, the ``gamepad.game_files`` instance is used.
 
 .. note::
-    Call ``gamepad.game_files_required()`` before game initialization. This flag is **required** to use ``game_files``. If the flag is set and no SD card is inserted, the game will not start.
+    Set ``bool GAME_FILES_REQUIRED = true;`` as a global variable. This flag is **required** to use ``game_files``. If the flag is set and no SD card is inserted, the main menu would be called before game.
 
 .. note::
     The **root directory** of ``game_files`` corresponds to the **game directory** (the same directory that contains ``game.ini``). Accessing files from another game is not possible.
@@ -79,10 +79,10 @@ Common examples
 
 .. code-block:: cpp
 
+    bool GAME_FILES_REQUIRED = true;        // Game files on SD requirement flag
+
     void setup() {
         Serial.begin(115200);
-        gamepad.game_files_required();      // Game files on SD requirement flag
-        gamepad.init(game);
 
         // Dirs and files creation
         gamepad.game_files.make_dir("dir1");

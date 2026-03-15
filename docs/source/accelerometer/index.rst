@@ -106,14 +106,12 @@ Common examples
     uint64_t last_update = 0;
 
     void setup(){
-        gamepad.init(gyro_demo);
-
         // Display represents the "ground" plane
         gamepad.accel.set_horizontal_mode();
         gamepad.main_loop();
     }
 
-    void gyro_demo(){
+    void loop(){
         // Erase previous frame
         gamepad.canvas -> fillCircle(pos.x, pos.y, R, TFT_BLACK);
 

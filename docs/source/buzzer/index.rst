@@ -84,7 +84,7 @@ Piano example
    // Define sequence vector to store melody
    std::vector < Buzzer_element_t > notes;
 
-   void main_loop(){
+   void loop(){
       // Reading player inputs
       while(gamepad.buttons.event_available()){
          uint8_t *event = gamepad.buttons.get_button_event();
@@ -157,7 +157,11 @@ Music example
       NOTE_C3, 125, NOTE_E2, 250, NOTE_AS2, 500
    };
 
-   void game_loop(){
+   void setup(){
+      gamepad.main_loop();
+   }
+
+   void loop(){
       gamepad.buzzer.play_sequence(
          (uint16_t*)&music,            // pointer to the sequence
          sizeof(music) / 4             // N of notes from array size
