@@ -89,8 +89,6 @@ class Gamepad{
     Gamepad_battery batt;
     Gamepad_SD_card sd_card;
 
-    Gamepad_battery batt;
-
     std::vector < Layer_t* > layers;
 
     void (*game_func)();
@@ -173,9 +171,9 @@ public:
      * 
      * @note May be unstable if core2 is busy
      *
-     * @param maintain_fps update will try to maintain stable fps (if render speed is enough)
+     * @param fps_max update will limit fps to stable value (if render speed is enough)
      */
-    void update_display_threaded(float maintain_fps = 0);
+    void update_display_threaded(float fps_max = 0);
 
     /**
      * @brief Checks if it is possible to perform `Gamepad::update_display_threaded()`
