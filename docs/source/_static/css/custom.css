@@ -16,5 +16,5 @@
 /* Code blocks styles*/
 .highlight pre, 
 .highlight pre span {
-    font-weight: 600 !important;
+    font-weight: 500;
 }
