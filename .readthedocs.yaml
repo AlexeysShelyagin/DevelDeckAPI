@@ -14,7 +14,7 @@ build:
     - python -m pip install -r docs/requirements.txt
     - pygmentize -S monokai -f html > docs/source/_static/pygments.css
     - python -m sphinx -E -b html docs/source $READTHEDOCS_OUTPUT/html
-    - cd docs/source/_static; ls
+    - cd docs/source/_static; cat pygments.css
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
