@@ -12,7 +12,7 @@ build:
     - cd docs/doxygen; doxygen Doxyfile
     #
     - python -m pip install -r docs/requirements.txt
-    - pygmentize -S monokai -f html > docs/source/_static/pygments.css
+    - pygmentize -S pastie -f html > docs/source/_static/pygments.css
     - python -m sphinx -E -b html docs/source $READTHEDOCS_OUTPUT/html
     - cd docs/source/_static; cat pygments.css
 
