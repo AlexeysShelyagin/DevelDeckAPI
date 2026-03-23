@@ -12,7 +12,7 @@ extern PNG *png_decoder;
 
 class Image_raw16_t{
 protected:
-    bool create_(uint16_t w_, uint16_t h_, bool alpha_, int buff_size);
+    bool create_(void *ibuff, void *abuff, uint16_t w_, uint16_t h_, bool alpha_, int buff_size);
 
 public:
     uint16_t w, h;
@@ -44,6 +44,29 @@ public:
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
 
     /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param alpha_data alpha data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
+    bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
+    bool create(const void *image_data, uint16_t w_, uint16_t h_);
+
+    /**
      * @brief Delete all image data and free the memory
      * 
      */
@@ -65,6 +88,29 @@ public:
      * @return false: unable to create, not enough space in heap
      */
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param alpha_data alpha data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
+    bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
+    bool create(const void *image_data, uint16_t w_, uint16_t h_);
 };
 
 #endif

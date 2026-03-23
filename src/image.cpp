@@ -12,8 +12,10 @@ Image_raw16_t::~Image_raw16_t(){
 }
 
 void Image_raw16_t::clear(){
-    delete [] img_buffer;
-    delete [] alpha_buffer;
+    if(!esp_ptr_in_drom(img_buffer))
+        delete [] img_buffer;
+    if(!esp_ptr_in_drom(alpha_buffer))
+        delete [] alpha_buffer;
     img_buffer = nullptr;
     alpha_buffer = nullptr;
 }
@@ -30,8 +32,10 @@ Image_raw16_t& Image_raw16_t::operator=(Image_raw16_t&& other) noexcept{
         w = other.w;
         h = other.h;
         alpha = other.alpha;
-        delete [] img_buffer;
-        delete [] alpha_buffer;
+        if(!esp_ptr_in_drom(img_buffer))
+            delete [] img_buffer;
+        if(!esp_ptr_in_drom(alpha_buffer))
+            delete [] alpha_buffer;
         img_buffer = other.img_buffer;
         alpha_buffer = other.alpha_buffer;
         other.img_buffer = nullptr;
@@ -40,32 +44,62 @@ Image_raw16_t& Image_raw16_t::operator=(Image_raw16_t&& other) noexcept{
     return *this;
 }
 
-bool Image_raw16_t::create_(uint16_t w_, uint16_t h_, bool alpha_, int buff_size){
+bool Image_raw16_t::create_(void *ibuff, void *abuff, uint16_t w_, uint16_t h_, bool alpha_, int buff_size){
     alpha_buff_size = ((w_ + 7) >> 3) * h_;
 
     clear();
-    if(heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < w_ * h_ * sizeof(uint16_t))
-        return 0;
-    if (alpha_ && heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < alpha_buff_size)
-        return 0;
+    if(!esp_ptr_in_drom(ibuff)){
+        if(heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < w_ * h_ * sizeof(uint16_t))
+            return 0;
+    }
+    if(!esp_ptr_in_drom(abuff)){
+        if (alpha_ && heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < alpha_buff_size)
+            return 0;
+    }
 
     w = w_;
     h = h_;
     alpha = alpha_;
 
-    img_buffer = new uint16_t[buff_size];
-    if(alpha)
-        alpha_buffer = new uint8_t[alpha_buff_size];
+    if(ibuff == nullptr)
+        img_buffer = new uint16_t[buff_size];
+    else
+        img_buffer = (uint16_t *) ibuff;
+    
+    if(alpha){
+        if(abuff == nullptr)
+            alpha_buffer = new uint8_t[alpha_buff_size];
+        else
+            alpha_buffer = (uint8_t *) abuff;
+    }
 
     return 1;
 }
 
 bool Image_raw16_t::create(uint16_t w_, uint16_t h_, bool alpha_){
-    return create_(w_, h_, alpha_, w_ * h_);
+    return create_(nullptr, nullptr, w_, h_, alpha_, w_ * h_);
 }
 
+bool Image_raw16_t::create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_){
+    return create_((uint16_t *) image_data, (uint8_t *) alpha_data, w_, h_, true, w_ * h_);
+}
+
+bool Image_raw16_t::create(const void *image_data, uint16_t w_, uint16_t h_){
+    return create_((uint16_t *) image_data, nullptr, w_, h_, false, w_ * h_);
+}
+
+
+
 bool Image_raw8_t::create(uint16_t w_, uint16_t h_, bool alpha_){
-    return create_(w_, h_, alpha_, w_ * h_ / 2);
+    return create_(nullptr, nullptr, w_, h_, alpha_, w_ * h_ / 2);
+}
+
+bool Image_raw8_t::create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_){
+    return create_((uint16_t *) image_data, (uint8_t *) alpha_data, w_, h_, true, w_ * h_ / 2);
+}
+
+bool Image_raw8_t::create(const void *image_data, uint16_t w_, uint16_t h_){
+    return create_((uint16_t *) image_data, nullptr, w_, h_, false, w_ * h_ / 2);
 }
 
 Image_raw8_t::Image_raw8_t(Image_raw16_t img){
