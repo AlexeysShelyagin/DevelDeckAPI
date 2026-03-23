@@ -161,10 +161,12 @@ public:
     /**
      * @brief Transfers image buffer to display
      * 
+     * @param ignore_layers do not render layers above canvas if true
+     * 
      * @note Function takes a while (~37ms at max ESP32 SPI frequency)
      * 
      */
-    void update_display();
+    void update_display(bool ignore_layers = false);
 
     /**
      * @brief Transfers image buffer to display on different core
@@ -262,6 +264,13 @@ public:
      * @param new_y 
      */
     void move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y);
+
+    /**
+     * @brief Update specific layer on display
+     * 
+     * @param id layer pointer
+     */
+    void update_layer(Layer_id_t id);
 
     
 

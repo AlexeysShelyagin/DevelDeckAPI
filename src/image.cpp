@@ -1,5 +1,12 @@
 #include "image.h"
 
+#ifdef GLOBAL_PNG_DECODER
+static PNG png_dec;
+PNG *png_decoder = &png_dec;
+#endif
+
+
+
 Image_raw16_t::~Image_raw16_t(){
     clear();
 }
@@ -36,12 +43,11 @@ Image_raw16_t& Image_raw16_t::operator=(Image_raw16_t&& other) noexcept{
 bool Image_raw16_t::create_(uint16_t w_, uint16_t h_, bool alpha_, int buff_size){
     alpha_buff_size = ((w_ + 7) >> 3) * h_;
 
+    clear();
     if(heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < w_ * h_ * sizeof(uint16_t))
         return 0;
     if (alpha_ && heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < alpha_buff_size)
         return 0;
-    
-    clear();
 
     w = w_;
     h = h_;

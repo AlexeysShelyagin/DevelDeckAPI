@@ -323,7 +323,7 @@ public:
      * @param alpha_channel: set false to ignore alpha channel
      * @return Image_raw16_t: decoded image
      */
-    Image_raw16_t file_read_PNG(bool alpha_channel = false);
+    bool file_read_PNG(Image_raw16_t &img, bool alpha_channel = false);
 
     /**
      * @brief Encode `Image_raw16_t` to file
@@ -339,7 +339,7 @@ public:
      * @param start_pos data chunk start position (in bytes)
      * @return Image_raw16_t: resulting image
      */
-    Image_raw16_t file_read_raw16(int start_pos = -1);
+    bool file_read_raw16(Image_raw16_t &img, int start_pos = -1);
 };
 
 #endif

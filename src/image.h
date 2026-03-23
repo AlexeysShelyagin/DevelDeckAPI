@@ -2,6 +2,13 @@
 #define GAMEPAD_IMAGE_H
 
 #include <Arduino.h>
+#include <PNGdec.h>
+
+#include "config.h"
+
+#ifdef GLOBAL_PNG_DECODER
+extern PNG *png_decoder;
+#endif
 
 class Image_raw16_t{
 protected:

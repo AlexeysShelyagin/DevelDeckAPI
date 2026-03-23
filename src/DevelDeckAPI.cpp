@@ -405,13 +405,15 @@ void Gamepad::clear_canvas(){
     disp -> clear();
 }
 
-void Gamepad::update_display(){
+void Gamepad::update_display(bool ignore_layers){
     if(!sys_param(DISPLAY_ENABLED))
 		return;
     disp -> update();
 
-    for(uint8_t i = 0; i < layers.size(); i++)
-        disp -> display_sprite(layers[i] -> canvas, layers[i] -> x, layers[i] -> y);
+    if(!ignore_layers){
+        for(uint8_t i = 0; i < layers.size(); i++)
+            disp -> display_sprite(layers[i] -> canvas, layers[i] -> x, layers[i] -> y);
+    }
 }
 
 
@@ -512,6 +514,15 @@ void Gamepad::clear_layer(Layer_id_t id){
 void Gamepad::move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y){
     id -> x = new_x;
     id -> y = new_y;
+}
+
+
+
+void Gamepad::update_layer(Layer_id_t id){
+     if(!sys_param(DISPLAY_ENABLED))
+		return;
+    
+    disp -> display_sprite(id -> canvas, id -> x, id -> y);
 }
 
 // ---------------------------------------------------------------
