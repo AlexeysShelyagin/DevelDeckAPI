@@ -19,6 +19,7 @@ TaskHandle_t *main_loop_handler = nullptr;
 Gamepad_UI ui;
 uint64_t last_disp_update = 0;
 float battery_critical_v;
+SemaphoreHandle_t threaded_update_mutex = xSemaphoreCreateMutex();
 
 // ===============================================================================================
 
@@ -65,6 +66,8 @@ void battery_listener(void *params){
                             }
 
                             vTaskSuspend(*main_loop_handler);
+                            xSemaphoreGive(gamepad.semaphore);
+
                             ui.notification("Discharged");
                             delay(NOTIFICATION_HOLD_TIME);
                             gamepad.set_display_brightness(0);      // TODO: print to display
@@ -127,6 +130,7 @@ void forced_main_menu_listener(void *params){
                 
                 if(millis() - timer >= FORCED_MENU_HOLD_TIME){
                     vTaskSuspend(*main_loop_handler);
+                    xSemaphoreGive(gamepad.semaphore);
 
                     gamepad.buttons.clear_queue();
                     gamepad.main_menu();
@@ -143,18 +147,20 @@ void forced_main_menu_listener(void *params){
 }
 
 void display_update_thread(void *params){
-    float *dt = (float *) params;
-    xSemaphoreTake(gamepad.semaphore, portMAX_DELAY);
+    xSemaphoreTake(threaded_update_mutex, portMAX_DELAY);
 
-    while(micros() - last_disp_update < *dt)
+    float dt = *(float *) params;
+    delete (float *) params;
+
+    while(micros() - last_disp_update < dt)
         vTaskDelay(1);
+    
     last_disp_update = micros();
-    delete dt;
-
     gamepad.update_display();
     
-    xSemaphoreGive(gamepad.semaphore);
-    vTaskDelay(pdMS_TO_TICKS(2));
+    xSemaphoreGive(threaded_update_mutex);
+    gamepad.give_access_to_subprocess();
+    
     vTaskDelete(NULL);
 }
 
@@ -171,6 +177,7 @@ void display_update_thread(void *params){
 
 void Gamepad::main_loop(void (*game_func_)()){
     game_func = game_func_;
+    *main_loop_handler = xTaskGetCurrentTaskHandle();
     
     while(true){
         game_func();
@@ -180,6 +187,10 @@ void Gamepad::main_loop(void (*game_func_)()){
 }
 
 void Gamepad::give_access_to_subprocess(){
+    if (xSemaphoreTake(threaded_update_mutex, 0) == pdFALSE)
+        return;
+    xSemaphoreGive(threaded_update_mutex);
+    
     xSemaphoreGive(semaphore);
     delay(1);
     xSemaphoreTake(semaphore, portMAX_DELAY);
@@ -394,18 +405,20 @@ void Gamepad::clear_canvas(){
     disp -> clear();
 }
 
-void Gamepad::update_display(){
+void Gamepad::update_display(bool ignore_layers){
     if(!sys_param(DISPLAY_ENABLED))
 		return;
     disp -> update();
 
-    for(uint8_t i = 0; i < layers.size(); i++)
-        disp -> display_sprite(layers[i] -> canvas, layers[i] -> x, layers[i] -> y);
+    if(!ignore_layers){
+        for(uint8_t i = 0; i < layers.size(); i++)
+            disp -> display_sprite(layers[i] -> canvas, layers[i] -> x, layers[i] -> y);
+    }
 }
 
 
 
-void Gamepad::update_display_threaded(float maintain_fps){            // abusing RTOS a bit ;)    (meet v-sync issues)
+void Gamepad::update_display_threaded(float fps_max){            // abusing RTOS a bit ;)    (meet v-sync issues)
     if(!sys_param(DISPLAY_ENABLED))
 		return;
     
@@ -414,8 +427,8 @@ void Gamepad::update_display_threaded(float maintain_fps){            // abusing
     
     float *dt = new float;
     *dt = 0;
-    if(maintain_fps != 0)
-        *dt = 1000000.0 / maintain_fps;
+    if(fps_max != 0)
+        *dt = 1000000.0 / fps_max;
 
     xTaskCreatePinnedToCore(
         display_update_thread,
@@ -426,11 +439,13 @@ void Gamepad::update_display_threaded(float maintain_fps){            // abusing
         &display_updater_handler,
         !xPortGetCoreID()
     );
-    xSemaphoreGive(semaphore);
 }
 
 bool Gamepad::update_display_threaded_available(){
-    return (xTaskGetHandle("disp") == NULL);
+    if(xSemaphoreTake(threaded_update_mutex, 0) == pdFALSE)
+        return false;
+    xSemaphoreGive(threaded_update_mutex);
+    return true;
 }
 
 
@@ -499,6 +514,15 @@ void Gamepad::clear_layer(Layer_id_t id){
 void Gamepad::move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y){
     id -> x = new_x;
     id -> y = new_y;
+}
+
+
+
+void Gamepad::update_layer(Layer_id_t id){
+     if(!sys_param(DISPLAY_ENABLED))
+		return;
+    
+    disp -> display_sprite(id -> canvas, id -> x, id -> y);
 }
 
 // ---------------------------------------------------------------

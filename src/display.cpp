@@ -115,7 +115,9 @@ void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){
 
 
 File *PNG_disp_file_ptr;
-PNG *png_disp;
+#ifndef GLOBAL_PNG_DECODER
+static PNG *png_decoder;
+#endif
 
 struct PNG_user_param_t{
 	Gamepad_canvas_t *canvas;
@@ -146,11 +148,11 @@ int PNG_disp_draw(PNGDRAW *pDraw){
 
 	uint16_t line_buffer[pDraw -> iWidth];
 
-	png_disp -> getLineAsRGB565(pDraw, line_buffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
+	png_decoder -> getLineAsRGB565(pDraw, line_buffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
 	if(params -> alpha){
 		uint8_t mask_buffer[(pDraw -> iWidth + 7) >> 3];
-		if(png_disp -> getAlphaMask(pDraw, mask_buffer, 255))
+		if(png_decoder -> getAlphaMask(pDraw, mask_buffer, 255))
 			params -> canvas -> pushMaskedImage(params -> x, params -> y + pDraw -> y, pDraw -> iWidth, 1, line_buffer, mask_buffer);
 	}
 	else{
@@ -164,9 +166,11 @@ void Gamepad_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool al
 	if(file == nullptr)
 		return;
 
+#ifndef GLOBAL_PNG_DECODER
 	if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < sizeof(PNG))
 		return;
-	png_disp = new PNG;
+	png_decoder = new PNG;
+#endif
 	
 	PNG_disp_file_ptr = file;
 	String name = PNG_disp_file_ptr -> name();
@@ -174,13 +178,15 @@ void Gamepad_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool al
 	if(ext != ".png" && ext != ".PNG")
 		return;
 	
-	int status = png_disp -> open(name.c_str(), PNG_disp_init, NULL, PNG_disp_read, PNG_disp_seek, PNG_disp_draw);
+	int status = png_decoder -> open(name.c_str(), PNG_disp_init, NULL, PNG_disp_read, PNG_disp_seek, PNG_disp_draw);
 	if(status == PNG_SUCCESS){
 		PNG_user_param_t params = {this, x, y, alpha_channel};
-		status = png_disp -> decode(&params, 0);
+		status = png_decoder -> decode(&params, 0);
 	}
 
-	delete png_disp;
+#ifndef GLOBAL_PNG_DECODER
+	delete png_decoder;
+#endif
 }
 
 /***************************************************************************************

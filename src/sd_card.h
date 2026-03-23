@@ -85,9 +85,9 @@ public:
     
     bool rename(String curren_path, String new_path, bool absolute = false);
 
-    Image_raw16_t file_read_PNG(bool alpha_channel = false);
+    bool file_read_PNG(Image_raw16_t &img, bool alpha_channel = false);
     void file_write_raw16(Image_raw16_t &img, int start_pos = -1);
-    Image_raw16_t file_read_raw16(int start_pos = -1);
+    bool file_read_raw16(Image_raw16_t &img, int start_pos = -1);
 };
 
 #endif

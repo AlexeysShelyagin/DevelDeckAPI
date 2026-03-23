@@ -2,10 +2,17 @@
 #define GAMEPAD_IMAGE_H
 
 #include <Arduino.h>
+#include <PNGdec.h>
+
+#include "config.h"
+
+#ifdef GLOBAL_PNG_DECODER
+extern PNG *png_decoder;
+#endif
 
 class Image_raw16_t{
 protected:
-    bool create_(uint16_t w_, uint16_t h_, bool alpha_, int buff_size);
+    bool create_(void *ibuff, void *abuff, uint16_t w_, uint16_t h_, bool alpha_, int buff_size);
 
 public:
     uint16_t w, h;
@@ -24,6 +31,8 @@ public:
     Image_raw16_t& operator=(Image_raw16_t&& other) noexcept;
 
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
+    bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+    bool create(const void *image_data, uint16_t w_, uint16_t h_);
     void clear();
 };
 
@@ -33,6 +42,8 @@ public:
     Image_raw8_t(Image_raw16_t img);
 
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
+    bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+    bool create(const void *image_data, uint16_t w_, uint16_t h_);
 };
 
 #endif

@@ -340,7 +340,9 @@ bool Gamepad_SD_card::rename(String curren_path, String new_path, bool absolute)
 
 
 File *PNG_SD_file_ptr;
-PNG *png_SD;
+#ifndef GLOBAL_PNG_DECODER
+static PNG *png_decoder;
+#endif
 
 void *PNG_SD_init(const char *filename, int32_t *size){
 	*size = PNG_SD_file_ptr -> size();
@@ -363,46 +365,49 @@ int PNG_SD_draw(PNGDRAW *pDraw){
     Image_raw16_t *params = (Image_raw16_t *) pDraw -> pUser;
 
     uint16_t *img_buff_ptr = params -> img_buffer;
-	png_SD -> getLineAsRGB565(pDraw, img_buff_ptr + (pDraw -> y * pDraw -> iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
+	png_decoder -> getLineAsRGB565(pDraw, img_buff_ptr + (pDraw -> y * pDraw -> iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
 	if(params -> alpha){
 		uint8_t *alpha_buff_ptr = params -> alpha_buffer;
         uint16_t line_size = (pDraw -> iWidth + 7) >> 3;
-		png_SD -> getAlphaMask(pDraw, alpha_buff_ptr + (pDraw -> y * line_size), 255);
+		png_decoder -> getAlphaMask(pDraw, alpha_buff_ptr + (pDraw -> y * line_size), 255);
 	}
     
 
 	return 1;
 }
 
-Image_raw16_t Gamepad_SD_card::file_read_PNG(bool alpha_channel){
-    Image_raw16_t img;
+bool Gamepad_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
     if(!file)
-        return img;
+        return 0;
     
     PNG_SD_file_ptr = &file;
 	String name = PNG_SD_file_ptr -> name();
 	String ext = name.substring(name.length() - 4, name.length());
 	if(ext != ".png" && ext != ".PNG")
-		return img;
+		return 0;
     
+#ifndef GLOBAL_PNG_DECODER
     if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < sizeof(PNG))
-		return img;
-    png_SD = new PNG;
+		return 0;
+    png_decoder = new PNG;
+#endif
 
-    int status = png_SD -> open(name.c_str(), PNG_SD_init, NULL, PNG_SD_read, PNG_SD_seek, PNG_SD_draw);
+    int status = png_decoder -> open(name.c_str(), PNG_SD_init, NULL, PNG_SD_read, PNG_SD_seek, PNG_SD_draw);
     
-    img.create(
-        png_SD -> getWidth(), 
-        png_SD -> getHeight(), 
-        (alpha_channel && png_SD -> hasAlpha())
+    bool img_created = img.create(
+        png_decoder -> getWidth(), 
+        png_decoder -> getHeight(), 
+        (alpha_channel && png_decoder -> hasAlpha())
     );
 
-	if(status == PNG_SUCCESS)
-		status = png_SD -> decode(&img, 0);
+	if(status == PNG_SUCCESS && img_created)
+		status = png_decoder -> decode(&img, 0);
 
-    delete png_SD;
-    return img;
+#ifndef GLOBAL_PNG_DECODER
+    delete png_decoder;
+#endif
+    return (status == PNG_SUCCESS && img_created);
 }
 
 void Gamepad_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
@@ -427,10 +432,9 @@ void Gamepad_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
         file.write(a_ptr, img.alpha_buff_size);
 }
 
-Image_raw16_t Gamepad_SD_card::file_read_raw16(int start_pos){
-    Image_raw16_t img;
+bool Gamepad_SD_card::file_read_raw16(Image_raw16_t &img, int start_pos){
     if(!file)
-        return img;
+        return 0;
     uint64_t t = millis();
 
     uint8_t *vars_ptr = new uint8_t[5];
@@ -438,12 +442,15 @@ Image_raw16_t Gamepad_SD_card::file_read_raw16(int start_pos){
         file.seek(start_pos);
     file.read(vars_ptr, 5);
 
-    img.create(
+    bool img_created = img.create(
         *(uint16_t *) (vars_ptr),
         *(uint16_t *) (vars_ptr + 2),
         *(bool *) (vars_ptr + 4)
     );
     delete vars_ptr;
+
+    if(!img_created)
+        return 0;
 
     uint8_t *img_ptr = new uint8_t[img.w * img.h * 2];
     uint8_t *a_ptr = nullptr;
@@ -461,5 +468,5 @@ Image_raw16_t Gamepad_SD_card::file_read_raw16(int start_pos){
     img.img_buffer = (uint16_t *) img_ptr;
     img.alpha_buffer = a_ptr;
     
-    return img;
+    return 1;
 }

@@ -22,13 +22,16 @@ typedef DEFAULT_CANVAS_T Gamepad_canvas_t;
 #endif
 
 
-
+/**
+ * @brief Game info for loading screen container
+ * 
+ */
 struct Game_config_t{
-    String name;
-    String description;
-    String game_path;
-    String icon_path;
-    uint8_t minimum_flash;
+    String name;                /** Game name */
+    String description;         /** Game description text */
+    String game_path;           /** Path to `game.ini` */
+    String icon_path;           /** Path to game icon */
+    uint8_t minimum_flash;      /** Minimum required flash for installation */
 };
 
 struct System_data_t{
@@ -83,10 +86,8 @@ class Gamepad{
     TaskHandle_t display_updater_handler = NULL;
 
     Gamepad_display *disp;
-    
-    Gamepad_SD_card sd_card;
-
     Gamepad_battery batt;
+    Gamepad_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
 
@@ -125,42 +126,184 @@ public:
 
     Gamepad() = default;
 
-
+    /**
+     * @brief Start main game loop
+     * 
+     * @param game_func_ override game loop function instead `void loop()` if needed
+     */
     void main_loop(void (*game_func_)() = loop);
 
+    /**
+     * @brief Some system level subprocesses are blocked during `game_func()` handling. Call this function to avoid long-term system delay.
+     * 
+     */
     void give_access_to_subprocess();
 
     void init__();
 
     
+
+    /**
+     * @brief Battery charge check
+     * 
+     * @return battery level in range from 0 to `BATTERY_LEVELS`
+     */
     uint8_t get_battery_charge();
 
 
+
+    /**
+     * @brief Clears image buffer to black
+     * 
+     */
     void clear_canvas();
-    void update_display();
-    void update_display_threaded(float maintain_fps = 0);
+
+    /**
+     * @brief Transfers image buffer to display
+     * 
+     * @param ignore_layers do not render layers above canvas if true
+     * 
+     * @note Function takes a while (~37ms at max ESP32 SPI frequency)
+     * 
+     */
+    void update_display(bool ignore_layers = false);
+
+    /**
+     * @brief Transfers image buffer to display on different core
+     * 
+     * @note May be unstable if core2 is busy
+     *
+     * @param fps_max update will try to maintain stable fps (if render speed is enough)
+     */
+    void update_display_threaded(float fps_max = 0);
+
+    /**
+     * @brief Checks if it is possible to perform `Gamepad::update_display_threaded()`
+     * 
+     * @return true: means previous update has finished
+     * @return false: if previous update is in progress
+     */
     bool update_display_threaded_available();
 
+
+    /**
+     * @brief Changes the display backlight brightness
+     * 
+     * @param brightness_  value in range from 0 to `BRIGHTNESS_LEVELS`
+     */
     void set_display_brightness(uint8_t brightness_);
+
+    /**
+     * @brief returns current display brigtness
+     * 
+     * @return uint8_t
+     */
     uint8_t get_display_brightness();
 
 
+
+    /**
+     * @brief Creates a layer which will be rendered above the main canvas
+     * 
+     * @note Creation of the layer creates new image buffer with a size of `W * H * color_depth / 8` bytes. 
+     * If there is not enough memory layer won't be created
+     * 
+     * @note Layers arranged by their creation order
+     * 
+     * @note Layers are rendered directly from memory separately, which can cause flickering for frequent updates
+     * 
+     * @param width 
+     * @param height 
+     * @param x 
+     * @param y 
+     * @param color_depth  1 | 4 | 8 | 16 bits
+     * 
+     * @return Layer_id_t: pointer to the layer
+     * @return nullptr: if layer creation failed
+     */
     Layer_id_t create_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 8);
+
+    /**
+     * @brief Checks if layer exists
+     * 
+     * @param id layer pointer
+     * 
+     * @return true 
+     * @return false 
+     */
     bool layer_exists(Layer_id_t id);
+
+    /**
+     * @brief Access layer canvas
+     * 
+     * @param id layer pointer
+     * 
+     * @return Gamepad_canvas_t*: pointer to the canvas
+     */
     Gamepad_canvas_t* layer(Layer_id_t id);
-    void move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y);
+    
+    /**
+     * @brief Fills layer black
+     * 
+     * @param id layer pointer
+     */
     void clear_layer(Layer_id_t id);
+    
+    /**
+     * @brief Deletes layer with its canvas
+     * 
+     * @param id layer pointer
+     */
     void delete_layer(Layer_id_t id);
 
+    /**
+     * @brief Changes layer position on display
+     * 
+     * @param id layer pointer
+     * @param new_x 
+     * @param new_y 
+     */
+    void move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y);
 
+    /**
+     * @brief Update specific layer on display
+     * 
+     * @param id layer pointer
+     */
+    void update_layer(Layer_id_t id);
+
+    
+
+    /**
+     * @brief Enter gamepad main menu function
+     * 
+     */
     void main_menu();
-    void select_game_menu();
-    void settings_menu();
-    String file_manager();
-    void game_downloading_screen(uint8_t percentage);
 
+    /**
+     * @brief Enter gamepad game selection menu
+     * 
+     */
+    void select_game_menu();
+
+    /**
+     * @brief Enter gamepad settings menu
+     * 
+     */
+    void settings_menu();
+
+    /**
+     * @brief Opens gamepad file manager at game source folder as root
+     * 
+     * @return String: absolute path to file selected by user
+     */
+    String file_manager();
+
+    
 
     // ----------- API-only functions ------------
+
+    void game_downloading_screen(uint8_t percentage);
 
     void save_system_settings();
     void apply_system_settings(System_data_t *settings);
