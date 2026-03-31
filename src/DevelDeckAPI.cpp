@@ -500,15 +500,15 @@ Layer_id_t Gamepad::create_layer(uint16_t width, uint16_t height, uint16_t x, ui
     return layer;
 }
 
-bool Gamepad::layer_exists(Layer_id_t id){
+bool Gamepad::layer_exists(Layer_id_t &id){
     return (id != nullptr);
 }
 
-Gamepad_canvas_t* Gamepad::layer(Layer_id_t id){
+Gamepad_canvas_t* Gamepad::layer(Layer_id_t &id){
     return id -> canvas;
 }
 
-void Gamepad::delete_layer(Layer_id_t id){
+void Gamepad::delete_layer(Layer_id_t &id){
     disp -> delete_sprite(id -> canvas);
     for(uint8_t i = 0; i < layers.size(); i++){
         if(layers[i] == id){
@@ -517,22 +517,23 @@ void Gamepad::delete_layer(Layer_id_t id){
         }
     }
     delete id;
+    id = nullptr;
 }
 
 
 
-void Gamepad::clear_layer(Layer_id_t id){
+void Gamepad::clear_layer(Layer_id_t &id){
     disp -> clear_sprite(id ->canvas);
 }
 
-void Gamepad::move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y){
+void Gamepad::move_layer(Layer_id_t &id, uint16_t new_x, uint16_t new_y){
     id -> x = new_x;
     id -> y = new_y;
 }
 
 
 
-void Gamepad::update_layer(Layer_id_t id){
+void Gamepad::update_layer(Layer_id_t &id){
      if(!sys_param(DISPLAY_ENABLED))
 		return;
     
@@ -542,7 +543,7 @@ void Gamepad::update_layer(Layer_id_t id){
     disp -> display_sprite(id -> canvas, id -> x, id -> y);
 }
 
-void Gamepad::update_layer_threaded(Layer_id_t id, float fps_max){
+void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max){
     if(!sys_param(DISPLAY_ENABLED))
 		return;
 

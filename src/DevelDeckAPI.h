@@ -232,7 +232,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool layer_exists(Layer_id_t id);
+    bool layer_exists(Layer_id_t &id);
 
     /**
      * @brief Access layer canvas
@@ -241,21 +241,21 @@ public:
      * 
      * @return Gamepad_canvas_t*: pointer to the canvas
      */
-    Gamepad_canvas_t* layer(Layer_id_t id);
+    Gamepad_canvas_t* layer(Layer_id_t &id);
     
     /**
      * @brief Fills layer black
      * 
      * @param id layer pointer
      */
-    void clear_layer(Layer_id_t id);
+    void clear_layer(Layer_id_t &id);
     
     /**
      * @brief Deletes layer with its canvas
      * 
      * @param id layer pointer
      */
-    void delete_layer(Layer_id_t id);
+    void delete_layer(Layer_id_t &id);
 
     /**
      * @brief Changes layer position on display
@@ -264,14 +264,14 @@ public:
      * @param new_x 
      * @param new_y 
      */
-    void move_layer(Layer_id_t id, uint16_t new_x, uint16_t new_y);
+    void move_layer(Layer_id_t &id, uint16_t new_x, uint16_t new_y);
 
     /**
      * @brief Update specific layer on display
      * 
      * @param id layer pointer
      */
-    void update_layer(Layer_id_t id);
+    void update_layer(Layer_id_t &id);
 
     /**
      * @brief Transfers layer contents **on top** of display image
@@ -281,7 +281,7 @@ public:
      * @param id layer id to update
      * @param fps_max update will try to maintain stable fps (if render speed is enough)
      */
-    void update_layer_threaded(Layer_id_t id, float fps_max = 0);
+    void update_layer_threaded(Layer_id_t &id, float fps_max = 0);
 
     
 
