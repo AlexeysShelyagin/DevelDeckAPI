@@ -124,7 +124,7 @@ Common examples
 Graphics
 -----------------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    graphics/eSPI.rst
    graphics/fonts.rst

@@ -166,7 +166,7 @@ Check :doc:`Custom fonts docs <fonts>` for details.
 Rendering images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Check :doc:`images docs <fonts>` for details.
+Check :doc:`images docs <images>` for details.
 
 |
 
