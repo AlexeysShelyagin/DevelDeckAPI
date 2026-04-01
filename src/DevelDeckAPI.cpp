@@ -621,9 +621,6 @@ void Gamepad::settings_menu(){
     if(resp == 1){
         *system_data = updated_data;
         save_system_settings();
-
-        if(!sys_param(SD_ENABLED))
-            ui.notification(TXT_SETTINGS_SAVE_WARINING);
     }
     if(resp == 1 || resp == 0)
         apply_system_settings();

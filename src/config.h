@@ -290,7 +290,6 @@ const char TXT_FAILED_CALIBR[] PROGMEM = "Failed to\ncalibrate battery";
 const char TXT_DISPAY_FAILED[] PROGMEM = "ERROR: unable to initialize display";
 const char TXT_SD_FAILED[] PROGMEM = "ERROR: failed to init SD card";
 const char TXT_SD_DISCONNECT[] PROGMEM = "ERROR: SD is disconnected";
-const char TXT_SETTINGS_SAVE_WARINING[] PROGMEM = "Settings won't\nbe saved\nafter reset";
 const char TXT_UNSUPPORTED_DEVICE[] PROGMEM = "Unsupported on\nyour device\n";
 const char TXT_SPIFFS_FAILED[] PROGMEM = "ERROR: failed to init SPIFFS";
 
