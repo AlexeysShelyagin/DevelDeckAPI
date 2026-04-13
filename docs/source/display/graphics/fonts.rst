@@ -74,11 +74,11 @@ Common examples
         gamepad.clear_canvas();
 
         // load font to id 0
-        gamepad.canvas -> loadFont(font_demo, 1);
+        gamepad.canvas->loadFont(font_demo, 1);
         // use loaded font
-        gamepad.canvas -> setFont(1);
+        gamepad.canvas->setFont(1);
 
-        gamepad.canvas -> print("A A A");
+        gamepad.canvas->print("A A A");
         gamepad.update_display();
 
         gamepad.main_loop();
@@ -108,13 +108,13 @@ You can :download:`download font for this example <cambria 20.vlw>`
         // open VLW file
         gamepad.game_files.open_file("cambria 20.vlw");
         // load font to slot 1 from an opened file
-        gamepad.canvas -> loadFont(gamepad.game_files.get_file_reference(), 1);
+        gamepad.canvas->loadFont(gamepad.game_files.get_file_reference(), 1);
         gamepad.game_files.close_file();
 
         gamepad.clear_canvas();
-        gamepad.canvas -> println("This is a standart font");
-        gamepad.canvas -> setFont(1);   // select loaded font
-        gamepad.canvas -> println("This is a loaded from VLW file smooth font");
+        gamepad.canvas->println("This is a standart font");
+        gamepad.canvas->setFont(1);   // select loaded font
+        gamepad.canvas->println("This is a loaded from VLW file smooth font");
         gamepad.update_display();
 
         gamepad.main_loop();
@@ -166,7 +166,7 @@ The generated ``.vlw`` file can be converted into a byte array and stored in ``P
 
     #include "montserrat_20.h"
     // ...
-    gamepad.canvas -> loadFont(montserrat20, 1);
+    gamepad.canvas->loadFont(montserrat20, 1);
 
 
 

@@ -21,8 +21,8 @@ Since ``gamepad.canvas`` is is a pointer, its functions must be accessed via ``-
 .. code-block:: cpp
 
     gamepad.clear_canvas();
-    gamepad.canvas -> fillRect(0, 0, 100, 100, TFT_RED);
-    gamepad.canvas -> setCursor(0, 0);
+    gamepad.canvas->fillRect(0, 0, 100, 100, TFT_RED);
+    gamepad.canvas->setCursor(0, 0);
 
 
 
@@ -106,11 +106,11 @@ Common examples
         while(!gamepad.update_display_threaded_available());
 
         gamepad.clear_canvas();
-        gamepad.canvas -> fillRect(millis() / 10 % 320, 100, 10, 10, TFT_RED);  // running rectangle
-        gamepad.canvas -> setCursor(0, 0);
+        gamepad.canvas->fillRect(millis() / 10 % 320, 100, 10, 10, TFT_RED);  // running rectangle
+        gamepad.canvas->setCursor(0, 0);
         float fps = 1000.0 / (millis() - last_update);
         // print current fps and calc_time (time program spent on calculations)
-        gamepad.canvas -> printf("fps: %f      calc_time: %d", fps, calc_time / 10);
+        gamepad.canvas->printf("fps: %f      calc_time: %d", fps, calc_time / 10);
         
         // start threaded update
         last_update = millis();

@@ -208,10 +208,10 @@ Overall
         // Read some data type from file
         MyData_t *from_file = gamepad.game_files.file_read_variable < MyData_t > ();
         if(from_file != nullptr){                                   // Check if read successfully
-            Serial.println(from_file -> score);
-            Serial.print(from_file -> pos.x);
+            Serial.println(from_file->score);
+            Serial.print(from_file->pos.x);
             Serial.print(" ");
-            Serial.println(from_file -> pos.y);
+            Serial.println(from_file->pos.y);
         }
 
         while(gamepad.game_files.file_available())                  // Read data until EOF
@@ -260,8 +260,8 @@ Images
         Serial.println(png.alpha);
 
         // Draw from raw16
-        gamepad.canvas -> pushImage(0, 0, png);             // From PNG file
-        gamepad.canvas -> pushImage(png.w + 20, 0, png);    // From raw file
+        gamepad.canvas->pushImage(0, 0, png);             // From PNG file
+        gamepad.canvas->pushImage(png.w + 20, 0, png);    // From raw file
         gamepad.update_display();
     }
 

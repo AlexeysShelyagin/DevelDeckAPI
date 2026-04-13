@@ -75,14 +75,14 @@ Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(){
 
 void battery_callibration(void *params){
     Gamepad_battery *batt = (Gamepad_battery *) params;
-    float v = batt -> get_battery_voltage();
+    float v = batt->get_battery_voltage();
     while(v > CRITICAL_V){
-        if(batt -> get_device_mode() != Gamepad_battery::POWER_ON){
+        if(batt->get_device_mode() != Gamepad_battery::POWER_ON){
             calibr_failed = true;
             break;
         }
 
-        v = batt -> get_battery_voltage();
+        v = batt->get_battery_voltage();
 
         calibr_time.push_back(millis() / 1000);
         calibr_v.push_back(v);

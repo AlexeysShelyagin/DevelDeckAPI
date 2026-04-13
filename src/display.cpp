@@ -127,36 +127,36 @@ struct PNG_user_param_t{
 };
 
 void *PNG_disp_init(const char *filename, int32_t *size){
-	*size = PNG_disp_file_ptr -> size();
+	*size = PNG_disp_file_ptr->size();
 	return PNG_disp_file_ptr;
 }
 
 int32_t PNG_disp_read(PNGFILE *handle, uint8_t *buffer, int32_t length){
 	if(!(*PNG_disp_file_ptr))
 		return 0;
-	return PNG_disp_file_ptr -> read(buffer, length);
+	return PNG_disp_file_ptr->read(buffer, length);
 }
 
 int32_t PNG_disp_seek(PNGFILE *handle, int32_t position){
 	if(!(*PNG_disp_file_ptr))
 		return 0;
-	return PNG_disp_file_ptr -> seek(position);
+	return PNG_disp_file_ptr->seek(position);
 }
 
 int PNG_disp_draw(PNGDRAW *pDraw){
-	PNG_user_param_t *params = (PNG_user_param_t *) pDraw -> pUser;
+	PNG_user_param_t *params = (PNG_user_param_t *) pDraw->pUser;
 
-	uint16_t line_buffer[pDraw -> iWidth];
+	uint16_t line_buffer[pDraw->iWidth];
 
-	png_decoder -> getLineAsRGB565(pDraw, line_buffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
+	png_decoder->getLineAsRGB565(pDraw, line_buffer, PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
-	if(params -> alpha){
-		uint8_t mask_buffer[(pDraw -> iWidth + 7) >> 3];
-		if(png_decoder -> getAlphaMask(pDraw, mask_buffer, 255))
-			params -> canvas -> pushMaskedImage(params -> x, params -> y + pDraw -> y, pDraw -> iWidth, 1, line_buffer, mask_buffer);
+	if(params->alpha){
+		uint8_t mask_buffer[(pDraw->iWidth + 7) >> 3];
+		if(png_decoder->getAlphaMask(pDraw, mask_buffer, 255))
+			params->canvas->pushMaskedImage(params->x, params->y + pDraw->y, pDraw->iWidth, 1, line_buffer, mask_buffer);
 	}
 	else{
-		params -> canvas -> pushImage(params -> x, params -> y + pDraw -> y, pDraw -> iWidth, 1, line_buffer);
+		params->canvas->pushImage(params->x, params->y + pDraw->y, pDraw->iWidth, 1, line_buffer);
 	}
 
 	return 1;
@@ -173,15 +173,15 @@ void Gamepad_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool al
 #endif
 	
 	PNG_disp_file_ptr = file;
-	String name = PNG_disp_file_ptr -> name();
+	String name = PNG_disp_file_ptr->name();
 	String ext = name.substring(name.length() - 4, name.length());
 	if(ext != ".png" && ext != ".PNG")
 		return;
 	
-	int status = png_decoder -> open(name.c_str(), PNG_disp_init, NULL, PNG_disp_read, PNG_disp_seek, PNG_disp_draw);
+	int status = png_decoder->open(name.c_str(), PNG_disp_init, NULL, PNG_disp_read, PNG_disp_seek, PNG_disp_draw);
 	if(status == PNG_SUCCESS){
 		PNG_user_param_t params = {this, x, y, alpha_channel};
-		status = png_decoder -> decode(&params, 0);
+		status = png_decoder->decode(&params, 0);
 	}
 
 #ifndef GLOBAL_PNG_DECODER
@@ -198,16 +198,16 @@ void Gamepad_canvas_t::loadFont(File *file, uint8_t id){
 	if(id == 0)
 		return;
 
-	String path = file -> path(), ext = path.substring(path.length() - 4, path.length());
+	String path = file->path(), ext = path.substring(path.length() - 4, path.length());
 	if(ext != ".vlw" && ext != ".VLW")
 		return;
 	path = path.substring(1, path.length() - 4);
 
 	unloadFont(id);
 
-	fonts[id - 1] = new uint8_t[file -> size()];
-	file -> seek(0);
-	file -> read(fonts[id - 1], file -> size());
+	fonts[id - 1] = new uint8_t[file->size()];
+	file->seek(0);
+	file->read(fonts[id - 1], file->size());
 
 	dynamic_mem_font |= 1 << (id - 1);
 }
@@ -373,14 +373,14 @@ uint8_t Gamepad_display::get_brightness(){
 Gamepad_canvas_t* Gamepad_display::create_sprite(uint16_t width, uint16_t height, uint8_t color_depth){
 	Gamepad_canvas_t *sprite = new Gamepad_canvas_t(&disp);
 
-	sprite -> setColorDepth(color_depth);
+	sprite->setColorDepth(color_depth);
 	if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < (float) color_depth / 8.0 * width * height){
 		delete sprite;
 		return nullptr;
 	}
-	sprite -> createSprite(width, height);
-	sprite -> fillSprite(0);
-	sprite -> setTextFont(1);
+	sprite->createSprite(width, height);
+	sprite->fillSprite(0);
+	sprite->setTextFont(1);
 
 	return sprite;
 }
@@ -388,7 +388,7 @@ Gamepad_canvas_t* Gamepad_display::create_sprite(uint16_t width, uint16_t height
 void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x, int16_t disp_y){
 	if(!initialized || sprite == nullptr)
 		return;
-	sprite -> pushSprite(disp_x, disp_y);
+	sprite->pushSprite(disp_x, disp_y);
 }
 
 void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, 
@@ -397,14 +397,14 @@ void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite,
 									uint16_t window_w, uint16_t window_h){
 	if(!initialized || sprite == nullptr)
 		return;
-	sprite -> pushSprite(disp_x, disp_y, sprite_x0, sprite_y0, window_w, window_h);
+	sprite->pushSprite(disp_x, disp_y, sprite_x0, sprite_y0, window_w, window_h);
 }
 
 void Gamepad_display::clear_sprite(Gamepad_canvas_t *sprite){
-	sprite -> fillSprite(0);
+	sprite->fillSprite(0);
 }
 
 void Gamepad_display::delete_sprite(Gamepad_canvas_t *sprite){
-	sprite -> deleteSprite();
+	sprite->deleteSprite();
 	delete sprite;
 }

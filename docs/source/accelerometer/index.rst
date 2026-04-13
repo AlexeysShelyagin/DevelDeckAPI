@@ -113,7 +113,7 @@ Common examples
 
     void loop(){
         // Erase previous frame
-        gamepad.canvas -> fillCircle(pos.x, pos.y, R, TFT_BLACK);
+        gamepad.canvas->fillCircle(pos.x, pos.y, R, TFT_BLACK);
 
         // Get accelerometer data
         vec2 ang = gamepad.accel.get_angles() * (1 / 180.0);
@@ -125,7 +125,7 @@ Common examples
         last_update = millis();     // sets time scale
 
         // Render frame
-        gamepad.canvas -> fillCircle(pos.x, pos.y, R, TFT_RED);
+        gamepad.canvas->fillCircle(pos.x, pos.y, R, TFT_RED);
         gamepad.update_display();
     }
 

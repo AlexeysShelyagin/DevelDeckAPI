@@ -11,13 +11,13 @@ struct Buzzer_sequence_t{
 void play_tone_seq_task(void *params){
 	Buzzer_sequence_t *seq = (Buzzer_sequence_t *) params;
 
-	for(uint32_t i = 0; i < seq -> size; i++){
-		ledcChangeFrequency(seq -> channel, seq -> data[i * 2], 8);
-		ledcWrite(seq -> channel, *seq -> volume);
+	for(uint32_t i = 0; i < seq->size; i++){
+		ledcChangeFrequency(seq->channel, seq->data[i * 2], 8);
+		ledcWrite(seq->channel, *seq->volume);
 
-		vTaskDelay(pdMS_TO_TICKS(seq -> data[i * 2 + 1]));
+		vTaskDelay(pdMS_TO_TICKS(seq->data[i * 2 + 1]));
 	}
-	ledcWrite(seq -> channel, 0);
+	ledcWrite(seq->channel, 0);
 
 	delete seq;
 
@@ -72,14 +72,14 @@ void Gamepad_buzzer::play_sequence(std::vector < Buzzer_element_t > sequence){
 		return;
 	
 	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
-	seq -> size = sequence.size();
-	seq -> channel = channel;
-	seq -> volume = &volume;
-	seq -> data = new uint16_t[seq -> size * 2];
+	seq->size = sequence.size();
+	seq->channel = channel;
+	seq->volume = &volume;
+	seq->data = new uint16_t[seq->size * 2];
 
-	for(uint32_t i = 0; i < seq -> size; i++){
-		seq -> data[i * 2] = sequence[i].freq;
-		seq -> data[i * 2 + 1] = sequence[i].timing;
+	for(uint32_t i = 0; i < seq->size; i++){
+		seq->data[i * 2] = sequence[i].freq;
+		seq->data[i * 2 + 1] = sequence[i].timing;
 	}
 
 	xTaskCreatePinnedToCore(
@@ -98,13 +98,13 @@ void Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size){
 		return;
 	
 	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
-	seq -> size = size;
-	seq -> channel = channel;
-	seq -> volume = &volume;
-	seq -> data = new uint16_t[seq -> size * 2];
+	seq->size = size;
+	seq->channel = channel;
+	seq->volume = &volume;
+	seq->data = new uint16_t[seq->size * 2];
 
-	for(uint32_t i = 0; i < seq -> size * 2; i++){
-		seq -> data[i] = data[i];
+	for(uint32_t i = 0; i < seq->size * 2; i++){
+		seq->data[i] = data[i];
 	}
 
 	xTaskCreatePinnedToCore(
@@ -131,11 +131,11 @@ struct Period_task_param_t{
 void vib_periodic_task(void *parameters){
 	Period_task_param_t *params = (Period_task_param_t *) parameters;
 
-	for(uint8_t i = 0; i < params -> n; i++){
-		ledcWrite(params -> channel, params -> strength_);
-		vTaskDelay(pdMS_TO_TICKS(params -> t1));
-		ledcWrite(params -> channel, 0);
-		vTaskDelay(pdMS_TO_TICKS(params -> t2));
+	for(uint8_t i = 0; i < params->n; i++){
+		ledcWrite(params->channel, params->strength_);
+		vTaskDelay(pdMS_TO_TICKS(params->t1));
+		ledcWrite(params->channel, 0);
+		vTaskDelay(pdMS_TO_TICKS(params->t2));
 	}
 
 	delete params;
