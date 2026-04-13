@@ -25,6 +25,20 @@ Since ``gamepad.canvas`` is is a pointer, its functions must be accessed via ``-
     gamepad.canvas->setCursor(0, 0);
 
 
+Bitdepth
+^^^^^^^^^^^^
+
+Canvas bitdepth can be owerriden via global flag:
+
+.. code-block:: cpp
+    
+    // can be 1, 4 or 8
+    uint8_t CANVAS_COLOR_DEPTH = 1;
+
+    void setup(){
+    // ...
+
+
 
 .. _disp_update_section:
 
