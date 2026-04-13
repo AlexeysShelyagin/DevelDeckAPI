@@ -36,7 +36,7 @@ Call :cpp:func:`Gamepad::update_display` for update. It is a procedure of transf
 Since image buffer stores large amount of data, it **takes a while** to transfer it to the display.
 
 .. note::
-    It takes about ``23.7 ms`` to update display.
+    It takes from ``23.7ms`` to ``29.3 ms`` (depending on contents) to update display.
 
 .. note::
     Frequent updates can cause :ref:`flickering <flickering_section>`.
@@ -116,6 +116,68 @@ Common examples
         last_update = millis();
         gamepad.update_display_threaded();
     }
+
+
+
+
+Window (region-wise) update
+---------------------------
+
+It is possible to transfer only a specific rectangular window of a canvas or layer to the display instead of updating the entire frame.
+
+Both :cpp:func:`Gamepad::update_display` and :cpp:func:`Gamepad::update_display_threaded` support region-based updates. The region is defined via the following parameters:
+
+- ``x0``, ``y0`` — starting (upper-left) point of the window to transfer (relative to canvas origin)
+- ``w``, ``h`` — width and height of the window
+
+Using partial updates can significantly reduce display refresh time when only a portion of the screen changes.
+
+.. note::
+    The displayed image may temporarily differ from the full canvas contents when partial updates are used.
+
+.. note::
+    Region updates are applied to **only one layer** (including the base canvas) and do not affect others. Coordinates are always relative to the layer position (``(0, 0)`` for ``gamepad.canvas``).
+
+Optimization
+^^^^^^^^^^^^^^^^^
+
+Region-based updates are a **highly effective optimization technique** for **FPS-sensitive applications**. Below are common strategies for leveraging this feature.
+
+Dynamic bounding box
+`````````````````````````
+
+The most common approach is to **track or compute** the bounding box of all changes that occur between frames, and update only that region.
+
+For example:
+
+- Moving objects - update only previous and new positions
+- UI changes - update only affected widgets
+
+Segment-wise rendering
+````````````````````````
+
+This approach involves **modifying the canvas while it is being transferred** to the display. The goal is to overlap rendering and transfer operations to reduce idle time.
+
+Instead of updating a single large region, the image is divided into smaller blocks (tiles), and processed sequentially.
+
+.. figure:: segmentwise_rendering.png
+   :alt: Segement-wise update diagram
+   :width: 60%
+   :align: center
+
+   Segement-wise update memory diagram
+
+.. note::
+    Only appliacations that use **pixel-by-pixel** or **fine-grained** rendering benefit significantly from this approach.
+
+.. TODO: demonstration image
+
+Key requirements for implementation:
+  
+- A **fine-grained renderer** (pixel-by-pixel or block-by-block)
+- A **render-transfer** synchronization mechanism
+- Use of :cpp:func:`Gamepad::update_display_threaded` for asynchronous transfer
+- Proper handling of **flickering and tearing**
 
 
 
