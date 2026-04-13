@@ -56,14 +56,14 @@ void battery_listener(void *params){
     while(true){
         if(millis() - last_check >= BATTERY_CHECK_TIMEOUT){
             if(xSemaphoreTake(gamepad.semaphore, portMAX_DELAY)){
-                if(batt -> get_device_mode() == Gamepad_battery::POWER_ON){
+                if(batt->get_device_mode() == Gamepad_battery::POWER_ON){
                     bool suspended = false;
                     float threshold = 0;
                     uint8_t disp_brightness = gamepad.get_display_brightness();
-                    while(batt -> get_battery_voltage() <= battery_critical_v + threshold){
+                    while(batt->get_battery_voltage() <= battery_critical_v + threshold){
                         if(!suspended){
-                            if(batt -> is_calibrating()){
-                                float *levels = batt -> finish_calibration();
+                            if(batt->is_calibrating()){
+                                float *levels = batt->finish_calibration();
 
                                 if(levels == nullptr){
                                     ui.notification(TXT_FAILED_CALIBR);
@@ -94,17 +94,17 @@ void battery_listener(void *params){
                         vTaskResume(*main_loop_handler);
                     }
                     
-                    if(batt -> get_battery_charge() == 0 && millis() - last_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
+                    if(batt->get_battery_charge() == 0 && millis() - last_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
                         ui.notification("Low charge");
                         last_alarm = millis();
                     }
                 }
             }
 
-            if(batt -> is_calibrating()){
-                if(batt -> calibration_failed()){
+            if(batt->is_calibrating()){
+                if(batt->calibration_failed()){
                     if(ui.notification(TXT_FAILED_CALIBR))
-                        batt -> finish_calibration();
+                        batt->finish_calibration();
                 }
             }
 
@@ -113,7 +113,7 @@ void battery_listener(void *params){
             last_check = millis();
         }
 
-        if(batt -> get_device_mode() == Gamepad_battery::ONLY_CHARHING)
+        if(batt->get_device_mode() == Gamepad_battery::ONLY_CHARHING)
             ESP.restart();
 
         vTaskDelay(pdMS_TO_TICKS(DEVICE_MODE_CHECK_TIMEOUT));
@@ -259,7 +259,7 @@ void Gamepad::init__(){
         main_menu();
     
     init_battery();
-    battery_critical_v = system_data -> battery_critical_v;
+    battery_critical_v = system_data->battery_critical_v;
     
     xTaskCreatePinnedToCore(
         forced_main_menu_listener,
@@ -281,14 +281,14 @@ void Gamepad::init__(){
 void Gamepad::init_display(){
     disp = new Gamepad_display();
 
-    if(system_data -> brightness == 0){
-        system_data -> brightness = BRIGHTNESS_LEVELS;
+    if(system_data->brightness == 0){
+        system_data->brightness = BRIGHTNESS_LEVELS;
         brightness = BRIGHTNESS_LEVELS;
     }
     set_display_brightness(brightness);
 
-    canvas = disp -> get_canvas_reference();
-    if(!(disp -> init())){
+    canvas = disp->get_canvas_reference();
+    if(!(disp->init())){
         Serial.println(TXT_DISPAY_FAILED);
         return;
     }
@@ -342,10 +342,10 @@ bool Gamepad::init_accel(){
 
 void Gamepad::init_battery(){
     batt.init(
-        system_data -> battery_critical_v,
-        system_data -> battery_full_v,
-        system_data -> battery_charging_v,
-        system_data -> battery_only_charging_v
+        system_data->battery_critical_v,
+        system_data->battery_full_v,
+        system_data->battery_charging_v,
+        system_data->battery_only_charging_v
     );
 
     batt.set_voltage_adjustment(BATTERY_VADJ_FUNC);
@@ -415,24 +415,24 @@ uint8_t Gamepad::get_battery_charge(){
 // ------------------------- Display -----------------------------
 
 void Gamepad::clear_canvas(){
-    disp -> clear_canvas();
+    disp->clear_canvas();
 }
 
 void Gamepad::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
     if(!sys_param(DISPLAY_ENABLED))
 		return;
     if(w == 0 || h == 0)
-        disp -> display_canvas();
+        disp->display_canvas();
     else
-        disp -> display_canvas(x0, y0, w, h);
+        disp->display_canvas(x0, y0, w, h);
 
     if(!ignore_layers){
         for(uint8_t i = 0; i < layers.size(); i++)
-            disp -> display_sprite(layers[i] -> canvas, layers[i] -> x, layers[i] -> y);
+            disp->display_sprite(layers[i]->canvas, layers[i]->x, layers[i]->y);
     }
 
     for(uint8_t i = 0; i < sys_layers.size(); i++)
-        disp -> display_sprite(sys_layers[i] -> canvas, sys_layers[i] -> x, sys_layers[i] -> y);
+        disp->display_sprite(sys_layers[i]->canvas, sys_layers[i]->x, sys_layers[i]->y);
 }
 
 
@@ -446,14 +446,14 @@ void Gamepad::update_display_threaded(bool ignore_layers, float fps_max,
         return;
     
     threaded_update_params_t *update_job = new threaded_update_params_t;
-    update_job -> target = nullptr;
-    update_job -> ignore_layers = ignore_layers;
-    update_job -> dt = 0;
+    update_job->target = nullptr;
+    update_job->ignore_layers = ignore_layers;
+    update_job->dt = 0;
     if(fps_max != 0)
-        update_job -> dt = 1000000.0 / fps_max;
+        update_job->dt = 1000000.0 / fps_max;
     
-    update_job -> x0 = x0; update_job -> y0 = y0;
-    update_job -> w = w; update_job -> h = h;
+    update_job->x0 = x0; update_job->y0 = y0;
+    update_job->w = w; update_job->h = h;
 
     xTaskCreatePinnedToCore(
         display_update_thread,
@@ -479,11 +479,11 @@ void Gamepad::set_display_brightness(uint8_t brightness_){
     brightness = brightness_;
 
     if(brightness >= BRIGHTNESS_LEVELS)
-        disp -> set_brightness(255);
+        disp->set_brightness(255);
     else if(brightness == 0)
-        disp -> set_brightness(0);
+        disp->set_brightness(0);
     else
-        disp -> set_brightness(254.0 / (BRIGHTNESS_LEVELS - 1) * (brightness - 1) + 1);
+        disp->set_brightness(254.0 / (BRIGHTNESS_LEVELS - 1) * (brightness - 1) + 1);
 }
 
 uint8_t Gamepad::get_display_brightness(){
@@ -498,14 +498,14 @@ uint8_t Gamepad::get_display_brightness(){
 // --------------------- Display layers --------------------------
 
 Layer_id_t Gamepad::create_layer(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
-    Gamepad_canvas_t *layer_canvas = disp -> create_sprite(width, height, color_depth);
+    Gamepad_canvas_t *layer_canvas = disp->create_sprite(width, height, color_depth);
     if(layer_canvas == nullptr)
         return nullptr;
     
     Layer_t *layer = new Layer_t;
-    layer -> canvas = layer_canvas;
-    layer -> x = x;
-    layer -> y = y;
+    layer->canvas = layer_canvas;
+    layer->x = x;
+    layer->y = y;
     layers.push_back(layer);
 
     return layer;
@@ -516,11 +516,11 @@ bool Gamepad::layer_exists(Layer_id_t &id){
 }
 
 Gamepad_canvas_t* Gamepad::layer(Layer_id_t &id){
-    return id -> canvas;
+    return id->canvas;
 }
 
 void Gamepad::delete_layer(Layer_id_t &id){
-    disp -> delete_sprite(id -> canvas);
+    disp->delete_sprite(id->canvas);
     for(uint8_t i = 0; i < layers.size(); i++){
         if(layers[i] == id){
             layers.erase(layers.begin() + i);
@@ -534,12 +534,12 @@ void Gamepad::delete_layer(Layer_id_t &id){
 
 
 void Gamepad::clear_layer(Layer_id_t &id){
-    disp -> clear_sprite(id ->canvas);
+    disp->clear_sprite(id ->canvas);
 }
 
 void Gamepad::move_layer(Layer_id_t &id, uint16_t new_x, uint16_t new_y){
-    id -> x = new_x;
-    id -> y = new_y;
+    id->x = new_x;
+    id->y = new_y;
 }
 
 
@@ -552,9 +552,9 @@ void Gamepad::update_layer(Layer_id_t &id, int16_t x0, int16_t y0, uint16_t w, u
         return;
     
     if(w == 0 || h == 0)
-        disp -> display_sprite(id -> canvas, id -> x, id -> y);
+        disp->display_sprite(id->canvas, id->x, id->y);
     else
-        disp -> display_sprite(id -> canvas, id -> x, id -> y, x0, y0, w, h);
+        disp->display_sprite(id->canvas, id->x, id->y, x0, y0, w, h);
 }
 
 void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
@@ -568,13 +568,13 @@ void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, i
         return;
     
     threaded_update_params_t *update_job = new threaded_update_params_t;
-    update_job -> target = id;
-    update_job -> dt = 0;
+    update_job->target = id;
+    update_job->dt = 0;
     if(fps_max != 0)
-        update_job -> dt = 1000000.0 / fps_max;
+        update_job->dt = 1000000.0 / fps_max;
 
-    update_job -> x0 = x0; update_job -> y0 = y0;
-    update_job -> w = w; update_job -> h = h;
+    update_job->x0 = x0; update_job->y0 = y0;
+    update_job->w = w; update_job->h = h;
 
     xTaskCreatePinnedToCore(
         display_update_thread,
@@ -667,20 +667,20 @@ void Gamepad::select_game_menu(){
     if(file.file == "")
         return;
 
-    if(file.game_config -> minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
-        ui.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config -> minimum_flash) + "MB required");
+    if(file.game_config->minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
+        ui.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
         return;
     }
 
     if(file.game_config != nullptr){
         sd_card.open_dir(file.dir, 1);
-        sd_card.open_file(file.game_config -> game_path);
+        sd_card.open_file(file.game_config->game_path);
 
         ui.init_game_downloading_screen(*file.game_config, file.dir);
         if( OTA_update(*sd_card.get_file_reference()) ){
-            system_data -> game_path_size = file.dir.length();
-            for(uint8_t i = 0; i < system_data -> game_path_size; i++)
-                system_data -> game_path[i] = file.dir[i];
+            system_data->game_path_size = file.dir.length();
+            for(uint8_t i = 0; i < system_data->game_path_size; i++)
+                system_data->game_path[i] = file.dir[i];
             
             save_system_settings();
 
@@ -717,14 +717,14 @@ String Gamepad::file_manager(){
 // --------------------- System level layers ---------------------
 
 Layer_id_t Gamepad::create_system_layer(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
-    Gamepad_canvas_t *layer_canvas = disp -> create_sprite(width, height, color_depth);
+    Gamepad_canvas_t *layer_canvas = disp->create_sprite(width, height, color_depth);
     if(layer_canvas == nullptr)
         return nullptr;
     
     Layer_t *layer = new Layer_t;
-    layer -> canvas = layer_canvas;
-    layer -> x = x;
-    layer -> y = y;
+    layer->canvas = layer_canvas;
+    layer->x = x;
+    layer->y = y;
     sys_layers.push_back(layer);
 
     return layer;
@@ -744,27 +744,27 @@ void Gamepad::sys_param(Sys_param_t id, bool val){
 void Gamepad::system_data_dump(){
     Serial.println("==================System data dump====================");
 
-    char path[system_data -> game_path_size];
-    for(uint8_t i = 0; i < system_data -> game_path_size; i++)
-        path[i] = system_data -> game_path[i];
+    char path[system_data->game_path_size];
+    for(uint8_t i = 0; i < system_data->game_path_size; i++)
+        path[i] = system_data->game_path[i];
     
-    Serial.printf("Game path len:   %d\n", system_data -> game_path_size);
+    Serial.printf("Game path len:   %d\n", system_data->game_path_size);
     Serial.print("Game path:       ");
     Serial.println(path);
     
-    Serial.printf("Buzzer volume:   %d\n", system_data -> buzzer_volume);
-    Serial.printf("Brightness:      %d\n", system_data -> brightness);
-    Serial.printf("Vibro strength:  %d\n", system_data -> vibro_strength);
+    Serial.printf("Buzzer volume:   %d\n", system_data->buzzer_volume);
+    Serial.printf("Brightness:      %d\n", system_data->brightness);
+    Serial.printf("Vibro strength:  %d\n", system_data->vibro_strength);
 
-    Serial.printf("Critical V:      %f\n", system_data -> battery_critical_v);
-    Serial.printf("Charging V:      %f\n", system_data -> battery_charging_v);
-    Serial.printf("Only charging V: %f\n", system_data -> battery_only_charging_v);
-    Serial.printf("Full V:          %f\n", system_data -> battery_full_v);
+    Serial.printf("Critical V:      %f\n", system_data->battery_critical_v);
+    Serial.printf("Charging V:      %f\n", system_data->battery_charging_v);
+    Serial.printf("Only charging V: %f\n", system_data->battery_only_charging_v);
+    Serial.printf("Full V:          %f\n", system_data->battery_full_v);
     
-    Serial.printf("Batt levels N:   %d\n", system_data -> battery_levels_n);
-    for(uint8_t i = 0; i < system_data -> battery_levels_n; i++)
-        Serial.printf("\t%d: %f\n", i, system_data -> battery_levels[i]);
-    Serial.printf("Batt lifetime:   %d\n", system_data -> battery_lifetime);
+    Serial.printf("Batt levels N:   %d\n", system_data->battery_levels_n);
+    for(uint8_t i = 0; i < system_data->battery_levels_n; i++)
+        Serial.printf("\t%d: %f\n", i, system_data->battery_levels[i]);
+    Serial.printf("Batt lifetime:   %d\n", system_data->battery_lifetime);
 
     Serial.println("======================================================");
 }
@@ -774,8 +774,8 @@ void Gamepad::system_data_dump(){
 void Gamepad::locate_game(){
     if(GAME_FILES_REQUIRED && sys_param(SD_ENABLED)){
         game_path = "";
-        for (uint8_t i = 0; i < system_data -> game_path_size; i++)
-            game_path += system_data -> game_path[i];
+        for (uint8_t i = 0; i < system_data->game_path_size; i++)
+            game_path += system_data->game_path[i];
         
         if(!sd_card.exists(game_path, 1) || game_path.length() == 0)
             return;
@@ -820,15 +820,15 @@ void Gamepad::apply_system_settings(System_data_t *settings){
     if (settings == nullptr)
         return;
     
-    buzzer.change_volume(settings -> buzzer_volume);
-    set_display_brightness(settings -> brightness);
-    vibro.strength = settings -> vibro_strength;
+    buzzer.change_volume(settings->buzzer_volume);
+    set_display_brightness(settings->brightness);
+    vibro.strength = settings->vibro_strength;
 
-    if(settings -> battery_levels_n == 0)
+    if(settings->battery_levels_n == 0)
         batt.set_calibration_data(nullptr);
     else{
-        batt.set_calibration_data(settings -> battery_levels);
-        batt.lifetime = settings -> battery_lifetime;
+        batt.set_calibration_data(settings->battery_levels);
+        batt.lifetime = settings->battery_lifetime;
     }
 }
 
@@ -839,26 +839,26 @@ void Gamepad::apply_system_settings(){
 
 
 void Gamepad::save_system_settings(){    
-    system_data -> buzzer_volume = buzzer.get_volume();
-    system_data -> brightness = get_display_brightness();
-    system_data -> vibro_strength = vibro.strength;
+    system_data->buzzer_volume = buzzer.get_volume();
+    system_data->brightness = get_display_brightness();
+    system_data->vibro_strength = vibro.strength;
 
     if(batt.calibrated()){
-        system_data -> battery_levels_n = BATTERY_LEVELS;
+        system_data->battery_levels_n = BATTERY_LEVELS;
         float* batt_data = batt.get_calibration_data();
         for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
-            system_data -> battery_levels[i] = batt_data[i];
+            system_data->battery_levels[i] = batt_data[i];
     }
     else{
-        system_data -> battery_levels_n = 0;
+        system_data->battery_levels_n = 0;
     }
 
-    system_data -> battery_critical_v = BATTERY_CRITICAL_V;
-    system_data -> battery_full_v = BATTERY_FULL_V;
-    system_data -> battery_charging_v = BATTERY_CHARGING_V;
-    system_data -> battery_only_charging_v = BATTERY_ONLY_CHARGING_V;
+    system_data->battery_critical_v = BATTERY_CRITICAL_V;
+    system_data->battery_full_v = BATTERY_FULL_V;
+    system_data->battery_charging_v = BATTERY_CHARGING_V;
+    system_data->battery_only_charging_v = BATTERY_ONLY_CHARGING_V;
 
-    system_data -> battery_lifetime = batt.lifetime;
+    system_data->battery_lifetime = batt.lifetime;
 
     File sys_data = SPIFFS.open(GAMEPAD_DATA_FILE_NAME, "w");
     sys_data.write((uint8_t *) system_data, sizeof(System_data_t));
@@ -879,9 +879,9 @@ void Gamepad::user_locate_game_folder(){
 
         if(config.game_path != ""){
             game_path = selected.dir;
-            system_data -> game_path_size = game_path.length();
+            system_data->game_path_size = game_path.length();
             for(uint8_t i = 0; i < game_path.length(); i++)
-                system_data -> game_path[i] = game_path[i];
+                system_data->game_path[i] = game_path[i];
             save_system_settings();
 
             uint8_t init_status = game_files.init(game_path);

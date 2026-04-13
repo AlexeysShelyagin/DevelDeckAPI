@@ -345,32 +345,32 @@ static PNG *png_decoder;
 #endif
 
 void *PNG_SD_init(const char *filename, int32_t *size){
-	*size = PNG_SD_file_ptr -> size();
+	*size = PNG_SD_file_ptr->size();
 	return PNG_SD_file_ptr;
 }
 
 int32_t PNG_SD_read(PNGFILE *handle, uint8_t *buffer, int32_t length){
 	if(!(*PNG_SD_file_ptr))
 		return 0;
-	return PNG_SD_file_ptr -> read(buffer, length);
+	return PNG_SD_file_ptr->read(buffer, length);
 }
 
 int32_t PNG_SD_seek(PNGFILE *handle, int32_t position){
 	if(!(*PNG_SD_file_ptr))
 		return 0;
-	return PNG_SD_file_ptr -> seek(position);
+	return PNG_SD_file_ptr->seek(position);
 }
 
 int PNG_SD_draw(PNGDRAW *pDraw){
-    Image_raw16_t *params = (Image_raw16_t *) pDraw -> pUser;
+    Image_raw16_t *params = (Image_raw16_t *) pDraw->pUser;
 
-    uint16_t *img_buff_ptr = params -> img_buffer;
-	png_decoder -> getLineAsRGB565(pDraw, img_buff_ptr + (pDraw -> y * pDraw -> iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
+    uint16_t *img_buff_ptr = params->img_buffer;
+	png_decoder->getLineAsRGB565(pDraw, img_buff_ptr + (pDraw->y * pDraw->iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
-	if(params -> alpha){
-		uint8_t *alpha_buff_ptr = params -> alpha_buffer;
-        uint16_t line_size = (pDraw -> iWidth + 7) >> 3;
-		png_decoder -> getAlphaMask(pDraw, alpha_buff_ptr + (pDraw -> y * line_size), 255);
+	if(params->alpha){
+		uint8_t *alpha_buff_ptr = params->alpha_buffer;
+        uint16_t line_size = (pDraw->iWidth + 7) >> 3;
+		png_decoder->getAlphaMask(pDraw, alpha_buff_ptr + (pDraw->y * line_size), 255);
 	}
     
 
@@ -382,7 +382,7 @@ bool Gamepad_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
         return 0;
     
     PNG_SD_file_ptr = &file;
-	String name = PNG_SD_file_ptr -> name();
+	String name = PNG_SD_file_ptr->name();
 	String ext = name.substring(name.length() - 4, name.length());
 	if(ext != ".png" && ext != ".PNG")
 		return 0;
@@ -393,16 +393,16 @@ bool Gamepad_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
     png_decoder = new PNG;
 #endif
 
-    int status = png_decoder -> open(name.c_str(), PNG_SD_init, NULL, PNG_SD_read, PNG_SD_seek, PNG_SD_draw);
+    int status = png_decoder->open(name.c_str(), PNG_SD_init, NULL, PNG_SD_read, PNG_SD_seek, PNG_SD_draw);
     
     bool img_created = img.create(
-        png_decoder -> getWidth(), 
-        png_decoder -> getHeight(), 
-        (alpha_channel && png_decoder -> hasAlpha())
+        png_decoder->getWidth(), 
+        png_decoder->getHeight(), 
+        (alpha_channel && png_decoder->hasAlpha())
     );
 
 	if(status == PNG_SUCCESS && img_created)
-		status = png_decoder -> decode(&img, 0);
+		status = png_decoder->decode(&img, 0);
 
 #ifndef GLOBAL_PNG_DECODER
     delete png_decoder;

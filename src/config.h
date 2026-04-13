@@ -188,7 +188,7 @@ enum Buttons_id_t{
 
 // Battery voltage is calculated from analog value and converted to RAW voltage
 // However, adjustment function is needed, due to internal resistanse, nonlinearity of ADC etc.
-#define BATTERY_VADJ_FUNC [](float v) -> float{ return v + 0.3095; }
+#define BATTERY_VADJ_FUNC [](float v)->float{ return v + 0.3095; }
 
 #define BATTERY_CRITICAL_V 3.40                         // At this voltage device would turn off
 #define BATTERY_FULL_V 4.15                             // Voltage considered as fully charged battery, for proportional charge level calculations
