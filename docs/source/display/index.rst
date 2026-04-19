@@ -214,6 +214,44 @@ Graphics
 Flickering
 -----------------
 
+In addition to the gam's refresh rate (FPS), the display operates on its own internal clock, scanning the frame buffer line by line. When these two rates are not synchronized, visual artifacts such as flickering and tearing lines may appear.
+
+The issue is illustrated in the timing diagram below.
+
+.. figure:: async_update.png
+   :alt: Asynchronous refresh diagram
+   :width: 90%
+   :align: center
+
+   Asynchronous display transfer timings causing flickering (via tearing line)
+
+In this example, the SPI transfer rate does not align with an integer number of **full display refresh cycles**, causing the tearing line to shift position with each update.
+
+To solve this issue, the **FPS should be limited** to stable value so frame updates align with full display refresh cycles. While this does not eliminate the tearing line entirely, it stabilizes its position and prevents visible flickering or movement.
+
+.. figure:: sync_update.png
+   :alt: Synchronized refresh diagram
+   :width: 90%
+   :align: center
+
+   Synchronized transfer rate matching display refresh cycles
+
+Embedded solution
+^^^^^^^^^^^^^^^^^
+
+.. warning::
+    This section is experimental and may not work reliably in all cases. This feature is unfinished.
+
+.. note::
+    The display refresh rate (ST7789) is approximately ``210-220 FPS``. The most stable results are typically achieved using odd divisors of this value. For example:
+    ``212 FPS / 7 ≈ 30.304 FPS (in-game)``.
+
+The DevelDeck API provides a set of experimentally found stable FPS values, defined as ``NO_FLICKERING_FPS_<N>``, where ``N`` ranges from ``1`` to ``6``.
+
+.. code-block:: cpp
+
+    // Limit to ~30.304 FPS
+    gamepad.update_display_threaded(true, NO_FLICKERING_FPS_1);
 
 
 API reference
