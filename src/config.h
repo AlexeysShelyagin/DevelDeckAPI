@@ -140,11 +140,12 @@ enum Buttons_id_t{
 // There are, when the flickering is minimal. Diagonal lines just freeze on the same place, or move slowly
 // Those FPSs should be maintained to avoid display flickering
 
-#define NO_FLICKERING_FPS_1 30.31f
-#define NO_FLICKERING_FPS_2 20.35f
-#define NO_FLICKERING_FPS_3 37.242f
-#define NO_FLICKERING_FPS_4 15.15f
-#define NO_FLICKERING_FPS_5 13.34f
+#define NO_FLICKERING_FPS_1 30.304f
+#define NO_FLICKERING_FPS_2 20.0004f
+#define NO_FLICKERING_FPS_3 17.2417f
+#define NO_FLICKERING_FPS_4 15.1517f
+#define NO_FLICKERING_FPS_5 13.3336f
+#define NO_FLICKERING_FPS_6 12.049f
 
 
 
