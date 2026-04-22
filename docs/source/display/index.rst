@@ -1,6 +1,6 @@
-#####################
+*********************
 Display
-#####################
+*********************
 
 .. contents::
     :local:
@@ -192,20 +192,6 @@ Key requirements for implementation:
 - A **render-transfer** synchronization mechanism
 - Use of :cpp:func:`Gamepad::update_display_threaded` for asynchronous transfer
 - Proper handling of **flickering and tearing**
-
-
-
-.. _graphics_section:
-
-Graphics
------------------
-.. toctree::
-   :maxdepth: 1
-
-   graphics/eSPI.rst
-   graphics/fonts.rst
-   graphics/images.rst
-   graphics/layers.rst
 
 
 
