@@ -1,12 +1,11 @@
-.. gamepadAPI documentation master file, created by
-   sphinx-quickstart on Mon Nov 10 15:08:49 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-
 ##################################################
 DevelDeck-API documentation
 ##################################################
+
+:ref:`DevelDeck <about-page>` is an open-source, retro-inspired game console created by `DevelTeam <https://www.youtube.com/@develteamru>`_. It is powered by the **DevelDeck-API** — a flexible development framework that enables the community to design, build, and share their **own games**.
+
+This documentation serves as a comprehensive guide to the DevelDeck architecture. Whether you are just getting started or developing advanced features, you will find detailed explanations, practical examples, and reference materials to support your workflow.
+
 
 
 .. toctree::
@@ -21,15 +20,17 @@ DevelDeck-API documentation
 
 
 .. toctree::
-   :caption: API - General
+   :caption: API - Core Modules
    :maxdepth: 2
 
    display/index.rst
+   graphics/index.rst
    UI/index.rst
    SD_card/index.rst
+   others/index.rst
 
 .. toctree::
-   :caption: API - Periphery
+   :caption: API - Hardware & Peripherals
    :maxdepth: 2
 
    buttons/index.rst
