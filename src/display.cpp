@@ -3,6 +3,7 @@
 
 
 uint8_t CANVAS_COLOR_DEPTH __attribute__((weak)) = DEFAULT_COLOR_DEPTH;
+bool ALLOW_DMA __attribute__((weak)) = true;
 
 
 
@@ -303,6 +304,9 @@ bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_ch
 	disp.setRotation(DISP_ROTATION);
 	disp.invertDisplay(false);
 	disp.fillScreen(TFT_WHITE);
+	if(ALLOW_DMA)
+		disp.initDMA();
+	ALLOW_DMA = disp.DMA_Enabled;
 	
 	canvas.setColorDepth(CANVAS_COLOR_DEPTH);
 	float memory_bitdepth_fit_rate = (float) heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) * 8 / (w * h);
@@ -354,7 +358,15 @@ void Gamepad_display::display_canvas(){
 void Gamepad_display::display_canvas(int16_t x0, int16_t y0, uint16_t window_w, uint16_t window_h){
 	if(!initialized)
 		return;
-	canvas.pushSprite(x0, y0, x0, y0, window_w, window_h);
+	
+	if(ALLOW_DMA && canvas.getColorDepth() == 16){
+		disp.dmaWait();
+		disp.startWrite();
+		disp.pushImageDMA(x0, y0, canvas.width(), canvas.height(), (uint16_t*) canvas_buffer_ptr);
+		disp.endWrite();
+	}
+	else
+		canvas.pushSprite(x0, y0, x0, y0, window_w, window_h);
 }
 
 void Gamepad_display::clear_canvas(){
@@ -388,7 +400,15 @@ Gamepad_canvas_t* Gamepad_display::create_sprite(uint16_t width, uint16_t height
 void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x, int16_t disp_y){
 	if(!initialized || sprite == nullptr)
 		return;
-	sprite->pushSprite(disp_x, disp_y);
+	
+	if(ALLOW_DMA && sprite->getColorDepth() == 16){
+		disp.dmaWait();
+		disp.startWrite();
+		disp.pushImageDMA(disp_x, disp_y, sprite->width(), sprite->height(), (uint16_t*) sprite->getPointer());
+		disp.endWrite();
+	}
+	else
+		sprite->pushSprite(disp_x, disp_y);
 }
 
 void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, 
@@ -397,7 +417,7 @@ void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite,
 									uint16_t window_w, uint16_t window_h){
 	if(!initialized || sprite == nullptr)
 		return;
-	sprite->pushSprite(disp_x, disp_y, sprite_x0, sprite_y0, window_w, window_h);
+	sprite->pushSprite(disp_x + sprite_x0, disp_y + sprite_y0, sprite_x0, sprite_y0, window_w, window_h);
 }
 
 void Gamepad_display::clear_sprite(Gamepad_canvas_t *sprite){

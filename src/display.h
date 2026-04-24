@@ -17,6 +17,7 @@
 
 // Make possible user color depth override
 extern uint8_t CANVAS_COLOR_DEPTH __attribute__((weak));
+extern bool ALLOW_DMA __attribute__((weak));
 
 
 /**
