@@ -100,6 +100,14 @@ Refer to :ref:`disp_threaded_update_section` for details.
 
 The function :cpp:func:`Gamepad::update_display_threaded_available` applies to both canvas and layers.
 
+DMA update
+^^^^^^^^^^^^^^^
+
+If the **layer bitdepth is** ``16bit`` the **DMA** (Direct Memory Access) transfer is used. This approach is faster than the default one for about ``~15%``. So it is recommended to use 16bit layers for the fps-sensetive graphics.
+
+.. note::
+   DMA update **can be disabled** using global flag ``bool ALLOW_DMA = false;``
+
 
 Common Example
 ^^^^^^^^^^^^^^^^^^
