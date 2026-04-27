@@ -129,10 +129,9 @@ bool GAMEPAD_GLOBAL::get_latest_button_state(uint8_t id){
 
 void GAMEPAD_GLOBAL::stop_button_interrupts(){
     for (int i = 0; i < BUTTONS_N; i++)
-        gpio_intr_disable((gpio_num_t) buttons_map[i]);
+        gpio_isr_handler_remove((gpio_num_t) buttons_map[i]);
 }
 
 void GAMEPAD_GLOBAL::resume_button_interrupts(){
-    for (int i = 0; i < BUTTONS_N; i++)
-        gpio_intr_enable((gpio_num_t) buttons_map[i]);
+    gamepad.buttons.init();
 }

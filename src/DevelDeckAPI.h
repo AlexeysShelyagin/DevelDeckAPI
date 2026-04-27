@@ -104,7 +104,7 @@ class Gamepad{
     void apply_system_settings();
     void user_locate_game_folder();
 
-    void on_charge_screen();
+    void on_charge_mode();
 
     void __main_menu();
     void __select_game_menu();

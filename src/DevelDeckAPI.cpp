@@ -434,7 +434,7 @@ void Gamepad::init_battery(){
 
     batt_mode = battery.get_device_mode();
     if(batt_mode == Gamepad_battery::POWER_OFF)
-        on_charge_screen();
+        on_charge_mode();
 
     xTaskCreatePinnedToCore(
         battery_listener,
@@ -800,12 +800,17 @@ void Gamepad::__select_game_menu(){
         return;
     }
 
+    buttons.clear_queue();
+
     File_mngr_t file = UI.file_manager(true);
-    if(file.file == "")
+    if(file.file == ""){
+        buttons.clear_queue();
         return;
+    }
 
     if(file.game_config->minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
         UI.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
+        buttons.clear_queue();
         return;
     }
 
@@ -824,6 +829,8 @@ void Gamepad::__select_game_menu(){
             ESP.restart();
         }
     }
+    
+    buttons.clear_queue();
 }
 
 
@@ -838,6 +845,7 @@ String Gamepad::__file_manager(){
     String target = file.dir.substring(game_path.length(), file.dir.length());
     target += "/" + file.file;
 
+    buttons.clear_queue();
     return target;
 }
 
@@ -1104,31 +1112,33 @@ void Gamepad::game_downloading_screen(uint8_t percentage){
 
 
 
-void Gamepad::on_charge_screen(){
-    uint8_t brightness = get_display_brightness();
+void Gamepad::on_charge_mode(){
+    uint8_t brightness_before = get_display_brightness();
     bool initial = true;
+    esp_sleep_wakeup_cause_t cause;
 
+    GAMEPAD_GLOBAL::stop_button_interrupts();
     for(uint8_t i = 0; i < BUTTONS_N; i++)
         gpio_wakeup_enable((gpio_num_t) buttons_map[i], (INVERT_BUTTONS_STATE) ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
     esp_sleep_enable_gpio_wakeup();
     
     while(battery.get_device_mode() == Gamepad_battery::POWER_OFF){
-        if(buttons.event_available() || initial){
+        if(initial || cause == ESP_SLEEP_WAKEUP_GPIO){
             UI.on_charge_screen();
-            delay(30);
-            set_display_brightness(brightness);
+            delay(50);
+            set_display_brightness(brightness_before);
 
-            delay(2000);
+            delay(NOTIFICATION_PRESENSE_TIME);
 
             set_display_brightness(0);
+            delay(50);
             UI.on_charge_screen(true);
-
-            buttons.clear_queue();
             initial = false;
         }
 
         esp_sleep_enable_timer_wakeup(2000000);
         esp_light_sleep_start();
+        cause = esp_sleep_get_wakeup_cause();
     }
     
     ESP.restart();
