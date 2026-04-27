@@ -14,6 +14,8 @@ class Gamepad_battery{
     float charging_v;
     float power_off_v;
 
+    SemaphoreHandle_t batt_pin_mutex;
+    
     float (*v_adj_func)(float);
     float *voltage_levels = nullptr;
 
@@ -48,5 +50,10 @@ public:
     float* get_calibration_data();
     void set_calibration_data(float data[BATTERY_LEVELS]);
 };
+
+
+namespace GAMEPAD_GLOBAL{
+    extern Gamepad_battery battery;
+}
 
 #endif

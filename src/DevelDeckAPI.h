@@ -107,8 +107,6 @@ class Gamepad{
     void on_charge_screen();
 
 public:
-    Gamepad_battery batt; // TODO: to private
-
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;
     Gamepad_buzzer buzzer;

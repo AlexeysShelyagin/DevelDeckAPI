@@ -28,6 +28,8 @@ void Gamepad_battery::init(float critical_v_, float full_v_, float charging_v_, 
     power_off_v = only_charging_v_;
     CRITICAL_V = critical_v;
 
+    batt_pin_mutex = xSemaphoreCreateMutex();
+
     adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(BATTERY_ADC_CHANNEL, ADC_ATTEN_DB_12);
     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0, &adc1_chars);
@@ -39,6 +41,8 @@ void Gamepad_battery::set_voltage_adjustment(float (*v_adj_func_ptr)(float)){
 
 
 float Gamepad_battery::get_battery_voltage(){
+    while(!xSemaphoreTake(batt_pin_mutex, portMAX_DELAY));      // wait until analog read is available
+
     int raw_read = 0;
     for(uint8_t i = 0; i < BATTERY_N_OF_MEASURES; i++)
         raw_read += adc1_get_raw(BATTERY_ADC_CHANNEL);
@@ -46,6 +50,8 @@ float Gamepad_battery::get_battery_voltage(){
 
     float v_raw = esp_adc_cal_raw_to_voltage(raw_read, &adc1_chars);
     v_raw = v_raw * batt_inv_divider_val / 1000.0;
+
+    xSemaphoreGive(batt_pin_mutex);
 
     return v_adj_func(v_raw); 
 }
@@ -74,16 +80,14 @@ Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(){
 }
 
 void battery_callibration(void *params){
-    Gamepad_battery *batt = (Gamepad_battery *) params;
-    
-    float v = batt->get_battery_voltage();
+    float v = GAMEPAD_GLOBAL::battery.get_battery_voltage();
     while(v > CRITICAL_V){
-        if(batt->get_device_mode() != Gamepad_battery::POWER_ON){
+        if(GAMEPAD_GLOBAL::battery.get_device_mode() != Gamepad_battery::POWER_ON){
             calibr_failed = true;
             break;
         }
 
-        v = batt->get_battery_voltage();
+        v = GAMEPAD_GLOBAL::battery.get_battery_voltage();
 
         calibr_time.push_back(millis() / 1000);
         calibr_v.push_back(v);
@@ -101,7 +105,7 @@ void Gamepad_battery::start_calibration(){
         battery_callibration,
         "batt_calibr",
         BATTERY_CALIBRATION_STACK_SIZE,
-        this,
+        NULL,
         BATTERY_CALIBRATION_TASK_PRIORITY,
         &calibration_handler,
         THIS_CORE
@@ -179,4 +183,11 @@ void Gamepad_battery::set_calibration_data(float data[BATTERY_LEVELS]){
     voltage_levels = new float[BATTERY_LEVELS];
     for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
         voltage_levels[i] = data[i];
+}
+
+
+
+
+namespace GAMEPAD_GLOBAL{
+    Gamepad_battery battery;
 }

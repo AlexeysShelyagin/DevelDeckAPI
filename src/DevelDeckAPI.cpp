@@ -67,12 +67,11 @@ void init(){
 // ==================================== RTOS PROCESSES ===========================================
 
 void battery_listener(void *params){
-    Gamepad_battery *batt = (Gamepad_battery *) params;
     uint32_t last_charge_check = 0;
     float deadband = 0;
 
     while(true){
-        Gamepad_battery::Charge_mode_t batt_mode = batt->get_device_mode();
+        Gamepad_battery::Charge_mode_t batt_mode = battery.get_device_mode();
 
         if(batt_mode == Gamepad_battery::POWER_OFF)
             ESP.restart();
@@ -81,7 +80,7 @@ void battery_listener(void *params){
             if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT){
                 last_charge_check = millis();
 
-                if(batt->get_battery_voltage() <= battery_critical_v + deadband){
+                if(battery.get_battery_voltage() <= battery_critical_v + deadband){
                     deadband = BATTERY_DISCHARGED_DEADBAND;
                     is_discharged = true;
                     system_event_flag = true;
@@ -91,7 +90,7 @@ void battery_listener(void *params){
                     is_discharged = false;
                 }
                 
-                if(batt->get_battery_charge() == 0){
+                if(battery.get_battery_charge() == 0){
                     notify_low_charge = true;
                     system_event_flag = true;
                 }
@@ -218,8 +217,8 @@ void Gamepad::main_loop(void (*game_func_)()){
 
             if(is_discharged){
                 // finishing calibration if is present
-                if(batt.is_calibrating()){
-                    if(batt.finish_calibration() != nullptr)
+                if(battery.is_calibrating()){
+                    if(battery.finish_calibration() != nullptr)
                         gamepad.save_system_settings();
                     else{
                         UI.notification(TXT_FAILED_BATT_CALIBRATION);
@@ -262,9 +261,9 @@ void Gamepad::main_loop(void (*game_func_)()){
         }
 
         // notify if battery calibration failed 
-        if(batt.is_calibrating() && batt.calibration_failed()){
+        if(battery.is_calibrating() && battery.calibration_failed()){
             UI.notification(TXT_FAILED_BATT_CALIBRATION);
-            batt.finish_calibration();
+            battery.finish_calibration();
         }
 
         vTaskSuspend(game_task_handler);
@@ -402,16 +401,16 @@ bool Gamepad::init_accel(){
 
 
 void Gamepad::init_battery(){
-    batt.init(
+    battery.init(
         system_data->battery_critical_v,
         system_data->battery_full_v,
         system_data->battery_charging_v,
         system_data->battery_only_charging_v
     );
 
-    batt.set_voltage_adjustment(BATTERY_VADJ_FUNC);
+    battery.set_voltage_adjustment(BATTERY_VADJ_FUNC);
 
-    batt_mode = batt.get_device_mode();
+    batt_mode = battery.get_device_mode();
     if(batt_mode == Gamepad_battery::POWER_OFF)
         on_charge_screen();
 
@@ -419,7 +418,7 @@ void Gamepad::init_battery(){
         battery_listener,
         "batt",
         BATTERY_LISTENER_STACK_SIZE,
-        &batt,
+        NULL,
         BATTERY_LISTENER_TASK_PRIORITY,
         &battery_listener_handler,
         DIFFERENT_CORE
@@ -466,7 +465,7 @@ bool Gamepad::init_SPIFFS(){
 // ------------------------- Wrappers ----------------------------
 
 uint8_t Gamepad::get_battery_charge(){
-    return batt.get_battery_charge();
+    return battery.get_battery_charge();
 }
 
 // ---------------------------------------------------------------
@@ -725,8 +724,8 @@ void Gamepad::settings_menu(){
         ESP.restart();
     }
     if(resp == 3){
-        if(!batt.is_calibrating()){
-            batt.start_calibration();
+        if(!battery.is_calibrating()){
+            battery.start_calibration();
             UI.notification(BATTERY_CALIBRATION_MSG);
         }
     }
@@ -912,10 +911,10 @@ void Gamepad::apply_system_settings(System_data_t *settings){
     vibro.strength = settings->vibro_strength;
 
     if(settings->battery_levels_n == 0)
-        batt.set_calibration_data(nullptr);
+        battery.set_calibration_data(nullptr);
     else{
-        batt.set_calibration_data(settings->battery_levels);
-        batt.lifetime = settings->battery_lifetime;
+        battery.set_calibration_data(settings->battery_levels);
+        battery.lifetime = settings->battery_lifetime;
     }
 }
 
@@ -930,9 +929,9 @@ void Gamepad::save_system_settings(){
     system_data->brightness = get_display_brightness();
     system_data->vibro_strength = vibro.strength;
 
-    if(batt.calibrated()){
+    if(battery.calibrated()){
         system_data->battery_levels_n = BATTERY_LEVELS;
-        float* batt_data = batt.get_calibration_data();
+        float* batt_data = battery.get_calibration_data();
         for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
             system_data->battery_levels[i] = batt_data[i];
     }
@@ -945,7 +944,7 @@ void Gamepad::save_system_settings(){
     system_data->battery_charging_v = BATTERY_CHARGING_V;
     system_data->battery_only_charging_v = BATTERY_ONLY_CHARGING_V;
 
-    system_data->battery_lifetime = batt.lifetime;
+    system_data->battery_lifetime = battery.lifetime;
 
     File sys_data = SPIFFS.open(GAMEPAD_DATA_FILE_NAME, "w");
     sys_data.write((uint8_t *) system_data, sizeof(System_data_t));
@@ -1054,7 +1053,7 @@ void Gamepad::on_charge_screen(){
         gpio_wakeup_enable((gpio_num_t) buttons_map[i], (INVERT_BUTTONS_STATE) ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
     esp_sleep_enable_gpio_wakeup();
     
-    while(batt.get_device_mode() == Gamepad_battery::POWER_OFF){
+    while(battery.get_device_mode() == Gamepad_battery::POWER_OFF){
         if(buttons.event_available() || initial){
             UI.on_charge_screen();
             delay(30);
