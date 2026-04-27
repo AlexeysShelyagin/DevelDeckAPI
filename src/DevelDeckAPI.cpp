@@ -159,7 +159,7 @@ void display_update_thread(void *params){
 
 
 
-// ===================================== MAIN LOOP ===============================================
+// ===================================== SYSTEM MAIN ===============================================
 
 void game_task(void *params){
     while(true){
@@ -223,7 +223,7 @@ void Gamepad::main_loop(void (*game_func_)()){
                         gamepad.save_system_settings();
                     else{
                         UI.notification(TXT_FAILED_BATT_CALIBRATION);
-                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_HOLD_TIME));
+                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
                     }
                 }
                 
@@ -233,7 +233,7 @@ void Gamepad::main_loop(void (*game_func_)()){
                 // notification
                 UI.notification(TXT_DISCHARGED);
                 disp_transaction_block = true;      // save the world
-                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_HOLD_TIME));
+                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
                 uint8_t brightness_before_suspension = get_display_brightness();
                 set_display_brightness(0);
 
@@ -262,12 +262,10 @@ void Gamepad::main_loop(void (*game_func_)()){
         }
 
         // notify if battery calibration failed 
-        /*
         if(batt.is_calibrating() && batt.calibration_failed()){
             UI.notification(TXT_FAILED_BATT_CALIBRATION);
             batt.finish_calibration();
         }
-        */
 
         vTaskSuspend(game_task_handler);
         vTaskDelay(1);

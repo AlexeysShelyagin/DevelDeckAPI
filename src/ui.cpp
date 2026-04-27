@@ -618,7 +618,7 @@ bool Gamepad_UI::notification(String msg){
         notif_layer->canvas->drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
 
     
-    GAMEPAD_GLOBAL::notification_destruction_time = millis() + NOTIFICATION_HOLD_TIME;
+    GAMEPAD_GLOBAL::notification_destruction_time = millis() + NOTIFICATION_PRESENSE_TIME;
     gamepad.update_display();
 
     return 1;
