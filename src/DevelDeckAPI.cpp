@@ -255,13 +255,10 @@ void Gamepad::main_loop(void (*game_func_)()){
             system_event_flag = false;
         }
 
-        if(notification_layer_id != nullptr){
-            if( (int64_t) notification_destruction_time - millis() <= 0){
-                delete_layer(notification_layer_id);
-                notification_destruction_time = 0;
-                notification_layer_id = nullptr;
-                update_display();
-            }
+        if( (int64_t) notification_destruction_time - millis() <= 0){
+            delete_sys_overlay();
+            reset_notification_time();
+            update_display();
         }
 
         // notify if battery calibration failed 
@@ -504,8 +501,8 @@ void Gamepad::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint16_
             disp->display_sprite(layers[i]->canvas, layers[i]->x, layers[i]->y);
     }
 
-    for(uint8_t i = 0; i < sys_layers.size(); i++)
-        disp->display_sprite(sys_layers[i]->canvas, sys_layers[i]->x, sys_layers[i]->y);
+    if(sys_overlay_layer.canvas != nullptr)
+        disp->display_sprite(sys_overlay_layer.canvas, sys_overlay_layer.x, sys_overlay_layer.y);
 
     disp_transaction_owner = NULL;
 }
@@ -594,6 +591,9 @@ Gamepad_canvas_t* Gamepad::layer(Layer_id_t &id){
 }
 
 void Gamepad::delete_layer(Layer_id_t &id){
+    if(id == nullptr)
+        return;
+    
     disp->delete_sprite(id->canvas);
     for(uint8_t i = 0; i < layers.size(); i++){
         if(layers[i] == id){
@@ -797,18 +797,26 @@ String Gamepad::file_manager(){
 
 // --------------------- System level layers ---------------------
 
-Layer_id_t Gamepad::create_system_layer(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
-    Gamepad_canvas_t *layer_canvas = disp->create_sprite(width, height, color_depth);
-    if(layer_canvas == nullptr)
+Layer_id_t Gamepad::create_sys_overlay(uint16_t width, uint16_t height, uint16_t x, uint16_t y, uint8_t color_depth){
+    if(sys_overlay_layer.canvas != nullptr)
         return nullptr;
     
-    Layer_t *layer = new Layer_t;
-    layer->canvas = layer_canvas;
-    layer->x = x;
-    layer->y = y;
-    sys_layers.push_back(layer);
+    sys_overlay_layer.canvas = disp->create_sprite(width, height, color_depth);
+    if(sys_overlay_layer.canvas == nullptr)
+        return nullptr;
 
-    return layer;
+    sys_overlay_layer.x = x;
+    sys_overlay_layer.y = y;
+
+    return &sys_overlay_layer;
+}
+
+void Gamepad::delete_sys_overlay(){
+    if(sys_overlay_layer.canvas == nullptr)
+        return;
+
+    disp->delete_sprite(sys_overlay_layer.canvas);
+    sys_overlay_layer.canvas = nullptr;
 }
 
 // -------------- Gamepad settings and parameters ----------------

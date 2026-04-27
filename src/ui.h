@@ -6,7 +6,6 @@
 #include <stack>
 
 #include "config.h"
-#include "DevelDeckAPI.h"
 
 struct Game_config_t;
 struct System_data_t;
@@ -63,7 +62,7 @@ namespace GAMEPAD_GLOBAL{
     extern Gamepad_UI UI;
 
     extern uint32_t notification_destruction_time;
-    extern Layer_id_t notification_layer_id;
+    void reset_notification_time();
 }
 
 #endif

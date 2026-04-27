@@ -305,8 +305,8 @@ const char TXT_BATT_CALIBR[] PROGMEM = "Battery calibration";
 const char TXT_BATT_LIFETIME[] PROGMEM = "Battery lifetime: ";
 const char TXT_FACTORY_RESET[] PROGMEM = "Factory reset";
 const char TXT_SAVE_MSG[] PROGMEM = "\nSave changes?";
-const char TEXT_UNABLE_CREATE_MSGBOX[] PROGMEM = "ERROR: unable to create message box";
-const char TEXT_UNABLE_CREATE_NOTIFF[] PROGMEM = "ERROR: unable to create notification";
+const char TXT_UNABLE_CREATE_MSGBOX[] PROGMEM = "ERROR: unable to create message box";
+const char TXT_UNABLE_CREATE_NOTIFF[] PROGMEM = "ERROR: unable to create notification";
 
 
 // ##################################################################################

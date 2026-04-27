@@ -4,10 +4,6 @@
 #include <Arduino.h>
 #include <vector>
 
-struct Layer_t;
-typedef Layer_t* Layer_id_t;
-
-
 #include "SPI_v3x_compat.h"
 #include "config.h"
 #include "buttons.h"
@@ -59,6 +55,8 @@ struct Layer_t{
     uint16_t x, y;
 };
 
+typedef Layer_t* Layer_id_t;
+
 
 
 class Gamepad{
@@ -86,7 +84,7 @@ class Gamepad{
     Gamepad_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
-    std::vector < Layer_t* > sys_layers;
+    Layer_t sys_overlay_layer = {nullptr, 0, 0};
 
     bool init_buttons();
     void init_display();
@@ -326,7 +324,8 @@ public:
 
     // ----------- API-only functions ------------
 
-    Layer_id_t create_system_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    Layer_id_t create_sys_overlay(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    void delete_sys_overlay();
 
     void game_downloading_screen(uint8_t percentage);
 
