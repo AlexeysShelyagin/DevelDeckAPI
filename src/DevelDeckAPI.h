@@ -106,6 +106,11 @@ class Gamepad{
 
     void on_charge_screen();
 
+    void __main_menu();
+    void __select_game_menu();
+    void __settings_menu();
+    String __file_manager();
+
 public:
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;

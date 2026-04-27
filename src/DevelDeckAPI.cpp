@@ -36,6 +36,16 @@ bool forced_menu_call = false;
 bool is_discharged = false;
 bool notify_low_charge = false;
 
+enum UI_call_t{
+    UI_NONE,
+    CALL_MAIN_MENU,
+    CALL_GAME_SELECTION_MENU,
+    CALL_SETTING_MENU,
+    CALL_FILE_MANAGER
+};
+uint8_t UI_call_info = UI_NONE;
+String file_manager_response = "";
+
 uint64_t last_disp_update = 0;
 
 struct threaded_update_params_t{
@@ -204,7 +214,7 @@ void Gamepad::main_loop(void (*game_func_)()){
         if(forced_menu_call){
             suspend_game();
 
-            gamepad.main_menu();
+            gamepad.__main_menu();
 
             vTaskResume(game_task_handler);
             forced_menu_call = false;
@@ -266,6 +276,18 @@ void Gamepad::main_loop(void (*game_func_)()){
             battery.finish_calibration();
         }
 
+        if(UI_call_info != UI_NONE){
+            switch (UI_call_info){
+                case CALL_MAIN_MENU:            __main_menu(); break;
+                case CALL_GAME_SELECTION_MENU:  __select_game_menu(); break;
+                case CALL_SETTING_MENU:         __settings_menu(); break;
+                case CALL_FILE_MANAGER:         file_manager_response = __file_manager(); break;
+                
+                default: break;
+            }
+            UI_call_info = UI_NONE;
+        }
+
         vTaskSuspend(game_task_handler);
         vTaskDelay(1);
         vTaskResume(game_task_handler);
@@ -316,7 +338,7 @@ void Gamepad::init__(){
 #endif
 
     if(buttons.read_state(MENU_BUT_ID))
-        main_menu();
+        __main_menu();
     
     init_battery();
     battery_critical_v = system_data->battery_critical_v;
@@ -332,7 +354,7 @@ void Gamepad::init__(){
     );
 
     if(!sys_param(READY_TO_PLAY))
-        main_menu();
+        __main_menu();
 
 }
 
@@ -670,9 +692,46 @@ void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, i
 
 
 
-// ------------------------ UI backend ---------------------------
+// --------------------------- UI user call -----------------------------
 
 void Gamepad::main_menu(){
+    UI_call_info = CALL_MAIN_MENU;
+    xTaskNotifyGive(sys_task_handler);
+    while(UI_call_info != UI_NONE)
+        vTaskDelay(1);
+}
+
+void Gamepad::settings_menu(){
+    UI_call_info = CALL_SETTING_MENU;
+    xTaskNotifyGive(sys_task_handler);
+    while(UI_call_info != UI_NONE)
+        vTaskDelay(1);
+}
+
+void Gamepad::select_game_menu(){
+    UI_call_info = CALL_GAME_SELECTION_MENU;
+    xTaskNotifyGive(sys_task_handler);
+    while(UI_call_info != UI_NONE)
+        vTaskDelay(1);
+}
+
+String Gamepad::file_manager(){
+    UI_call_info = CALL_FILE_MANAGER;
+    xTaskNotifyGive(sys_task_handler);
+    while(UI_call_info != UI_NONE)
+        vTaskDelay(1);
+
+    return file_manager_response;
+}
+
+// ---------------------------------------------------------------
+
+
+
+
+// ------------------------ UI implementation ---------------------------
+
+void Gamepad::__main_menu(){
     buttons.clear_queue();
     uint8_t cursor = 0;
 
@@ -696,10 +755,10 @@ void Gamepad::main_menu(){
             }
         }
         if(cursor == 1){
-            settings_menu();
+            __settings_menu();
         }
         if(cursor == 2)
-            select_game_menu();
+            __select_game_menu();
     }
 
     buttons.clear_queue();
@@ -707,7 +766,7 @@ void Gamepad::main_menu(){
     update_display();
 }
 
-void Gamepad::settings_menu(){
+void Gamepad::__settings_menu(){
     buttons.clear_queue();
 
     System_data_t updated_data = *system_data;
@@ -735,7 +794,7 @@ void Gamepad::settings_menu(){
 
 
 
-void Gamepad::select_game_menu(){
+void Gamepad::__select_game_menu(){
     if(!sys_param(SD_ENABLED)){
         UI.message_box(NO_SD_CARD_MSG);
         return;
@@ -769,7 +828,7 @@ void Gamepad::select_game_menu(){
 
 
 
-String Gamepad::file_manager(){
+String Gamepad::__file_manager(){
     if(!GAME_FILES_REQUIRED)
         return "";
     
