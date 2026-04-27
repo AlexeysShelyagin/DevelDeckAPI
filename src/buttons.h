@@ -39,6 +39,9 @@ namespace GAMEPAD_GLOBAL{
     extern uint8_t latest_buttons_state;
 
     bool get_latest_button_state(uint8_t id);
+    
+    void stop_button_interrupts();
+    void resume_button_interrupts();
 }
 
 #endif
