@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <vector>
 
+struct Layer_t;
+typedef Layer_t* Layer_id_t;
+
 
 #include "SPI_v3x_compat.h"
 #include "config.h"
@@ -56,8 +59,6 @@ struct Layer_t{
     uint16_t x, y;
 };
 
-typedef Layer_t* Layer_id_t;
-
 
 
 class Gamepad{
@@ -80,19 +81,12 @@ class Gamepad{
     System_data_t *system_data;
     String game_path;
 
-    TaskHandle_t battery_listener_handler = NULL;
-    TaskHandle_t system_data_updater_handler = NULL;
-    TaskHandle_t forced_main_menu_handler = NULL;
-    TaskHandle_t display_updater_handler = NULL;
-
     Gamepad_display *disp;
-    Gamepad_battery batt;
+    
     Gamepad_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
     std::vector < Layer_t* > sys_layers;
-
-    void (*game_func)();
 
     bool init_buttons();
     void init_display();
@@ -115,8 +109,7 @@ class Gamepad{
     void on_charge_screen();
 
 public:
-
-    SemaphoreHandle_t semaphore = NULL;
+    Gamepad_battery batt; // TODO: to private
 
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;

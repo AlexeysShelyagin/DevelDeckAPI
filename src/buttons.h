@@ -17,8 +17,7 @@ enum Button_state_t{
 class Gamepad_buttons{
     std::queue < uint8_t > button_buff;
 
-    uint8_t latest_state, previous_state = INVERT_BUTTONS_STATE * -1;
-
+    uint8_t previous_state = INVERT_BUTTONS_STATE * -1;
 public:
     uint64_t last_event_time[BUTTONS_N];
 
@@ -34,5 +33,12 @@ public:
     bool event_available();
     void clear_queue();
 };
+
+
+namespace GAMEPAD_GLOBAL{
+    extern uint8_t latest_buttons_state;
+
+    bool get_latest_button_state(uint8_t id);
+}
 
 #endif

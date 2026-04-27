@@ -27,7 +27,7 @@ void Gamepad_buttons::init(){
 }
 
 bool Gamepad_buttons::get_latest_state(uint8_t id){
-    return ((latest_state >> id) & 1);                // extract last state of one specific button
+    return GAMEPAD_GLOBAL::get_latest_button_state(id);
 }
 
 bool Gamepad_buttons::read_state(uint8_t id){
@@ -35,9 +35,9 @@ bool Gamepad_buttons::read_state(uint8_t id){
 }
 
 void Gamepad_buttons::add_button_event(uint8_t &state){
-    previous_state = latest_state;
+    previous_state = GAMEPAD_GLOBAL::latest_buttons_state;
 
-    latest_state = state;
+    GAMEPAD_GLOBAL::latest_buttons_state = state;
     button_buff.push(state);
 }
 
@@ -104,4 +104,16 @@ IRAM_ATTR void handle_button_interrupt(){
         state = ~state;
 
     gamepad.buttons.add_button_event(state);
+}
+
+
+
+// ------------ GLOBAL ----------------
+
+namespace GAMEPAD_GLOBAL{
+    uint8_t latest_buttons_state;
+}
+
+bool GAMEPAD_GLOBAL::get_latest_button_state(uint8_t id){
+    return ((GAMEPAD_GLOBAL::latest_buttons_state >> id) & 1);                // extract last state of one specific button
 }

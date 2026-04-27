@@ -25,7 +25,7 @@ void Gamepad_battery::init(float critical_v_, float full_v_, float charging_v_, 
     critical_v = critical_v_;
     full_v = full_v_;
     charging_v = charging_v_;
-    only_charging_v = only_charging_v_;
+    power_off_v = only_charging_v_;
     CRITICAL_V = critical_v;
 
     adc1_config_width(ADC_WIDTH_BIT_12);
@@ -66,10 +66,10 @@ uint8_t Gamepad_battery::get_battery_charge(){
 
 Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(){
     float v = get_battery_voltage();
-    if(v > only_charging_v)
-        return ONLY_CHARHING;
+    if(v > power_off_v)
+        return POWER_OFF;
     if(v > charging_v)
-        return POWER_ON_CHARGING;
+        return CHARGING;
     return POWER_ON;
 }
 
@@ -99,11 +99,11 @@ void Gamepad_battery::start_calibration(){
     xTaskCreatePinnedToCore(
         battery_callibration,
         "batt_calibr",
-        1024,
+        BATTERY_CALIBRATION_STACK_SIZE,
         this,
-        1,
+        BATTERY_CALIBRATION_TASK_PRIORITY,
         &calibration_handler,
-        xPortGetCoreID()
+        THIS_CORE
     );
 
     calibrating = true;

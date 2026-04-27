@@ -1,7 +1,5 @@
 #include "ui.h"
 
-#include "DevelDeckAPI.h"
-
 String File_mngr_trim(String filename, uint16_t max_len){
     if(filename.length() <= max_len)
         return filename;
@@ -89,8 +87,6 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
             gamepad.update_display();
             update_disp = false;
         }
-
-        gamepad.give_access_to_subprocess();
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
@@ -286,8 +282,6 @@ File_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
 
             gamepad.update_display();
         }
-
-        gamepad.give_access_to_subprocess();
     }
 
     if(!is_game_folder)
@@ -483,8 +477,6 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
             gamepad.update_display();
             update_disp = true;
         }
-
-        gamepad.give_access_to_subprocess();
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
@@ -589,8 +581,6 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
             gamepad.update_display();
             update_disp = false;
         }
-
-        gamepad.give_access_to_subprocess();
     }
 
     gamepad.delete_layer(layer_id);
@@ -599,25 +589,8 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
     return cursor;
 }
 
-void notification_destructor(void* params){
-    Layer_id_t *layer_id = (Layer_id_t *) params;
-
-    vTaskDelay(pdTICKS_TO_MS(NOTIFICATION_HOLD_TIME));
-
-    while(!xSemaphoreTake(gamepad.semaphore, portMAX_DELAY))
-        vTaskDelay(pdMS_TO_TICKS(1));
-    
-    gamepad.delete_layer(*layer_id);
-    gamepad.update_display();
-
-    xSemaphoreGive(gamepad.semaphore);
-        
-    delete layer_id;
-    vTaskDelete(NULL);
-}
-
 bool Gamepad_UI::notification(String msg){
-    if(notification_handler != NULL && eTaskGetState(notification_handler) == eBlocked){
+    if(GAMEPAD_GLOBAL::notification_destruction_time != 0){
         Serial.println(TEXT_UNABLE_CREATE_NOTIFF);
         return 0;
     }
@@ -646,20 +619,11 @@ bool Gamepad_UI::notification(String msg){
     gamepad.layer(layer_id)->setTextColor(TFT_WHITE);
     for(uint8_t i = 0; i < msg_lines.size(); i++)
         gamepad.layer(layer_id)->drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
-    
-    gamepad.update_display();
 
-    Layer_id_t *layer_id_param = new Layer_id_t;
-    *layer_id_param = layer_id;
-    xTaskCreatePinnedToCore(
-        notification_destructor,
-        "notif",
-        NOTIFICATION_DESTRUCTOR_STACK_SIZE,
-        layer_id_param,
-        1,
-        &notification_handler,
-        xPortGetCoreID()
-    );
+    
+    GAMEPAD_GLOBAL::notification_destruction_time = millis() + NOTIFICATION_HOLD_TIME;
+    GAMEPAD_GLOBAL::notification_layer_id = layer_id;
+    gamepad.update_display();
 
     return 1;
 }
@@ -766,4 +730,13 @@ void Gamepad_UI_button::render(void* params, uint8_t skin, bool clear){
 
 void Gamepad_UI_button::render(uint8_t skin, bool clear){
     render(nullptr, skin, clear);
+}
+
+
+
+namespace GAMEPAD_GLOBAL{
+    Gamepad_UI UI;
+
+    uint32_t notification_destruction_time = 0;
+    Layer_id_t notification_layer_id = nullptr;
 }

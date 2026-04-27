@@ -2,6 +2,9 @@
 
 #include "SPIFFS.h"
 
+using namespace GAMEPAD_GLOBAL;
+
+
 
 // ================================= GLOBAL GAMEPAD VARIABLES ====================================
 
@@ -15,11 +18,26 @@ bool __attribute__((weak)) GAME_FILES_REQUIRED = false;
 
 // =============================== NON-CLASS variables ===========================================
 
-TaskHandle_t *main_loop_handler = nullptr;
-Gamepad_UI ui;
-uint64_t last_disp_update = 0;
+void (*game_loop)() = loop;
+
+TaskHandle_t sys_task_handler = NULL;
+TaskHandle_t game_task_handler = NULL;
+TaskHandle_t battery_listener_handler = NULL;
+TaskHandle_t forced_main_menu_handler = NULL;
+TaskHandle_t display_updater_handler = NULL;
+
+bool disp_transaction_block = false;
+TaskHandle_t disp_transaction_owner = NULL;
+
+Gamepad_battery::Charge_mode_t batt_mode;
 float battery_critical_v;
-SemaphoreHandle_t threaded_update_mutex = xSemaphoreCreateMutex();
+
+bool system_event_flag = false;
+bool forced_menu_call = false;
+bool is_discharged = false;
+bool notify_low_charge = false;
+
+uint64_t last_disp_update = 0;
 
 struct threaded_update_params_t{
     float dt;
@@ -50,119 +68,78 @@ void init(){
 
 void battery_listener(void *params){
     Gamepad_battery *batt = (Gamepad_battery *) params;
-    uint64_t last_check = 0;
-    uint64_t last_alarm = 0;
+    uint32_t last_charge_check = 0;
+    float deadband = 0;
 
     while(true){
-        if(millis() - last_check >= BATTERY_CHECK_TIMEOUT){
-            if(xSemaphoreTake(gamepad.semaphore, portMAX_DELAY)){
-                if(batt->get_device_mode() == Gamepad_battery::POWER_ON){
-                    bool suspended = false;
-                    float threshold = 0;
-                    uint8_t disp_brightness = gamepad.get_display_brightness();
-                    while(batt->get_battery_voltage() <= battery_critical_v + threshold){
-                        if(!suspended){
-                            if(batt->is_calibrating()){
-                                float *levels = batt->finish_calibration();
+        Gamepad_battery::Charge_mode_t batt_mode = batt->get_device_mode();
 
-                                if(levels == nullptr){
-                                    ui.notification(TXT_FAILED_CALIBR);
-                                    vTaskDelay(pdMS_TO_TICKS(2000));
-                                }
-                                else{
-                                    gamepad.save_system_settings();
-                                }
-                            }
+        if(batt_mode == Gamepad_battery::POWER_OFF)
+            ESP.restart();
+        
+        if(batt_mode == Gamepad_battery::POWER_ON){
+            if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT){
+                last_charge_check = millis();
 
-                            vTaskSuspend(*main_loop_handler);
-                            xSemaphoreGive(gamepad.semaphore);
-
-                            ui.notification("Discharged");
-                            delay(NOTIFICATION_HOLD_TIME);
-                            gamepad.set_display_brightness(0);      // TODO: print to display
-                            delay(10);
-                            threshold = 0.1;
-                            suspended = true;
-                        }
-
-                        esp_sleep_enable_timer_wakeup(1000ULL * BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT);
-                        esp_light_sleep_start();
-                        delay(50);
-                    }
-                    if(suspended){
-                        gamepad.set_display_brightness(disp_brightness);
-                        vTaskResume(*main_loop_handler);
-                    }
-                    
-                    if(batt->get_battery_charge() == 0 && millis() - last_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
-                        ui.notification("Low charge");
-                        last_alarm = millis();
-                    }
+                if(batt->get_battery_voltage() <= battery_critical_v + deadband){
+                    deadband = BATTERY_DISCHARGED_DEADBAND;
+                    is_discharged = true;
+                    system_event_flag = true;
+                }
+                else{
+                    deadband = 0;
+                    is_discharged = false;
+                }
+                
+                if(batt->get_battery_charge() == 0){
+                    notify_low_charge = true;
+                    system_event_flag = true;
                 }
             }
-
-            if(batt->is_calibrating()){
-                if(batt->calibration_failed()){
-                    if(ui.notification(TXT_FAILED_CALIBR))
-                        batt->finish_calibration();
-                }
-            }
-
-            xSemaphoreGive(gamepad.semaphore);
-
-            last_check = millis();
         }
 
-        if(batt->get_device_mode() == Gamepad_battery::ONLY_CHARHING)
-            ESP.restart();
+        if(batt_mode == Gamepad_battery::CHARGING){
+            if(is_discharged)
+                is_discharged = false;
+        }
 
-        vTaskDelay(pdMS_TO_TICKS(DEVICE_MODE_CHECK_TIMEOUT));
+        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVICE_MODE_CHECK_TIMEOUT));
     }
 }
 
 void forced_main_menu_listener(void *params){
+    bool pressed = false;
+    uint64_t st;
+
     while(true){
-        if(xSemaphoreTake(gamepad.semaphore, portMAX_DELAY)){
-            if(gamepad.buttons.get_latest_state(MENU_BUT_ID)){
-                xSemaphoreGive(gamepad.semaphore);
-                
-                uint64_t timer = millis();
-                while(true){
-                    if(xSemaphoreTake(gamepad.semaphore, portMAX_DELAY)){
-                        if(!gamepad.buttons.get_latest_state(MENU_BUT_ID) || millis() - timer >= FORCED_MENU_HOLD_TIME)
-                            break;
-                    }
+        uint64_t now_time = esp_timer_get_time();
 
-                    xSemaphoreGive(gamepad.semaphore);
-                    vTaskDelay(pdMS_TO_TICKS(100));
-                }
-                
-                if(millis() - timer >= FORCED_MENU_HOLD_TIME){
-                    vTaskSuspend(*main_loop_handler);
-                    xSemaphoreGive(gamepad.semaphore);
-
-                    gamepad.buttons.clear_queue();
-                    gamepad.main_menu();
-
-                    vTaskResume(*main_loop_handler);
-                }
+        if(get_latest_button_state(MENU_BUT_ID)){
+            if(!pressed){
+                pressed = true;
+                st = now_time;
             }
-
-            xSemaphoreGive(gamepad.semaphore);
-
-            vTaskDelay(pdMS_TO_TICKS(FORCED_MENU_CHECK_TIMEOUT));
         }
+        else
+            pressed = false;
+
+        if(pressed){
+            if(now_time - st >= FORCED_MENU_HOLD_TIME * 1000){
+                system_event_flag = true;
+                forced_menu_call = true;
+            }
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(FORCED_MENU_CHECK_TIMEOUT));
     }
 }
 
 void display_update_thread(void *params){
-    xSemaphoreTake(threaded_update_mutex, portMAX_DELAY);
-
     threaded_update_params_t job = * (threaded_update_params_t *) params;
     delete (float *) params;
 
     while(micros() - last_disp_update < job.dt)
-        vTaskDelay(1);
+        vTaskDelay(0);
     
     last_disp_update = micros();
 
@@ -170,9 +147,6 @@ void display_update_thread(void *params){
         gamepad.update_display(job.ignore_layers, job.x0, job.y0, job.w, job.h);
     else
         gamepad.update_layer(job.target, job.x0, job.y0, job.w, job.h);
-    
-    xSemaphoreGive(threaded_update_mutex);
-    gamepad.give_access_to_subprocess();
     
     vTaskDelete(NULL);
 }
@@ -187,26 +161,123 @@ void display_update_thread(void *params){
 
 // ===================================== MAIN LOOP ===============================================
 
-
-void Gamepad::main_loop(void (*game_func_)()){
-    game_func = game_func_;
-    *main_loop_handler = xTaskGetCurrentTaskHandle();
-    
+void game_task(void *params){
     while(true){
-        game_func();
-        
-        give_access_to_subprocess();
+        game_loop();
+        vTaskDelay(0);
+
+        if (serialEventRun) serialEventRun();   // from core main.cpp
     }
 }
 
-void Gamepad::give_access_to_subprocess(){
-    if (xSemaphoreTake(threaded_update_mutex, 0) == pdFALSE)
-        return;
-    xSemaphoreGive(threaded_update_mutex);
-    
-    xSemaphoreGive(semaphore);
-    delay(1);
-    xSemaphoreTake(semaphore, portMAX_DELAY);
+void suspend_game(){
+    while(disp_transaction_owner == game_task_handler)
+        disp_transaction_block = true;
+    disp_transaction_block = false;
+
+    gamepad.buzzer.stop();
+    gamepad.vibro.disable();
+    vTaskSuspend(game_task_handler);
+}
+
+void Gamepad::main_loop(void (*game_func_)()){
+    game_loop = game_func_;
+
+    vTaskPrioritySet(NULL, SYS_TASK_PRIORITY);
+    sys_task_handler = xTaskGetCurrentTaskHandle();
+
+    uint32_t last_low_charge_alarm = 0;
+
+    xTaskCreatePinnedToCore(
+        game_task,
+        "game",
+        GAME_STACK_SIZE,
+        NULL,
+        GAME_LOOP_TASK_PRIORITY,
+        &game_task_handler,
+        THIS_CORE
+    );
+
+    while(true){        
+        if(system_event_flag){
+            if(forced_menu_call){
+                suspend_game();
+
+                gamepad.main_menu();
+
+                vTaskResume(game_task_handler);
+                forced_menu_call = false;
+            }
+
+            if(notify_low_charge){
+                if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
+                    UI.notification(TXT_LOW_CHARGE_ALARM);
+                    last_low_charge_alarm = millis();
+                }
+            }
+
+            if(is_discharged){
+                // finishing calibration if is present
+                if(batt.is_calibrating()){
+                    if(batt.finish_calibration() != nullptr)
+                        gamepad.save_system_settings();
+                    else{
+                        UI.notification(TXT_FAILED_BATT_CALIBRATION);
+                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_HOLD_TIME));
+                    }
+                }
+                
+                // suspension
+                suspend_game();
+
+                // notification
+                UI.notification(TXT_DISCHARGED);
+                disp_transaction_block = true;      // save the world
+                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_HOLD_TIME));
+                uint8_t brightness_before_suspension = get_display_brightness();
+                set_display_brightness(0);
+
+                // wait until charged
+                while(is_discharged){
+                    esp_sleep_enable_timer_wakeup(1000ULL * BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT);
+                    esp_light_sleep_start();
+                    xTaskNotifyGive(battery_listener_handler);
+                    vTaskDelay(pdMS_TO_TICKS(50));
+                }
+
+                // resume system
+                disp_transaction_block = false;
+                gamepad.update_display();
+                gamepad.set_display_brightness(brightness_before_suspension);
+                vTaskResume(game_task_handler);
+            }
+
+            system_event_flag = false;
+        }
+
+        if(notification_layer_id != nullptr){
+            if( (int64_t) notification_destruction_time - millis() <= 0){
+                delete_layer(notification_layer_id);
+                notification_destruction_time = 0;
+                notification_layer_id = nullptr;
+                update_display();
+            }
+        }
+
+        // notify if battery calibration failed 
+        /*
+        if(batt.is_calibrating() && batt.calibration_failed()){
+            UI.notification(TXT_FAILED_BATT_CALIBRATION);
+            batt.finish_calibration();
+        }
+        */
+
+        vTaskSuspend(game_task_handler);
+        vTaskDelay(1);
+        vTaskResume(game_task_handler);
+        
+        vTaskDelay(pdMS_TO_TICKS(SYSTEM_EVENT_CHECK_TIMEOUT));
+    }
 }
 
 // ===============================================================================================
@@ -224,11 +295,6 @@ void Gamepad::init__(){
     sys_param(READY_TO_PLAY, 1);
 
     Serial.begin(115200);
-
-    main_loop_handler = new TaskHandle_t;
-    *main_loop_handler = xTaskGetCurrentTaskHandle();
-    semaphore = xSemaphoreCreateBinary();
-    xSemaphoreGive(semaphore);
 
     init_SPIFFS();
     init_system_data();
@@ -260,15 +326,15 @@ void Gamepad::init__(){
     
     init_battery();
     battery_critical_v = system_data->battery_critical_v;
-    
+
     xTaskCreatePinnedToCore(
         forced_main_menu_listener,
         "menu",
         FORCED_MENU_STACK_SIZE,
-        &main_loop_handler,
-        1,
+        NULL,
+        FORCED_MENU_TASK_PRIORITY,
         &forced_main_menu_handler,
-        xPortGetCoreID()
+        DIFFERENT_CORE
     );
 
     if(!sys_param(READY_TO_PLAY))
@@ -350,7 +416,8 @@ void Gamepad::init_battery(){
 
     batt.set_voltage_adjustment(BATTERY_VADJ_FUNC);
 
-    if(batt.get_device_mode() == Gamepad_battery::ONLY_CHARHING)
+    batt_mode = batt.get_device_mode();
+    if(batt_mode == Gamepad_battery::POWER_OFF)
         on_charge_screen();
 
     xTaskCreatePinnedToCore(
@@ -358,9 +425,9 @@ void Gamepad::init_battery(){
         "batt",
         BATTERY_LISTENER_STACK_SIZE,
         &batt,
-        1,
+        BATTERY_LISTENER_TASK_PRIORITY,
         &battery_listener_handler,
-        xPortGetCoreID()
+        DIFFERENT_CORE
     );
 }
 
@@ -421,6 +488,12 @@ void Gamepad::clear_canvas(){
 void Gamepad::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
     if(!sys_param(DISPLAY_ENABLED))
 		return;
+
+    if(disp_transaction_block || disp_transaction_owner != NULL)
+        return;
+    
+    disp_transaction_owner = xTaskGetCurrentTaskHandle();
+    
     if(w == 0 || h == 0)
         disp->display_canvas();
     else
@@ -433,6 +506,8 @@ void Gamepad::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint16_
 
     for(uint8_t i = 0; i < sys_layers.size(); i++)
         disp->display_sprite(sys_layers[i]->canvas, sys_layers[i]->x, sys_layers[i]->y);
+
+    disp_transaction_owner = NULL;
 }
 
 
@@ -460,17 +535,16 @@ void Gamepad::update_display_threaded(bool ignore_layers, float fps_max,
         "disp",
         DISPLAY_UPDATE_THREAD_STACK_SIZE,
         update_job,
-        1,
+        DISP_THREADED_TASK_PRIORITY,
         &display_updater_handler,
-        !xPortGetCoreID()
+        DIFFERENT_CORE
     );
 }
 
 bool Gamepad::update_display_threaded_available(){
-    if(xSemaphoreTake(threaded_update_mutex, 0) == pdFALSE)
-        return false;
-    xSemaphoreGive(threaded_update_mutex);
-    return true;
+    if(display_updater_handler != NULL)
+        return (eTaskGetState(display_updater_handler) == eDeleted);
+    return (display_updater_handler == NULL);
 }
 
 
@@ -547,6 +621,11 @@ void Gamepad::move_layer(Layer_id_t &id, uint16_t new_x, uint16_t new_y){
 void Gamepad::update_layer(Layer_id_t &id, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
      if(!sys_param(DISPLAY_ENABLED))
 		return;
+
+    if(disp_transaction_block || disp_transaction_owner != NULL)
+        return;
+
+    disp_transaction_owner = xTaskGetCurrentTaskHandle();
     
     if(id == nullptr)
         return;
@@ -555,6 +634,8 @@ void Gamepad::update_layer(Layer_id_t &id, int16_t x0, int16_t y0, uint16_t w, u
         disp->display_sprite(id->canvas, id->x, id->y);
     else
         disp->display_sprite(id->canvas, id->x, id->y, x0, y0, w, h);
+
+    disp_transaction_owner = NULL;
 }
 
 void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
@@ -581,9 +662,9 @@ void Gamepad::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, i
         "disp",
         DISPLAY_UPDATE_THREAD_STACK_SIZE,
         update_job,
-        1,
+        DISP_THREADED_TASK_PRIORITY,
         &display_updater_handler,
-        !xPortGetCoreID()
+        DIFFERENT_CORE
     );
 }
 
@@ -599,7 +680,7 @@ void Gamepad::main_menu(){
     uint8_t cursor = 0;
 
     while(true){
-        cursor = ui.main_menu(sys_param(READY_TO_PLAY), sys_param(SD_ENABLED), cursor);
+        cursor = UI.main_menu(sys_param(READY_TO_PLAY), sys_param(SD_ENABLED), cursor);
         buttons.clear_queue();
 
         if(cursor == 0){
@@ -607,10 +688,10 @@ void Gamepad::main_menu(){
                 break;  
             else{
                 std::vector < String > buttons = {"Ok", "Cancel"};
-                uint8_t response = ui.message_box(GAME_FILES_NOT_FOUND_MSG, buttons);
+                uint8_t response = UI.message_box(GAME_FILES_NOT_FOUND_MSG, buttons);
                 if(response == 0){
                     if(!sys_param(SD_ENABLED))
-                        ui.message_box(NO_SD_CARD_MSG);
+                        UI.message_box(NO_SD_CARD_MSG);
                     else{
                         user_locate_game_folder();
                     }
@@ -633,7 +714,7 @@ void Gamepad::settings_menu(){
     buttons.clear_queue();
 
     System_data_t updated_data = *system_data;
-    uint8_t resp = ui.settings(updated_data);
+    uint8_t resp = UI.settings(updated_data);
 
     if(resp == 1){
         *system_data = updated_data;
@@ -648,7 +729,7 @@ void Gamepad::settings_menu(){
     if(resp == 3){
         if(!batt.is_calibrating()){
             batt.start_calibration();
-            ui.notification(BATTERY_CALIBRATION_MSG);
+            UI.notification(BATTERY_CALIBRATION_MSG);
         }
     }
 
@@ -659,16 +740,16 @@ void Gamepad::settings_menu(){
 
 void Gamepad::select_game_menu(){
     if(!sys_param(SD_ENABLED)){
-        ui.message_box(NO_SD_CARD_MSG);
+        UI.message_box(NO_SD_CARD_MSG);
         return;
     }
 
-    File_mngr_t file = ui.file_manager(true);
+    File_mngr_t file = UI.file_manager(true);
     if(file.file == "")
         return;
 
     if(file.game_config->minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
-        ui.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
+        UI.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
         return;
     }
 
@@ -676,7 +757,7 @@ void Gamepad::select_game_menu(){
         sd_card.open_dir(file.dir, 1);
         sd_card.open_file(file.game_config->game_path);
 
-        ui.init_game_downloading_screen(*file.game_config, file.dir);
+        UI.init_game_downloading_screen(*file.game_config, file.dir);
         if( OTA_update(*sd_card.get_file_reference()) ){
             system_data->game_path_size = file.dir.length();
             for(uint8_t i = 0; i < system_data->game_path_size; i++)
@@ -697,7 +778,7 @@ String Gamepad::file_manager(){
     
     buttons.clear_queue();
 
-    File_mngr_t file = ui.file_manager(game_path);
+    File_mngr_t file = UI.file_manager(game_path);
     String target = file.dir.substring(game_path.length(), file.dir.length());
     target += "/" + file.file;
 
@@ -869,7 +950,7 @@ void Gamepad::save_system_settings(){
 
 void Gamepad::user_locate_game_folder(){
     while(true){
-        File_mngr_t selected = ui.file_manager();
+        File_mngr_t selected = UI.file_manager();
         
         sd_card.open_dir(selected.dir, true);
         sd_card.open_file(GAME_CONFIG_FILE_NAME);
@@ -890,7 +971,7 @@ void Gamepad::user_locate_game_folder(){
 
             break;
         }
-        ui.message_box(NOT_GAME_FOLDER_MSG);
+        UI.message_box(NOT_GAME_FOLDER_MSG);
     }
 }
 
@@ -954,7 +1035,7 @@ Game_config_t Gamepad::read_game_config(String &config){
 // ---------------------- UI only for API ------------------------
 
 void Gamepad::game_downloading_screen(uint8_t percentage){
-    ui.game_downloading_screen(percentage);
+    UI.game_downloading_screen(percentage);
 }
 
 
@@ -967,16 +1048,16 @@ void Gamepad::on_charge_screen(){
         gpio_wakeup_enable((gpio_num_t) buttons_map[i], (INVERT_BUTTONS_STATE) ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
     esp_sleep_enable_gpio_wakeup();
     
-    while(batt.get_device_mode() == Gamepad_battery::ONLY_CHARHING){
+    while(batt.get_device_mode() == Gamepad_battery::POWER_OFF){
         if(buttons.event_available() || initial){
-            ui.on_charge_screen();
+            UI.on_charge_screen();
             delay(30);
             set_display_brightness(brightness);
 
             delay(2000);
 
             set_display_brightness(0);
-            ui.on_charge_screen(true);
+            UI.on_charge_screen(true);
 
             buttons.clear_queue();
             initial = false;
