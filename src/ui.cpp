@@ -89,6 +89,8 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
             gamepad.update_display();
             update_disp = false;
         }
+
+        vTaskDelay(1);
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
@@ -284,6 +286,8 @@ File_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
 
             gamepad.update_display();
         }
+
+        vTaskDelay(1);
     }
 
     if(!is_game_folder)
@@ -479,6 +483,8 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
             gamepad.update_display();
             update_disp = true;
         }
+
+        vTaskDelay(1);
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
