@@ -32,9 +32,8 @@ TaskHandle_t disp_transaction_owner = NULL;
 Gamepad_battery::Charge_mode_t batt_mode;
 float battery_critical_v;
 
+bool forced_display_update = false;
 bool forced_menu_call = false;
-bool is_discharged = false;
-bool notify_low_charge = false;
 
 enum UI_call_t{
     UI_NONE,
@@ -75,13 +74,25 @@ void init(){
 
 // ==================================== RTOS PROCESSES ===========================================
 
-void call_sys_event(){
-    xTaskNotifyGive(sys_task_handler);
+#define call_sys_event() xTaskNotifyGive(sys_task_handler)
+
+void suspend_game(){
+    while(disp_transaction_owner == game_task_handler)
+        disp_transaction_block = true;
+    disp_transaction_block = false;
+
+    gamepad.buzzer.stop();
+    gamepad.vibro.disable();
+    vTaskSuspend(game_task_handler);
 }
 
 void battery_listener(void *params){
     uint32_t last_charge_check = 0;
+    uint32_t last_low_charge_alarm = 0;
     float deadband = 0;
+    bool is_discharged = false;
+    bool resume_system = false;
+    uint8_t brightness_before_suspension;
 
     while(true){
         Gamepad_battery::Charge_mode_t batt_mode = battery.get_device_mode();
@@ -90,32 +101,77 @@ void battery_listener(void *params){
             ESP.restart();
         
         if(batt_mode == Gamepad_battery::POWER_ON){
-            if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT){
+            if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT || is_discharged){
                 last_charge_check = millis();
 
                 if(battery.get_battery_voltage() <= battery_critical_v + deadband){
-                    deadband = BATTERY_DISCHARGED_DEADBAND;
-                    is_discharged = true;
-                    call_sys_event();
+                    if(!is_discharged){
+                        deadband = BATTERY_DISCHARGED_DEADBAND;
+                        is_discharged = true;
+
+                        // finishing calibration if is present
+                        if(battery.is_calibrating()){
+                            if(battery.finish_calibration() != nullptr)
+                                gamepad.save_system_settings();
+                            else{
+                                UI.notification(TXT_FAILED_BATT_CALIBRATION);
+                                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+                            }
+                        }
+                        
+                        // suspension
+                        suspend_game();
+
+                        // notification
+                        UI.notification(TXT_DISCHARGED);
+                        disp_transaction_block = true;      // save the world
+                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+                        brightness_before_suspension = gamepad.get_display_brightness();
+                        gamepad.set_display_brightness(0);
+                        vTaskDelay(50);
+
+                        esp_sleep_enable_timer_wakeup(1000ULL * BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT);
+
+                        vTaskSuspend(sys_task_handler);
+                    }
+                    
+                    // sleep
+                    esp_light_sleep_start();
                 }
-                else{
+                else if(is_discharged){
                     deadband = 0;
-                    is_discharged = false;
+                    resume_system = true;
                 }
                 
+                // low charge alarm
                 if(battery.get_battery_charge() == 0){
-                    notify_low_charge = true;
-                    call_sys_event();
+                    if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
+                        UI.notification(TXT_LOW_CHARGE_ALARM);
+                        last_low_charge_alarm = millis();
+                    }
                 }
             }
         }
 
         if(batt_mode == Gamepad_battery::CHARGING){
             if(is_discharged)
-                is_discharged = false;
+                resume_system = true;
         }
 
-        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVICE_MODE_CHECK_TIMEOUT));
+        if(resume_system){
+            is_discharged = false;
+
+            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
+            vTaskResume(sys_task_handler);
+            disp_transaction_block = false;
+            gamepad.update_display();
+            gamepad.set_display_brightness(brightness_before_suspension);
+            vTaskResume(game_task_handler);
+        }
+
+        if(!is_discharged)
+            ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DEVICE_MODE_CHECK_TIMEOUT));
     }
 }
 
@@ -182,24 +238,12 @@ void game_task(void *params){
     }
 }
 
-void suspend_game(){
-    while(disp_transaction_owner == game_task_handler)
-        disp_transaction_block = true;
-    disp_transaction_block = false;
-
-    gamepad.buzzer.stop();
-    gamepad.vibro.disable();
-    vTaskSuspend(game_task_handler);
-}
-
 void Gamepad::main_loop(void (*game_func_)()){
     game_loop = game_func_;
 
     vTaskPrioritySet(NULL, SYS_TASK_PRIORITY);
     sys_task_handler = xTaskGetCurrentTaskHandle();
-
-    uint32_t last_low_charge_alarm = 0;
-
+    
     xTaskCreatePinnedToCore(
         game_task,
         "game",
@@ -220,54 +264,9 @@ void Gamepad::main_loop(void (*game_func_)()){
             forced_menu_call = false;
         }
 
-        if(notify_low_charge){
-            if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
-                UI.notification(TXT_LOW_CHARGE_ALARM);
-                last_low_charge_alarm = millis();
-            }
-        }
-
-        if(is_discharged){
-            // finishing calibration if is present
-            if(battery.is_calibrating()){
-                if(battery.finish_calibration() != nullptr)
-                    gamepad.save_system_settings();
-                else{
-                    UI.notification(TXT_FAILED_BATT_CALIBRATION);
-                    vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
-                }
-            }
-            
-            // suspension
-            suspend_game();
-
-            // notification
-            UI.notification(TXT_DISCHARGED);
-            disp_transaction_block = true;      // save the world
-            vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
-            uint8_t brightness_before_suspension = get_display_brightness();
-            set_display_brightness(0);
-
-            // wait until charged
-            while(is_discharged){
-                esp_sleep_enable_timer_wakeup(1000ULL * BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT);
-                esp_light_sleep_start();
-                xTaskNotifyGive(battery_listener_handler);
-                vTaskDelay(pdMS_TO_TICKS(50));
-            }
-
-            // resume system
-            disp_transaction_block = false;
-            gamepad.update_display();
-            gamepad.set_display_brightness(brightness_before_suspension);
-            vTaskResume(game_task_handler);
-        }
-        
-
-        if( (int64_t) notification_destruction_time - millis() <= 0){
-            delete_sys_overlay();
-            reset_notification_time();
+        if(forced_display_update){
             update_display();
+            forced_display_update = false;
         }
 
         // notify if battery calibration failed 
@@ -287,10 +286,6 @@ void Gamepad::main_loop(void (*game_func_)()){
             }
             UI_call_info = UI_NONE;
         }
-
-        vTaskSuspend(game_task_handler);
-        vTaskDelay(1);
-        vTaskResume(game_task_handler);
         
         ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(SYSTEM_EVENT_CHECK_TIMEOUT));
     }
@@ -784,7 +779,7 @@ void Gamepad::__settings_menu(){
     }
     if(resp == 3){
         if(!battery.is_calibrating()){
-            battery.start_calibration();
+            //battery.start_calibration();
             UI.notification(BATTERY_CALIBRATION_MSG);
         }
     }

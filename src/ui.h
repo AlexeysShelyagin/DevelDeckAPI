@@ -19,6 +19,7 @@ struct File_mngr_t{
 
 
 class Gamepad_UI{
+    TaskHandle_t notif_destructor_handle = NULL;
 public:
     Gamepad_UI() = default;
 
@@ -60,9 +61,6 @@ public:
 
 namespace GAMEPAD_GLOBAL{
     extern Gamepad_UI UI;
-
-    extern uint32_t notification_destruction_time;
-    void reset_notification_time();
 }
 
 #endif

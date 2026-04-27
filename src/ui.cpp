@@ -2,6 +2,11 @@
 
 #include "DevelDeckAPI.h"
 
+extern bool forced_display_update;
+extern TaskHandle_t sys_task_handler;
+
+
+
 String File_mngr_trim(String filename, uint16_t max_len){
     if(filename.length() <= max_len)
         return filename;
@@ -597,6 +602,16 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
     return cursor;
 }
 
+void notification_destructor_task(void *params){
+    vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+
+    gamepad.delete_sys_overlay();
+    forced_display_update = true;
+    xTaskNotifyGive(sys_task_handler);
+
+    vTaskDelete(NULL);
+}
+
 bool Gamepad_UI::notification(String msg){
     Layer_id_t notif_layer = gamepad.create_sys_overlay(200, 100, 60, 70, 1);
     if(notif_layer == nullptr){                     // layer creation failed or sys_overlay already exists
@@ -623,9 +638,17 @@ bool Gamepad_UI::notification(String msg){
     for(uint8_t i = 0; i < msg_lines.size(); i++)
         notif_layer->canvas->drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
 
-    
-    GAMEPAD_GLOBAL::notification_destruction_time = millis() + NOTIFICATION_PRESENSE_TIME;
     gamepad.update_display();
+    
+    xTaskCreatePinnedToCore(
+        notification_destructor_task,
+        "notif",
+        NOTIFICATION_DESTRUCTOR_STACK_SIZE,
+        NULL,
+        NOTIFICATION_DESTRUCTOR_TASK_PRIORITY,
+        &notif_destructor_handle,
+        THIS_CORE
+    );
 
     return 1;
 }
@@ -738,9 +761,4 @@ void Gamepad_UI_button::render(uint8_t skin, bool clear){
 
 namespace GAMEPAD_GLOBAL{
     Gamepad_UI UI;
-
-    uint32_t notification_destruction_time = 0;
-    void reset_notification_time(){
-        notification_destruction_time = UINT32_MAX;
-    }
 }
