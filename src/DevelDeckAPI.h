@@ -111,6 +111,25 @@ class Gamepad{
     void __settings_menu();
     String __file_manager();
 
+
+    // ---------- system event listener --------------
+
+    uint32_t last_charge_check = 0;
+    uint32_t last_low_charge_alarm = 0;
+    float deadband_v = 0;
+    bool is_discharged = false;
+    bool resume_system = false;
+    uint8_t brightness_before_suspension;
+    inline void battery_listener_implementation();
+
+    bool menu_pressed = false;
+    uint64_t menu_pressed_st;
+    inline void forced_main_menu_listener_implementation();
+
+    static void sys_event_listener_task(void *params);
+
+    // --------------------------------
+
 public:
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;
@@ -345,6 +364,14 @@ public:
 extern Gamepad gamepad;
 
 extern bool GAME_FILES_REQUIRED;
+
+
+
+namespace GAMEPAD_GLOBAL{
+    extern bool forced_display_update;
+}
+
+#define force_sys_disp_update() GAMEPAD_GLOBAL::forced_display_update = true
 
 // -----------------------------------------------
 
