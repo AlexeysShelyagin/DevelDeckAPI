@@ -2,6 +2,11 @@
 
 #include "DevelDeckAPI.h"
 
+extern bool forced_display_update;
+extern TaskHandle_t sys_task_handler;
+
+
+
 String File_mngr_trim(String filename, uint16_t max_len){
     if(filename.length() <= max_len)
         return filename;
@@ -90,7 +95,7 @@ uint8_t Gamepad_UI::main_menu(bool game_active, bool game_select_active, uint8_t
             update_disp = false;
         }
 
-        gamepad.give_access_to_subprocess();
+        vTaskDelay(1);
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
@@ -287,7 +292,7 @@ File_mngr_t Gamepad_UI::file_manager(bool selecting_game, String root){
             gamepad.update_display();
         }
 
-        gamepad.give_access_to_subprocess();
+        vTaskDelay(1);
     }
 
     if(!is_game_folder)
@@ -484,7 +489,7 @@ uint8_t Gamepad_UI::settings(System_data_t &data){
             update_disp = true;
         }
 
-        gamepad.give_access_to_subprocess();
+        vTaskDelay(1);
     }
 
     gamepad.canvas->setGraphicsParams(init_graphics);
@@ -516,9 +521,9 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
     
     if(w == 0) w = 200;
     if(h == 0) h = 100;
-    Layer_id_t layer_id = gamepad.create_system_layer(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
-    if(!gamepad.layer_exists(layer_id)){
-        Serial.println(TEXT_UNABLE_CREATE_MSGBOX);
+    Layer_id_t msg_layer = gamepad.create_sys_overlay(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
+    if(msg_layer == nullptr){
+        Serial.println(TXT_UNABLE_CREATE_MSGBOX);
         return 0;
     }
 
@@ -536,19 +541,19 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
     
     uint8_t buttons_n = actions.size();
     uint16_t indent = round((float) w / buttons_n);
-    uint16_t buttons_h = gamepad.layer(layer_id)->fontHeight() + 4;
+    uint16_t buttons_h = msg_layer->canvas->fontHeight() + 4;
 
     Gamepad_UI_button buttons[buttons_n];
     for(uint8_t i = 0; i < buttons_n; i++){
-        uint16_t text_w = gamepad.layer(layer_id)->textWidth(actions[i]);
+        uint16_t text_w = msg_layer->canvas->textWidth(actions[i]);
         buttons[i] = Gamepad_UI_button(i, indent * (0.5 + i) - (text_w / 2 + 3), h - buttons_h - 8, text_w + 6, buttons_h);
         buttons[i].set_neighbours(-1, -1, (i + buttons_n - 1) % buttons_n, (i + buttons_n + 1) % buttons_n);
         buttons[i].assign_render_function(render_msgbox_button);
     }
 
-    gamepad.layer(layer_id)->setTextColor(TFT_WHITE);
-    gamepad.layer(layer_id)->setTextSize(2);
-    uint16_t font_h = gamepad.layer(layer_id)->fontHeight();
+    msg_layer->canvas->setTextColor(TFT_WHITE);
+    msg_layer->canvas->setTextSize(2);
+    uint16_t font_h = msg_layer->canvas->fontHeight();
     
     while(!quit){
         while(gamepad.buttons.event_available()){
@@ -572,59 +577,45 @@ uint8_t Gamepad_UI::message_box(String msg, std::vector < String > actions, uint
             break;
         
         if(update_disp){
-            gamepad.clear_layer(layer_id);
+            gamepad.clear_layer(msg_layer);
 
-            gamepad.layer(layer_id)->drawRect(0, 0, w, h, TFT_WHITE);
+            msg_layer->canvas->drawRect(0, 0, w, h, TFT_WHITE);
 
-            gamepad.layer(layer_id)->setTextSize(2);
-            gamepad.layer(layer_id)->setTextColor(TFT_WHITE);
+            msg_layer->canvas->setTextSize(2);
+            msg_layer->canvas->setTextColor(TFT_WHITE);
             for(uint8_t i = 0; i < msg_lines.size(); i++)
-                gamepad.layer(layer_id)->drawCentreString(msg_lines[i], w / 2, 5 + i * font_h, 1);
+                msg_layer->canvas->drawCentreString(msg_lines[i], w / 2, 5 + i * font_h, 1);
             
             for(uint8_t i = 0; i < buttons_n; i++){
-                msgbox_buttons_params_t but_params = {gamepad.layer(layer_id), actions[i]};
+                msgbox_buttons_params_t but_params = {msg_layer->canvas, actions[i]};
                 buttons[i].render(&but_params, (i == cursor), true);
             }
 
-            gamepad.update_display();
+            gamepad.update_layer(msg_layer);
             update_disp = false;
         }
-
-        gamepad.give_access_to_subprocess();
     }
 
-    gamepad.delete_layer(layer_id);
+    gamepad.delete_sys_overlay();
     gamepad.update_display();
 
     return cursor;
 }
 
-void notification_destructor(void* params){
-    Layer_id_t *layer_id = (Layer_id_t *) params;
+void notification_destructor_task(void *params){
+    vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
 
-    vTaskDelay(pdTICKS_TO_MS(NOTIFICATION_HOLD_TIME));
+    gamepad.delete_sys_overlay();
+    forced_display_update = true;
+    xTaskNotifyGive(sys_task_handler);
 
-    while(!xSemaphoreTake(gamepad.semaphore, portMAX_DELAY))
-        vTaskDelay(pdMS_TO_TICKS(1));
-    
-    gamepad.delete_layer(*layer_id);
-    gamepad.update_display();
-
-    xSemaphoreGive(gamepad.semaphore);
-        
-    delete layer_id;
     vTaskDelete(NULL);
 }
 
 bool Gamepad_UI::notification(String msg){
-    if(notification_handler != NULL && eTaskGetState(notification_handler) == eBlocked){
-        Serial.println(TEXT_UNABLE_CREATE_NOTIFF);
-        return 0;
-    }
-
-    Layer_id_t layer_id = gamepad.create_system_layer(200, 100, 60, 70, 1);
-    if(!gamepad.layer_exists(layer_id)){
-        Serial.println(TEXT_UNABLE_CREATE_MSGBOX);
+    Layer_id_t notif_layer = gamepad.create_sys_overlay(200, 100, 60, 70, 1);
+    if(notif_layer == nullptr){                     // layer creation failed or sys_overlay already exists
+        Serial.println(TXT_UNABLE_CREATE_NOTIFF);
         return 0;
     }
 
@@ -637,28 +628,26 @@ bool Gamepad_UI::notification(String msg){
         msg_lines[msg_lines.size() - 1] += msg[i];
     }
 
-    gamepad.layer(layer_id)->setTextColor(TFT_WHITE);
-    gamepad.layer(layer_id)->setTextSize(2);
-    uint16_t font_h = gamepad.layer(layer_id)->fontHeight();
+    notif_layer->canvas->setTextColor(TFT_WHITE);
+    notif_layer->canvas->setTextSize(2);
+    uint16_t font_h = notif_layer->canvas->fontHeight();
 
-    gamepad.layer(layer_id)->drawRect(0, 0, 200, 100, TFT_WHITE);
-    gamepad.layer(layer_id)->setTextSize(2);
-    gamepad.layer(layer_id)->setTextColor(TFT_WHITE);
+    notif_layer->canvas->drawRect(0, 0, 200, 100, TFT_WHITE);
+    notif_layer->canvas->setTextSize(2);
+    notif_layer->canvas->setTextColor(TFT_WHITE);
     for(uint8_t i = 0; i < msg_lines.size(); i++)
-        gamepad.layer(layer_id)->drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
-    
-    gamepad.update_display();
+        notif_layer->canvas->drawCentreString(msg_lines[i], 100, 5 + i * font_h, 1);
 
-    Layer_id_t *layer_id_param = new Layer_id_t;
-    *layer_id_param = layer_id;
+    gamepad.update_display();
+    
     xTaskCreatePinnedToCore(
-        notification_destructor,
+        notification_destructor_task,
         "notif",
         NOTIFICATION_DESTRUCTOR_STACK_SIZE,
-        layer_id_param,
-        1,
-        &notification_handler,
-        xPortGetCoreID()
+        NULL,
+        NOTIFICATION_DESTRUCTOR_TASK_PRIORITY,
+        &notif_destructor_handle,
+        THIS_CORE
     );
 
     return 1;
@@ -766,4 +755,10 @@ void Gamepad_UI_button::render(void* params, uint8_t skin, bool clear){
 
 void Gamepad_UI_button::render(uint8_t skin, bool clear){
     render(nullptr, skin, clear);
+}
+
+
+
+namespace GAMEPAD_GLOBAL{
+    Gamepad_UI UI;
 }

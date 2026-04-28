@@ -7,6 +7,11 @@ bool ALLOW_DMA __attribute__((weak)) = true;
 
 
 
+Gamepad_canvas_t::~Gamepad_canvas_t(){
+	for(uint8_t i = 1; i <= FONTS_MAX_N; i++)
+		unloadFont(i);
+}
+
 /***************************************************************************************
 ** ---------------Modified function from TFT_eSPI------------------
 **					- avoid display update

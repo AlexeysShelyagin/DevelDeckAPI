@@ -12,8 +12,10 @@ class Gamepad_battery{
     float critical_v;
     float full_v;
     float charging_v;
-    float only_charging_v;
+    float power_off_v;
 
+    SemaphoreHandle_t batt_pin_mutex;
+    
     float (*v_adj_func)(float);
     float *voltage_levels = nullptr;
 
@@ -24,8 +26,8 @@ class Gamepad_battery{
 public:
     enum Charge_mode_t{
         POWER_ON,
-        ONLY_CHARHING,
-        POWER_ON_CHARGING
+        POWER_OFF,
+        CHARGING
     };
     uint16_t lifetime = 0;
 
@@ -48,5 +50,10 @@ public:
     float* get_calibration_data();
     void set_calibration_data(float data[BATTERY_LEVELS]);
 };
+
+
+namespace GAMEPAD_GLOBAL{
+    extern Gamepad_battery battery;
+}
 
 #endif

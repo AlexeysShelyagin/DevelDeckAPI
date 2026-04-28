@@ -19,7 +19,7 @@ struct File_mngr_t{
 
 
 class Gamepad_UI{
-    TaskHandle_t notification_handler = NULL;
+    TaskHandle_t notif_destructor_handle = NULL;
 public:
     Gamepad_UI() = default;
 
@@ -56,5 +56,11 @@ public:
     void render(void* params = nullptr, uint8_t skin = 0, bool clear = false);
     void render(uint8_t skin, bool clear = false);
 };
+
+
+
+namespace GAMEPAD_GLOBAL{
+    extern Gamepad_UI UI;
+}
 
 #endif

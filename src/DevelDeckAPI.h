@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <vector>
 
-
 #include "SPI_v3x_compat.h"
 #include "config.h"
 #include "buttons.h"
@@ -80,19 +79,12 @@ class Gamepad{
     System_data_t *system_data;
     String game_path;
 
-    TaskHandle_t battery_listener_handler = NULL;
-    TaskHandle_t system_data_updater_handler = NULL;
-    TaskHandle_t forced_main_menu_handler = NULL;
-    TaskHandle_t display_updater_handler = NULL;
-
     Gamepad_display *disp;
-    Gamepad_battery batt;
+    
     Gamepad_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
-    std::vector < Layer_t* > sys_layers;
-
-    void (*game_func)();
+    Layer_t sys_overlay_layer = {nullptr, 0, 0};
 
     bool init_buttons();
     void init_display();
@@ -112,12 +104,14 @@ class Gamepad{
     void apply_system_settings();
     void user_locate_game_folder();
 
-    void on_charge_screen();
+    void on_charge_mode();
+
+    void __main_menu();
+    void __select_game_menu();
+    void __settings_menu();
+    String __file_manager();
 
 public:
-
-    SemaphoreHandle_t semaphore = NULL;
-
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;
     Gamepad_buzzer buzzer;
@@ -333,7 +327,8 @@ public:
 
     // ----------- API-only functions ------------
 
-    Layer_id_t create_system_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    Layer_id_t create_sys_overlay(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    void delete_sys_overlay();
 
     void game_downloading_screen(uint8_t percentage);
 
