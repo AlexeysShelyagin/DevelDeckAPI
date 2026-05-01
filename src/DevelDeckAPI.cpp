@@ -81,6 +81,9 @@ void init(){
 #define trigger_system() xTaskNotifyGive(sys_task_handler)
 
 void suspend_game(){
+    if(eTaskGetState(game_task_handler) == eSuspended)
+        return;
+    
     while(disp_transaction_owner == game_task_handler){
         disp_transaction_block = true;
         vTaskDelay(0);
@@ -187,6 +190,7 @@ inline void Gamepad::battery_listener_implementation(){
 
     if(resume_system){
         is_discharged = false;
+        resume_system = false;
 
         esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
@@ -333,7 +337,6 @@ void Gamepad::main_loop(void (*game_func_)()){
             UI_call_info = UI_NONE;
         }
         
-        Serial.println("aaaaaa");
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
