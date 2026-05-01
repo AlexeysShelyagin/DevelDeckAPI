@@ -81,8 +81,10 @@ void init(){
 #define trigger_system() xTaskNotifyGive(sys_task_handler)
 
 void suspend_game(){
-    while(disp_transaction_owner == game_task_handler)
+    while(disp_transaction_owner == game_task_handler){
         disp_transaction_block = true;
+        vTaskDelay(0);
+    }
     disp_transaction_block = false;
 
     gamepad.buzzer.stop();
@@ -212,6 +214,7 @@ inline void Gamepad::forced_main_menu_listener_implementation(){
     if(menu_pressed){
         if(now_time - menu_pressed_st >= FORCED_MENU_HOLD_TIME * 1000){
             forced_main_menu_call = true;
+            suspend_game();
             trigger_system();
         }
     }
@@ -219,7 +222,6 @@ inline void Gamepad::forced_main_menu_listener_implementation(){
 
 
 
-size_t usedBytes;
 void Gamepad::sys_event_listener_task(void *params){
     while(true){
         gamepad.forced_main_menu_listener_implementation();
@@ -242,10 +244,6 @@ void Gamepad::sys_event_listener_task(void *params){
             make_notification_helper(TXT_FAILED_BATT_CALIBRATION);
             battery.finish_calibration();
         }
-
-        UBaseType_t highWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        UBaseType_t usedWords = SYS_EVENT_LISTENER_STACK_SIZE - highWaterMark;
-        usedBytes = usedWords * sizeof(StackType_t);
 
         if(!gamepad.is_discharged)
             ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(SYSTEM_EVENT_CHECK_TIMEOUT));
@@ -335,6 +333,7 @@ void Gamepad::main_loop(void (*game_func_)()){
             UI_call_info = UI_NONE;
         }
         
+        Serial.println("aaaaaa");
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
 }
