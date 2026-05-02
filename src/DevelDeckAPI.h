@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <vector>
 
-
 #include "SPI_v3x_compat.h"
 #include "config.h"
 #include "buttons.h"
@@ -80,19 +79,12 @@ class Gamepad{
     System_data_t *system_data;
     String game_path;
 
-    TaskHandle_t battery_listener_handler = NULL;
-    TaskHandle_t system_data_updater_handler = NULL;
-    TaskHandle_t forced_main_menu_handler = NULL;
-    TaskHandle_t display_updater_handler = NULL;
-
     Gamepad_display *disp;
-    Gamepad_battery batt;
+    
     Gamepad_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
-    std::vector < Layer_t* > sys_layers;
-
-    void (*game_func)();
+    Layer_t sys_overlay_layer = {nullptr, 0, 0};
 
     bool init_buttons();
     void init_display();
@@ -112,12 +104,33 @@ class Gamepad{
     void apply_system_settings();
     void user_locate_game_folder();
 
-    void on_charge_screen();
+    void on_charge_mode();
+
+    void __main_menu();
+    void __select_game_menu();
+    void __settings_menu();
+    String __file_manager();
+
+
+    // ---------- system event listener --------------
+
+    uint32_t last_charge_check = 0;
+    uint32_t last_low_charge_alarm = 0;
+    float deadband_v = 0;
+    bool is_discharged = false;
+    bool resume_system = false;
+    uint8_t brightness_before_suspension;
+    inline void battery_listener_implementation();
+
+    bool menu_pressed = false;
+    uint64_t menu_pressed_st;
+    inline void forced_main_menu_listener_implementation();
+
+    static void sys_event_listener_task(void *params);
+
+    // --------------------------------
 
 public:
-
-    SemaphoreHandle_t semaphore = NULL;
-
     Gamepad_canvas_t *canvas = nullptr;
     Gamepad_buttons buttons;
     Gamepad_buzzer buzzer;
@@ -333,7 +346,8 @@ public:
 
     // ----------- API-only functions ------------
 
-    Layer_id_t create_system_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    Layer_id_t create_sys_overlay(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    void delete_sys_overlay();
 
     void game_downloading_screen(uint8_t percentage);
 
@@ -350,6 +364,14 @@ public:
 extern Gamepad gamepad;
 
 extern bool GAME_FILES_REQUIRED;
+
+
+
+namespace GAMEPAD_GLOBAL{
+    extern bool forced_display_update;
+}
+
+#define force_sys_disp_update() GAMEPAD_GLOBAL::forced_display_update = true
 
 // -----------------------------------------------
 

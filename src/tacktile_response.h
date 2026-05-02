@@ -16,7 +16,8 @@ class Gamepad_buzzer{
     uint8_t volume;
     uint8_t volume_level = DEFAULT_BUZZER_VOLUME;
 
-    TaskHandle_t buzz_task_handler = NULL;
+    TaskHandle_t task_handler = NULL;
+    void *task_params;
 public:
 
     Gamepad_buzzer() = default;
@@ -30,8 +31,8 @@ public:
     uint8_t get_volume();
 
     void play_for_time(uint16_t freq, uint16_t time);
-    void play_sequence(std::vector < Buzzer_element_t > sequence);
-    void play_sequence(uint16_t *data, uint32_t size);
+    void play_sequence(std::vector < Buzzer_element_t > &sequence);
+    void play_sequence(uint16_t *data, uint32_t size, bool nocopy = false);
 };
 
 
@@ -39,7 +40,9 @@ public:
 class Gamepad_vibro{
     uint8_t channel;
 
-    TaskHandle_t vib_task_handler = NULL;
+    TaskHandle_t task_handler = NULL;
+    void *task_params;
+
     uint8_t calc_strength(uint8_t strength_);
 public:
     uint8_t strength = DEFAULT_VIBRO_STRENGTH;

@@ -33,11 +33,15 @@ struct Graphics_params_t{
 class Gamepad_canvas_t : public TFT_eSprite{
     using TFT_eSprite::TFT_eSprite;
 
-    uint8_t *fonts[FONTS_MAX_N];
+    uint8_t* fonts[FONTS_MAX_N];
     uint16_t font_h;
     uint8_t dynamic_mem_font = 0;
     uint8_t font_id = 0;
 public:
+    explicit Gamepad_canvas_t(TFT_eSPI *tft) : TFT_eSprite(tft){}
+    ~Gamepad_canvas_t();
+
+
     void pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp = 16);
 
     using TFT_eSprite::pushImage;
