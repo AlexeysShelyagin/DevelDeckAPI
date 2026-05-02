@@ -264,9 +264,9 @@ const char GAME_CONFIG_FILE_NAME[] PROGMEM = "game.ini";
 // Major version number (X.x.x)
 #define DEVELDECK_API_VERSION_MAJOR 0
 // Minor version number (x.X.x)
-#define DEVELDECK_API_VERSION_MINOR 2
+#define DEVELDECK_API_VERSION_MINOR 3
 // Patch version number (x.x.X)
-#define DEVELDECK_API_VERSION_PATCH 5
+#define DEVELDECK_API_VERSION_PATCH 0
 
 const char DEVELDECK_API_VERSION[] PROGMEM = "0.1.1";
 
