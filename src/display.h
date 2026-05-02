@@ -17,6 +17,7 @@
 
 // Make possible user color depth override
 extern uint8_t CANVAS_COLOR_DEPTH __attribute__((weak));
+extern bool ALLOW_DMA __attribute__((weak));
 
 
 
@@ -32,11 +33,15 @@ struct Graphics_params_t{
 class Gamepad_canvas_t : public TFT_eSprite{
     using TFT_eSprite::TFT_eSprite;
 
-    uint8_t *fonts[FONTS_MAX_N];
+    uint8_t* fonts[FONTS_MAX_N];
     uint16_t font_h;
     uint8_t dynamic_mem_font = 0;
     uint8_t font_id = 0;
 public:
+    explicit Gamepad_canvas_t(TFT_eSPI *tft) : TFT_eSprite(tft){}
+    ~Gamepad_canvas_t();
+
+
     void pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp = 16);
 
     using TFT_eSprite::pushImage;
@@ -68,7 +73,7 @@ class Gamepad_display{
     Gamepad_canvas_t canvas = Gamepad_canvas_t(&disp);
 
     bool initialized = false;
-    uint8_t *sprite_buffer_ptr = nullptr;
+    uint8_t *canvas_buffer_ptr = nullptr;
 public:
     Gamepad_display() = default;
 
@@ -77,15 +82,24 @@ public:
     TFT_eSPI* get_display_reference();
     Gamepad_canvas_t* get_canvas_reference();
 
-    void update();
-    void flip();
-    void clear();
-
     void set_brightness(uint8_t brightness_);
     uint8_t get_brightness();
+
+
+    // Base canvas section
+    void display_canvas();
+    void display_canvas(int16_t x0, int16_t y0, uint16_t window_w, uint16_t window_h);
+    void clear_canvas();
     
+    // Sprites section
     Gamepad_canvas_t* create_sprite(uint16_t width, uint16_t height, uint8_t color_depth = 8);
-    void display_sprite(Gamepad_canvas_t *sprite, uint16_t x = 0, uint16_t y = 0);
+    void display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x = 0, int16_t disp_y = 0);
+    void display_sprite(
+        Gamepad_canvas_t *sprite, 
+        int16_t disp_x, int16_t disp_y, 
+        int16_t sprite_x0, int16_t sprite_y0, 
+        uint16_t window_w, uint16_t window_h
+    );
     void clear_sprite(Gamepad_canvas_t *sprite);
     void delete_sprite(Gamepad_canvas_t* sprite);
 };
