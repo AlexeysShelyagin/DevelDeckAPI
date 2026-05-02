@@ -20,7 +20,7 @@ class Gamepad_battery{
     float *voltage_levels = nullptr;
 
     bool calibrating = false;
-    uint64_t calibration_start_time;
+    uint32_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
     esp_adc_cal_characteristics_t adc1_chars;
 public:
@@ -37,9 +37,9 @@ public:
     void set_voltage_adjustment(float (*v_adj_func_ptr)(float));
 
     float get_battery_voltage();
-    uint8_t get_battery_charge();
+    uint8_t get_battery_charge(float v = 0);
 
-    Charge_mode_t get_device_mode();
+    Charge_mode_t get_device_mode(float v = 0);
 
     void start_calibration();
     float* finish_calibration();
@@ -48,7 +48,7 @@ public:
 
     bool calibrated();
     float* get_calibration_data();
-    void set_calibration_data(float data[BATTERY_LEVELS]);
+    void set_calibration_data(float *data);
 };
 
 

@@ -34,6 +34,7 @@ Gamepad_battery::Charge_mode_t batt_mode;
 float battery_critical_v;
 
 bool GAMEPAD_GLOBAL::forced_display_update = false;
+bool finish_batt_calibration = false;
 bool forced_main_menu_call = false;
 bool distruct_notification = false;
 bool create_notification = false;
@@ -125,7 +126,8 @@ void display_update_thread_task(void *params){
 // ====================== SYSTEM EVENT LISTENER PROCESS ==========================================
 
 inline void Gamepad::battery_listener_implementation(){
-    Gamepad_battery::Charge_mode_t batt_mode = battery.get_device_mode();
+    float voltage = battery.get_battery_voltage();
+    Gamepad_battery::Charge_mode_t batt_mode = battery.get_device_mode(voltage);
 
     if(batt_mode == Gamepad_battery::POWER_OFF)
         ESP.restart();
@@ -134,19 +136,16 @@ inline void Gamepad::battery_listener_implementation(){
         if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT || is_discharged){
             last_charge_check = millis();
 
-            if(battery.get_battery_voltage() <= battery_critical_v + deadband_v){
+            if(voltage <= battery_critical_v + deadband_v){
                 if(!is_discharged){
                     deadband_v = BATTERY_DISCHARGED_DEADBAND;
                     is_discharged = true;
 
                     // finishing calibration if is present
                     if(battery.is_calibrating()){
-                        if(battery.finish_calibration() != nullptr)
-                            gamepad.save_system_settings();
-                        else{
-                            make_notification_helper(TXT_FAILED_BATT_CALIBRATION);
-                            vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
-                        }
+                        finish_batt_calibration = true;
+                        trigger_system();
+                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
                     }
                     
                     // suspension
@@ -174,7 +173,7 @@ inline void Gamepad::battery_listener_implementation(){
             }
             
             // low charge alarm
-            if(battery.get_battery_charge() == 0 || is_discharged == false){
+            if(battery.get_battery_charge(voltage) == 0 && !is_discharged){
                 if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
                     make_notification_helper(TXT_LOW_CHARGE_ALARM);
                     last_low_charge_alarm = millis();
@@ -245,7 +244,7 @@ void Gamepad::sys_event_listener_task(void *params){
         }
 
         if(battery.is_calibrating() && battery.calibration_failed()){
-            make_notification_helper(TXT_FAILED_BATT_CALIBRATION);
+            make_notification_helper(BATTERY_CALIBRATION_FAILED_MSG);
             battery.finish_calibration();
         }
 
@@ -323,6 +322,17 @@ void Gamepad::main_loop(void (*game_func_)()){
         if(distruct_notification){
             gamepad.update_display();
             distruct_notification = false;
+        }
+
+        if(finish_batt_calibration){
+            finish_batt_calibration = false;
+
+            if(battery.finish_calibration() != nullptr)
+                gamepad.save_system_settings();
+            else{
+                make_notification_helper(BATTERY_CALIBRATION_FAILED_MSG);
+                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+            }
         }
 
         if(UI_call_info != UI_NONE){
@@ -808,9 +818,13 @@ void Gamepad::__settings_menu(){
         ESP.restart();
     }
     if(resp == 3){
-        if(!battery.is_calibrating()){
-            //battery.start_calibration();
-            UI.notification(BATTERY_CALIBRATION_MSG);
+        if(battery.get_device_mode() == Gamepad_battery::CHARGING)
+            UI.notification(UNPLUG_FOR_CALIBRATION_MSG);
+        else{
+            if(!battery.is_calibrating()){
+                battery.start_calibration();
+                UI.notification(BATTERY_CALIBRATION_MSG);
+            }
         }
     }
 
@@ -1026,6 +1040,7 @@ void Gamepad::save_system_settings(){
         float* batt_data = battery.get_calibration_data();
         for(uint8_t i = 0; i < BATTERY_LEVELS; i++)
             system_data->battery_levels[i] = batt_data[i];
+        system_data->battery_lifetime = battery.lifetime;
     }
     else{
         system_data->battery_levels_n = 0;

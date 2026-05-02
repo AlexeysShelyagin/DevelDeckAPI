@@ -195,6 +195,7 @@ enum Buttons_id_t{
 #define BATTERY_FULL_V 4.15                             // Voltage considered as fully charged battery, for proportional charge level calculations
 #define BATTERY_CHARGING_V 4.20                         // value above that would mean that device is connected to the charger
 #define BATTERY_ONLY_CHARGING_V 4.80                    // value above that would bean that device is charging and powered off
+// TODO: only charging ~4.59 when fully discharged
 
 #define BATTERY_DISCHARGED_DEADBAND 0.1                 // to this value battery voltage need to increase to turn on the system
 
@@ -281,6 +282,8 @@ const char NOT_GAME_FOLDER_MSG[] PROGMEM = "Not a game\n folder selected";
 const char NO_SD_CARD_MSG[] PROGMEM = "SD card is not\ninserted";
 const char FACTORY_RESET_MSG[] PROGMEM = "Perform factory\nreset?\n(Console will\n restart)";
 const char BATTERY_CALIBRATION_MSG[] PROGMEM = "Battery is\ncalibrating";
+const char BATTERY_CALIBRATION_FAILED_MSG[] PROGMEM = "Failed to\ncalibrate battery";
+const char UNPLUG_FOR_CALIBRATION_MSG[] PROGMEM = "Unplug the\ncharger\nto calibrate";
 const char BATTERY_CALIBRATION_ALERT[] PROGMEM = "To calibrate battery:\n 1. Make sure battery is fully charged\n 2. Do not power off gamepad until battery fully discharges\n 3. Do not connect the charger\n\n (You can use the gamepad during the calibration)";
 
 
@@ -288,7 +291,6 @@ const char BATTERY_CALIBRATION_ALERT[] PROGMEM = "To calibrate battery:\n 1. Mak
 
 const char TXT_DISPLAY_ALLOC_FAILED[] PROGMEM = "ERROR: not enough heap for display buffer allocation";
 const char TXT_DEFAULT_BITDEPTH_FAILED[] PROGMEM = "WARNING: bitdepth reduced to %d from %d\n";
-const char TXT_FAILED_BATT_CALIBRATION[] PROGMEM = "Failed to\ncalibrate battery";
 const char TXT_DISCHARGED[] PROGMEM = "Discharged";
 const char TXT_LOW_CHARGE_ALARM[] PROGMEM = "Low charge";
 const char TXT_DISPAY_FAILED[] PROGMEM = "ERROR: unable to initialize display";
@@ -329,9 +331,10 @@ const char TXT_UNABLE_CREATE_NOTIFF[] PROGMEM = "ERROR: unable to create notific
 #define SYSTEM_EVENT_CHECK_TIMEOUT 500
 
 #define BATTERY_LEVEL_CHECK_TIMEOUT 10000
+
 #define BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT 5000
 #define BATTERY_LOW_CHARGE_ALARM_TIMEOUT 30000
-#define BATTERY_CALIBRATION_TIMEOUT 2000        // TODO: change to 60000
+#define BATTERY_CALIBRATION_TIMEOUT 60000
 
 #define FORCED_MENU_HOLD_TIME 4000
 
@@ -343,12 +346,12 @@ const char TXT_UNABLE_CREATE_NOTIFF[] PROGMEM = "ERROR: unable to create notific
 
 // RTOS stack sizes per task
 
-#define GAME_STACK_SIZE 8192                        // OK
-#define SYS_EVENT_LISTENER_STACK_SIZE 1024          // OK
-#define DISPLAY_UPDATE_THREAD_STACK_SIZE 2048       // OK
-#define BATTERY_CALIBRATION_STACK_SIZE 4096
-#define BUZZER_STACK_SIZE 640                       // OK
-#define VIBRO_STACK_SIZE 640                        // OK
+#define GAME_STACK_SIZE 8192
+#define SYS_EVENT_LISTENER_STACK_SIZE 1024
+#define DISPLAY_UPDATE_THREAD_STACK_SIZE 2048
+#define BATTERY_CALIBRATION_STACK_SIZE 1024
+#define BUZZER_STACK_SIZE 640
+#define VIBRO_STACK_SIZE 640
 
 
 
