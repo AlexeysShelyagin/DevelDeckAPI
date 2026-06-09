@@ -81,7 +81,6 @@ Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(float v){
     return POWER_ON;
 }
 
-size_t usedBytes;
 void battery_callibration(void *params){
     float v = GAMEPAD_GLOBAL::battery.get_battery_voltage();
     while(v > CRITICAL_V){
@@ -91,11 +90,7 @@ void battery_callibration(void *params){
         }
 
         calibr_v.push_back(GAMEPAD_GLOBAL::battery.get_battery_voltage());
-
-        UBaseType_t highWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        UBaseType_t usedWords = BATTERY_CALIBRATION_STACK_SIZE - highWaterMark;
-        usedBytes = usedWords * sizeof(StackType_t);
-
+        
         vTaskDelay(BATTERY_CALIBRATION_TIMEOUT);
     }
 
