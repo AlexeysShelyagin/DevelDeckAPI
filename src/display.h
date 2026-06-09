@@ -45,7 +45,9 @@ public:
     void pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp = 16);
 
     using TFT_eSprite::pushImage;
+    void pushImage(int32_t x, int32_t y, Image_raw16_t *image);
     void pushImage(int32_t x, int32_t y, Image_raw16_t &image);
+    void pushImage(int32_t x, int32_t y, Image_raw8_t *image);
     void pushImage(int32_t x, int32_t y, Image_raw8_t &image);
 
     void drawPNGFromFile(File *file, int32_t x, int32_t y, bool alpha_channel = false);

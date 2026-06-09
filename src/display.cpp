@@ -105,18 +105,26 @@ void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t 
   }
 }
 
-void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
-	if(image.alpha)
-		pushMaskedImage(x, y, image.w, image.h, image.img_buffer, image.alpha_buffer);
+void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t *image){
+	if(image->alpha)
+		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer);
 	else
-		TFT_eSprite::pushImage(x, y, image.w, image.h, image.img_buffer);
+		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer);
+}
+
+void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
+	pushImage(x, y, &image);
+}
+
+void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t *image){
+	if(image->alpha)
+		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer, 8);
+	else
+		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer, 8);
 }
 
 void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){
-	if(image.alpha)
-		pushMaskedImage(x, y, image.w, image.h, image.img_buffer, image.alpha_buffer, 8);
-	else
-		TFT_eSprite::pushImage(x, y, image.w, image.h, image.img_buffer, 8);
+	pushImage(x, y, &image);
 }
 
 
