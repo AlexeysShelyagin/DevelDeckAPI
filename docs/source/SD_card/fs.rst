@@ -11,7 +11,7 @@ File system (``game_files`` instance)
 Overview
 -----------------
 
-To access files on the SD card, the ``gamepad.game_files`` instance is used.
+To access files on the SD card, the ``ddeckgame_files`` instance is used.
 
 .. important::
     Set ``bool GAME_FILES_REQUIRED = true;`` as a global variable. This flag is **required** to use ``game_files``. If the flag is set and no SD card is inserted, the main menu would be called before game.
@@ -20,7 +20,7 @@ To access files on the SD card, the ``gamepad.game_files`` instance is used.
     The **root directory** of ``game_files`` corresponds to the **game directory** (the same directory that contains ``game.ini``). Accessing files from another game is not possible.
 
 .. warning::
-    Do not perform any SD card operations while ``gamepad.update_display_threaded()`` is running, as this may cause SPI bus corruption.
+    Do not perform any SD card operations while ``ddeckupdate_display_threaded()`` is running, as this may cause SPI bus corruption.
 
 The ``game_files`` interface is intended for loading game assets and storing save data.
 
@@ -85,22 +85,22 @@ Common examples
         Serial.begin(115200);
 
         // Dirs and files creation
-        gamepad.game_files.make_dir("dir1");
-        gamepad.game_files.make_dir("dir1/dir2");
-        gamepad.game_files.create_file("dir1/dir2/file.txt");
+        ddeckgame_files.make_dir("dir1");
+        ddeckgame_files.make_dir("dir1/dir2");
+        ddeckgame_files.create_file("dir1/dir2/file.txt");
 
         // Renaming and deletion
-        gamepad.game_files.open_dir("dir1/dir2");
-        gamepad.game_files.make_dir("dir3");
-        gamepad.game_files.rename("dir3", "delete me");
-        gamepad.game_files.remove_dir("delete me");
+        ddeckgame_files.open_dir("dir1/dir2");
+        ddeckgame_files.make_dir("dir3");
+        ddeckgame_files.rename("dir3", "delete me");
+        ddeckgame_files.remove_dir("delete me");
 
         // Opening parent dir
-        gamepad.game_files.open_parent_dir(2);
+        ddeckgame_files.open_parent_dir(2);
 
         // Listing dir
         Serial.println("Current dir contents: ");
-        std::vector < File_name_t > dir = gamepad.game_files.list_dir();
+        std::vector < File_name_t > dir = ddeckgame_files.list_dir();
         for(uint16_t i = 0; i < dir.size(); i++){
             Serial.print( (dir[i].type == IS_FILE) ? "FILE:\t" : "DIR:\t");
             Serial.println(dir[i].name);
@@ -108,19 +108,19 @@ Common examples
 
         // Objects checks
         Serial.print("file.txt exists?  ");
-        Serial.println(gamepad.game_files.exists("dir1/dir2/file.txt"));    // Awaiting: 1
+        Serial.println(ddeckgame_files.exists("dir1/dir2/file.txt"));    // Awaiting: 1
         Serial.print("Is dir2 a directory?  ");
-        Serial.println(gamepad.game_files.is_dir("dir1/dir2"));             // Awaiting: 1
+        Serial.println(ddeckgame_files.is_dir("dir1/dir2"));             // Awaiting: 1
         Serial.print("Current dir:    ");
-        String abs_dir = gamepad.game_files.current_dir();
+        String abs_dir = ddeckgame_files.current_dir();
         Serial.println(abs_dir);                                            // Your root dir
-        gamepad.game_files.open_dir(abs_dir + "/dir1", true);
+        ddeckgame_files.open_dir(abs_dir + "/dir1", true);
         
-        gamepad.game_files.open_file("dir2/file.txt");
+        ddeckgame_files.open_file("dir2/file.txt");
         Serial.println("file.txt size: ");
-        Serial.println(gamepad.game_files.get_file_size());                 // Awaiting: 0 (empty file)
-        File *file_ref = gamepad.game_files.get_file_reference();
-        gamepad.game_files.close_file();
+        Serial.println(ddeckgame_files.get_file_size());                 // Awaiting: 0 (empty file)
+        File *file_ref = ddeckgame_files.get_file_reference();
+        ddeckgame_files.close_file();
     }
 
 
@@ -178,35 +178,35 @@ Overall
 
     void read_write_example(){
         // ================WRITING FILE===================
-        gamepad.game_files.open_file("test.bin", "w");              // Open for write
+        ddeckgame_files.open_file("test.bin", "w");              // Open for write
 
         char array[4] = {'a', 'b', 'c', 'd'};
-        gamepad.game_files.file_write(array, 4);                    // Writing data chunk
+        ddeckgame_files.file_write(array, 4);                    // Writing data chunk
 
-        gamepad.game_files.save_file();                             // Save in the middle of writing
+        ddeckgame_files.save_file();                             // Save in the middle of writing
         
-        gamepad.game_files.file_println();                          // String + new line
+        ddeckgame_files.file_println();                          // String + new line
 
         MyData_t example = {1000, vec2(10, 5)};
-        gamepad.game_files.file_write(&example, sizeof(example));   // Write some data type to file
+        ddeckgame_files.file_write(&example, sizeof(example));   // Write some data type to file
 
-        gamepad.game_files.file_print(": struct data");             // Print string
+        ddeckgame_files.file_print(": struct data");             // Print string
 
-        gamepad.game_files.close_file();                            // Close saves automatically
+        ddeckgame_files.close_file();                            // Close saves automatically
 
 
         // ================READING FILE===================
-        gamepad.game_files.open_file("test.bin");                   // Open for read
+        ddeckgame_files.open_file("test.bin");                   // Open for read
 
-        Serial.println( gamepad.game_files.file_read_string() + "\n");  // Read all file as string
+        Serial.println( ddeckgame_files.file_read_string() + "\n");  // Read all file as string
         
-        gamepad.game_files.seek(0);                                 // Return cursor to 0
-        Serial.println( gamepad.game_files.file_getline() );        // Read as string until newline
+        ddeckgame_files.seek(0);                                 // Return cursor to 0
+        Serial.println( ddeckgame_files.file_getline() );        // Read as string until newline
 
-        Serial.println( gamepad.game_files.pos() );                 // Current cursor position
+        Serial.println( ddeckgame_files.pos() );                 // Current cursor position
 
         // Read some data type from file
-        MyData_t *from_file = gamepad.game_files.file_read_variable < MyData_t > ();
+        MyData_t *from_file = ddeckgame_files.file_read_variable < MyData_t > ();
         if(from_file != nullptr){                                   // Check if read successfully
             Serial.println(from_file->score);
             Serial.print(from_file->pos.x);
@@ -214,8 +214,8 @@ Overall
             Serial.println(from_file->pos.y);
         }
 
-        while(gamepad.game_files.file_available())                  // Read data until EOF
-            Serial.print((char) *gamepad.game_files.file_read());   // Write each byte as char
+        while(ddeckgame_files.file_available())                  // Read data until EOF
+            Serial.print((char) *ddeckgame_files.file_read());   // Write each byte as char
     }
 
 
@@ -225,9 +225,9 @@ Dynamic data types
 .. code-block:: cpp
     
     String name = "cat";
-    gamepad.game_files.file_write(&name, sizeof(name));                         // Ambiglous
+    ddeckgame_files.file_write(&name, sizeof(name));                         // Ambiglous
     // ...
-    String *read_name = gamepad.game_files.file_read_variable < String > ();    // Ambiglous
+    String *read_name = ddeckgame_files.file_read_variable < String > ();    // Ambiglous
 
     // Because String buffer is dynamic, it won't be stored in file
 
@@ -238,19 +238,19 @@ Images
 .. code-block:: cpp
 
     void draw_PNG_example(){
-        if(!gamepad.game_files.open_file("sample.png"))
+        if(!ddeckgame_files.open_file("sample.png"))
             return;
         // Decode PNG from file (with alpha enabled)
         Image_raw16_t png;
-        gamepad.game_files.file_read_PNG(png, true);
-        gamepad.game_files.close_file();
+        ddeckgame_files.file_read_PNG(png, true);
+        ddeckgame_files.close_file();
 
         // Write and read RAW images
-        gamepad.game_files.open_file("decoded.bin", "a");   // Open for rw
-        gamepad.game_files.write_raw16(png, 0);
+        ddeckgame_files.open_file("decoded.bin", "a");   // Open for rw
+        ddeckgame_files.write_raw16(png, 0);
         Image_raw16_t from_decoded;
-        gamepad.game_files.file_read_raw16(from_decoded, 0);
-        gamepad.game_files.close_file();
+        ddeckgame_files.file_read_raw16(from_decoded, 0);
+        ddeckgame_files.close_file();
 
         Serial.print("Image width:\t");
         Serial.println(png.w);
@@ -260,9 +260,9 @@ Images
         Serial.println(png.alpha);
 
         // Draw from raw16
-        gamepad.canvas->pushImage(0, 0, png);             // From PNG file
-        gamepad.canvas->pushImage(png.w + 20, 0, png);    // From raw file
-        gamepad.update_display();
+        ddeckcanvas->pushImage(0, 0, png);             // From PNG file
+        ddeckcanvas->pushImage(png.w + 20, 0, png);    // From raw file
+        ddeckupdate_display();
     }
 
 

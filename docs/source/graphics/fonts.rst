@@ -71,17 +71,17 @@ Common examples
     };
 
     void setup(){
-        gamepad.clear_canvas();
+        ddeckclear_canvas();
 
         // load font to id 0
-        gamepad.canvas->loadFont(font_demo, 1);
+        ddeckcanvas->loadFont(font_demo, 1);
         // use loaded font
-        gamepad.canvas->setFont(1);
+        ddeckcanvas->setFont(1);
 
-        gamepad.canvas->print("A A A");
-        gamepad.update_display();
+        ddeckcanvas->print("A A A");
+        ddeckupdate_display();
 
-        gamepad.main_loop();
+        ddeckmain_loop();
     }
 
 Load VLW file
@@ -90,7 +90,7 @@ Load VLW file
 Load VLW file
 ^^^^^^^^^^^^^^^^^^
 
-To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``gamepad.game_files`` and passed to :cpp:func:`DD_canvas_t::loadFont` via :cpp:func:`DD_SD_card::get_file_reference`.
+To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``ddeckgame_files`` and passed to :cpp:func:`DD_canvas_t::loadFont` via :cpp:func:`DD_SD_card::get_file_reference`.
 
 .. note::
     Loading a font from the SD card takes time because it must be transferred to RAM. It is recommended to load fonts during initialization.
@@ -106,18 +106,18 @@ You can :download:`download font for this example <cambria 20.vlw>`
 
     void setup() {
         // open VLW file
-        gamepad.game_files.open_file("cambria 20.vlw");
+        ddeckgame_files.open_file("cambria 20.vlw");
         // load font to slot 1 from an opened file
-        gamepad.canvas->loadFont(gamepad.game_files.get_file_reference(), 1);
-        gamepad.game_files.close_file();
+        ddeckcanvas->loadFont(ddeckgame_files.get_file_reference(), 1);
+        ddeckgame_files.close_file();
 
-        gamepad.clear_canvas();
-        gamepad.canvas->println("This is a standart font");
-        gamepad.canvas->setFont(1);   // select loaded font
-        gamepad.canvas->println("This is a loaded from VLW file smooth font");
-        gamepad.update_display();
+        ddeckclear_canvas();
+        ddeckcanvas->println("This is a standart font");
+        ddeckcanvas->setFont(1);   // select loaded font
+        ddeckcanvas->println("This is a loaded from VLW file smooth font");
+        ddeckupdate_display();
 
-        gamepad.main_loop();
+        ddeckmain_loop();
     }
 
 
@@ -144,7 +144,7 @@ The font must first be converted into the ``.VLW`` format.
 .. note::
     The VLW format does not support multiple styles. For different sizes, create separate files (e.g. ``Arial_20.vlw``, ``Arial_12.vlw``).
 
-4. *(optional)* Place the file in the game folder for access via ``gamepad.game_files``.
+4. *(optional)* Place the file in the game folder for access via ``ddeckgame_files``.
 
 PROGMEM array generation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -166,7 +166,7 @@ The generated ``.vlw`` file can be converted into a byte array and stored in ``P
 
     #include "montserrat_20.h"
     // ...
-    gamepad.canvas->loadFont(montserrat20, 1);
+    ddeckcanvas->loadFont(montserrat20, 1);
 
 
 

@@ -10,19 +10,19 @@ Display
 Canvas
 -----------------
 
-The ``gamepad.canvas`` instance is the main drawing surface used to render graphics for the display. It represents an image buffer on which any :ref:`graphics functions <graphics_section>` can be composed before showing on the display.
+The ``ddeckcanvas`` instance is the main drawing surface used to render graphics for the display. It represents an image buffer on which any :ref:`graphics functions <graphics_section>` can be composed before showing on the display.
 
 Canvas can be cleared (filled black) using :cpp:func:`Gamepad::clear_canvas`.
 
 It is implied to fully render frame on canvas and then :ref:`update the display <disp_update_section>`.
 
-Since ``gamepad.canvas`` is is a pointer, its functions must be accessed via ``->``.
+Since ``ddeckcanvas`` is is a pointer, its functions must be accessed via ``->``.
 
 .. code-block:: cpp
 
-    gamepad.clear_canvas();
-    gamepad.canvas->fillRect(0, 0, 100, 100, TFT_RED);
-    gamepad.canvas->setCursor(0, 0);
+    ddeckclear_canvas();
+    ddeckcanvas->fillRect(0, 0, 100, 100, TFT_RED);
+    ddeckcanvas->setCursor(0, 0);
 
 
 Bitdepth
@@ -45,7 +45,7 @@ Canvas bitdepth can be owerriden via global flag:
 Display Update
 -----------------
 
-Call :cpp:func:`Gamepad::update_display` for update. It is a procedure of transfering ``gamepad.canvas`` image buffer to the display. Only after that player would see the rendered image.
+Call :cpp:func:`Gamepad::update_display` for update. It is a procedure of transfering ``ddeckcanvas`` image buffer to the display. Only after that player would see the rendered image.
 
 Since image buffer stores large amount of data, it **takes a while** to transfer it to the display.
 
@@ -84,7 +84,7 @@ Availability
 ^^^^^^^^^^^^^^^^^^
 
 .. warning::
-    It is not possible to update ``gamepad.canvas`` or use ``gamepad.game_files`` during threaded update due to image buffer memory region and SPI bus are busy. Interaction with them may cause **core fatal error**.
+    It is not possible to update ``ddeckcanvas`` or use ``ddeckgame_files`` during threaded update due to image buffer memory region and SPI bus are busy. Interaction with them may cause **core fatal error**.
 
 .. figure:: threaded_corruption.png
    :alt: Forbiden action diagram
@@ -117,18 +117,18 @@ Common examples
             calc_time = 1;
 
         // wait until previous update finishes
-        while(!gamepad.update_display_threaded_available());
+        while(!ddeckupdate_display_threaded_available());
 
-        gamepad.clear_canvas();
-        gamepad.canvas->fillRect(millis() / 10 % 320, 100, 10, 10, TFT_RED);  // running rectangle
-        gamepad.canvas->setCursor(0, 0);
+        ddeckclear_canvas();
+        ddeckcanvas->fillRect(millis() / 10 % 320, 100, 10, 10, TFT_RED);  // running rectangle
+        ddeckcanvas->setCursor(0, 0);
         float fps = 1000.0 / (millis() - last_update);
         // print current fps and calc_time (time program spent on calculations)
-        gamepad.canvas->printf("fps: %f      calc_time: %d", fps, calc_time / 10);
+        ddeckcanvas->printf("fps: %f      calc_time: %d", fps, calc_time / 10);
         
         // start threaded update
         last_update = millis();
-        gamepad.update_display_threaded();
+        ddeckupdate_display_threaded();
     }
 
 
@@ -150,7 +150,7 @@ Using partial updates can significantly reduce display refresh time when only a 
     The displayed image may temporarily differ from the full canvas contents when partial updates are used.
 
 .. note::
-    Region updates are applied to **only one layer** (including the base canvas) and do not affect others. Coordinates are always relative to the layer position (``(0, 0)`` for ``gamepad.canvas``).
+    Region updates are applied to **only one layer** (including the base canvas) and do not affect others. Coordinates are always relative to the layer position (``(0, 0)`` for ``ddeckcanvas``).
 
 Optimization
 ^^^^^^^^^^^^^^^^^
@@ -237,7 +237,7 @@ The DevelDeck API provides a set of experimentally found stable FPS values, defi
 .. code-block:: cpp
 
     // Limit to ~30.304 FPS
-    gamepad.update_display_threaded(true, NO_FLICKERING_FPS_1);
+    ddeckupdate_display_threaded(true, NO_FLICKERING_FPS_1);
 
 
 API reference

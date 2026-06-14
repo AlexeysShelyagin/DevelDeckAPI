@@ -11,7 +11,7 @@ Buzzer
 Overview
 -----------------
 
-The buzzer can be accessed through the ``gamepad.buzzer`` instance. All sound generation is handled in a separate subprocess, ensuring that audio playback does **not block or interrupt** the main application logic.
+The buzzer can be accessed through the ``ddeckbuzzer`` instance. All sound generation is handled in a separate subprocess, ensuring that audio playback does **not block or interrupt** the main application logic.
 
 The gamepad uses a **passive buzzer**. It can generate a single frequency (tone) at a time, and the volume can be adjusted. By playing tones in sequence, simple 8-bit style melodies and sound effects can be created.
 
@@ -37,14 +37,14 @@ Common examples
 
 .. code-block:: cpp
 
-   while(gamepad.buttons.event_available()){
-      uint8_t *event = gamepad.buttons.get_button_event();
+   while(ddeckbuttons.event_available()){
+      uint8_t *event = ddeckbuttons.get_button_event();
 
       if(event[A_BUT_ID] == BUT_PRESSED)
-         gamepad.buzzer.play_tone(400);
+         ddeckbuzzer.play_tone(400);
       
       if(event[A_BUT_ID] == BUT_RELEASED)
-         gamepad.buzzer.stop();
+         ddeckbuzzer.stop();
 
    }
 
@@ -52,7 +52,7 @@ Common examples
 
    void jump(){
       // Jump sound effect
-      gamepad.buzzer.play_for_time(200, 30);
+      ddeckbuzzer.play_for_time(200, 30);
 
       // ...
    }
@@ -86,8 +86,8 @@ Piano example
 
    void loop(){
       // Reading player inputs
-      while(gamepad.buttons.event_available()){
-         uint8_t *event = gamepad.buttons.get_button_event();
+      while(ddeckbuttons.event_available()){
+         uint8_t *event = ddeckbuttons.get_button_event();
          
          Buzzer_element_t note;
          note.timing = 200;   // Each note lasts 200 ms
@@ -113,7 +113,7 @@ Piano example
 
          // Play the whole melody on A pressed
          if(event[A_BUT_ID] == BUT_PRESSED)
-               gamepad.buzzer.play_sequence(notes);
+               ddeckbuzzer.play_sequence(notes);
          // Clear sequence on B pressed
          if(event[B_BUT_ID] == BUT_PRESSED)
                notes.clear();
@@ -158,11 +158,11 @@ Music example
    };
 
    void setup(){
-      gamepad.main_loop();
+      ddeckmain_loop();
    }
 
    void loop(){
-      gamepad.buzzer.play_sequence(
+      ddeckbuzzer.play_sequence(
          (uint16_t*)&music,            // pointer to the sequence
          sizeof(music) / 4             // N of notes from array size
       );

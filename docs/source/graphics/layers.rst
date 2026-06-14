@@ -10,7 +10,7 @@ Layers
 Overview
 ------------------
 
-The ``gamepad.canvas`` is the **base display buffer**. It represents a fixed ``320x240`` layer that is transferred to the display as a **single block**. Due to its size, the ``gamepad.canvas`` is limited to **8-bit color depth**. Additionally, transferring the entire buffer is relatively slow, which may negatively impact performance in time-sensitive applications.
+The ``ddeckcanvas`` is the **base display buffer**. It represents a fixed ``320x240`` layer that is transferred to the display as a **single block**. Due to its size, the ``ddeckcanvas`` is limited to **8-bit color depth**. Additionally, transferring the entire buffer is relatively slow, which may negatively impact performance in time-sensitive applications.
 
 To address these limitations, **layers** can be used. A layer is an independent ``W × H (1|4|8|16-bit)`` image buffer that is rendered separately from the base canvas.
 
@@ -39,7 +39,7 @@ The function returns a :cpp:type:`Layer_id_t` object, which serves as a referenc
    If there is not enough **contiguous memory** available in the heap, the layer will not be created and therefore will not be rendered.
 
 .. note::
-   :cpp:type:`Layer_id_t` internally stores a pointer to its canvas (the same type as ``gamepad.canvas``), allowing direct access:
+   :cpp:type:`Layer_id_t` internally stores a pointer to its canvas (the same type as ``ddeckcanvas``), allowing direct access:
 
    ``layer->canvas->print("text");``
 
@@ -118,16 +118,16 @@ Common Example
    Layer_id_t layer, notifications;
 
    void setup() {
-      gamepad.clear_canvas();
-      gamepad.update_display();
+      ddeckclear_canvas();
+      ddeckupdate_display();
 
       // create 16-bit layer
-      layer = gamepad.create_layer(100, 100, 0, 0, 16);
+      layer = ddeckcreate_layer(100, 100, 0, 0, 16);
       // 1-bit layer for notifications
-      notifications = gamepad.create_layer(120, 40, 110, 100, 1);
+      notifications = ddeckcreate_layer(120, 40, 110, 100, 1);
 
       // Reference layer canvas through function
-      gamepad.layer(layer)->print("layer");
+      ddecklayer(layer)->print("layer");
 
       // Access layer canvas directly
       notifications->canvas->drawRect(0, 0, 120, 40, TFT_WHITE);
@@ -136,9 +136,9 @@ Common Example
       notifications->canvas->fillRect(20, 30, 80, 4, TFT_RED);
 
       // render notification
-      gamepad.update_layer(notifications);
+      ddeckupdate_layer(notifications);
 
-      gamepad.main_loop();
+      ddeckmain_loop();
    }
 
    void loop() {
@@ -150,19 +150,19 @@ Common Example
       }
 
       // delete notification after 5 seconds
-      if(gamepad.layer_exists(notifications) && millis() > 5000){
-         gamepad.delete_layer(notifications);
+      if(ddecklayer_exists(notifications) && millis() > 5000){
+         ddeckdelete_layer(notifications);
          // use empty canvas to remove notification from display
-         gamepad.update_display();
+         ddeckupdate_display();
 
          // move layer origin to display center
-         gamepad.move_layer(layer, 110, 70);
+         ddeckmove_layer(layer, 110, 70);
          // note that previous image would remain on display
          // because no new data is transfered there
       }
 
       // update only 100x100 16bit layer
-      gamepad.update_layer(layer);
+      ddeckupdate_layer(layer);
    }
 
 
@@ -177,7 +177,7 @@ Recommended use cases for layers:
 - Mixing different color depths for efficiency
 
 .. note::
-   The base ``gamepad.canvas`` color depth can be reduced (e.g., ``uint8_t CANVAS_COLOR_DEPTH = 1;``) to save memory. The freed memory can then be used for higher-quality layers (e.g., 16-bit).
+   The base ``ddeckcanvas`` color depth can be reduced (e.g., ``uint8_t CANVAS_COLOR_DEPTH = 1;``) to save memory. The freed memory can then be used for higher-quality layers (e.g., 16-bit).
 
 Using layers with **different bit depths** is encouraged. This improves memory efficiency while enabling richer graphics where needed.
 

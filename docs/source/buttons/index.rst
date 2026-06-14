@@ -15,7 +15,7 @@ All button interactions are handled by the **gamepadAPI** using system interrupt
 
 Events remain in the queue until they are requested by the API user. This ensures that no button interactions are lost, even if multiple events occur between successive API calls.
 
-Buttons functionality have to be accessed through ``gamepad.buttons`` instance.
+Buttons functionality have to be accessed through ``ddeckbuttons`` instance.
 
 
 IDs
@@ -93,9 +93,9 @@ Common examples
    void loop(){
 
       // Process all button events since the previous loop iteration
-      while(gamepad.buttons.event_available()){
+      while(ddeckbuttons.event_available()){
          // Get button event (array indexed by button IDs)
-         uint8_t *event = gamepad.buttons.get_button_event();
+         uint8_t *event = ddeckbuttons.get_button_event();
          
 
          // Perform jump only on button press (click)
@@ -116,7 +116,7 @@ Common examples
 
          // Call main menu
          if(event[MENU_BUT_ID] == BUT_PRESSED)
-               gamepad.main_menu();
+               ddeckmain_menu();
       }
 
       // ...
@@ -137,7 +137,7 @@ Common examples
 
 .. code-block:: cpp
 
-   if(gamepad.buttons.read_state(A_BUT_ID))
+   if(ddeckbuttons.read_state(A_BUT_ID))
       Serial.println("A is pressed now");
    else
       Serial.println("A is unpressed now");
@@ -147,13 +147,13 @@ Common examples
 
    void some_func(){
       // ...
-      gamepad.buttons.clear_queue();
+      ddeckbuttons.clear_queue();
    }
 
    void loop(){
       some_func();
       /// ...
-      uint8_t *initial_A_state = gamepad.buttons.get_latest_state(A_BUT_ID);
+      uint8_t *initial_A_state = ddeckbuttons.get_latest_state(A_BUT_ID);
       /// ...
    }
 
