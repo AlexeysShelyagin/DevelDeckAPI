@@ -12,7 +12,7 @@ struct Buzz_tone_t{
 };
 
 class DD_buzzer{
-    uint8_t channel;
+    uint8_t ledc_ch;
     uint8_t volume;
     uint8_t volume_level = DEFAULT_BUZZER_VOLUME;
 

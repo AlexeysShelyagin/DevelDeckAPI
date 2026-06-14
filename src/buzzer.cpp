@@ -2,7 +2,7 @@
 
 struct Buzzer_sequence_t{
 	uint32_t size;
-	uint8_t channel;
+	uint8_t ledc_ch;
 	uint8_t *volume;
 	uint16_t *data;
 	bool clear_data;
@@ -20,20 +20,20 @@ void seq_free_memory(Buzzer_sequence_t *seq){
 	seq = nullptr;
 }
 
-void play_tone_seq_task(void *params){
+void tone_seq_task(void *params){
 	Buzzer_sequence_t *seq = (Buzzer_sequence_t *) params;
 
 	for(uint32_t i = 0; i < seq->size; i++){
 		if(seq->data[i * 2] != 0){
-			ledcChangeFrequency(seq->channel, seq->data[i * 2], 8);
-			ledcWrite(seq->channel, *seq->volume);
+			ledcChangeFrequency(seq->ledc_ch, seq->data[i * 2], 8);
+			ledcWrite(seq->ledc_ch, *seq->volume);
 		}
 		else
-			ledcWrite(seq->channel, 0);
+			ledcWrite(seq->ledc_ch, 0);
 		
 		vTaskDelay(pdMS_TO_TICKS(seq->data[i * 2 + 1]));
 	}
-	ledcWrite(seq->channel, 0);
+	ledcWrite(seq->ledc_ch, 0);
 
 	seq_free_memory(seq);
 
@@ -48,7 +48,7 @@ void DD_buzzer::init(uint16_t pin, uint8_t channel_){
 #else
     ledcSetup(channel_, 100, 8);
 	ledcAttachPin(pin, channel_);
-	channel = channel_;
+	ledc_ch = channel_;
 #endif
 	ledcWrite(channel_, 0);
 
@@ -56,8 +56,8 @@ void DD_buzzer::init(uint16_t pin, uint8_t channel_){
 }
 
 void DD_buzzer::play_tone(uint16_t freq){
-	ledcChangeFrequency(channel, freq, 8);
-	ledcWrite(channel, volume);
+	ledcChangeFrequency(ledc_ch, freq, 8);
+	ledcWrite(ledc_ch, volume);
 }
 
 void DD_buzzer::stop(){
@@ -67,7 +67,7 @@ void DD_buzzer::stop(){
 		seq_free_memory((Buzzer_sequence_t *) current_seq);
 	}
 
-	ledcWrite(channel, 0);
+	ledcWrite(ledc_ch, 0);
 }
 
 void DD_buzzer::change_volume(uint8_t level){
@@ -93,7 +93,7 @@ void DD_buzzer::play_sequence(std::vector < Buzz_tone_t > &sequence){
 	
 	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
 	seq->size = sequence.size();
-	seq->channel = channel;
+	seq->ledc_ch = ledc_ch;
 	seq->volume = &volume;
 	seq->clear_data = true;
 	seq->data = new uint16_t[seq->size * 2];
@@ -105,7 +105,7 @@ void DD_buzzer::play_sequence(std::vector < Buzz_tone_t > &sequence){
 
 	current_seq = seq;
 	xTaskCreatePinnedToCore(
-		play_tone_seq_task,
+		tone_seq_task,
 		"buzz",
 		BUZZER_STACK_SIZE,
 		seq,
@@ -121,7 +121,7 @@ void DD_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
 	
 	Buzzer_sequence_t *seq = new Buzzer_sequence_t();
 	seq->size = size;
-	seq->channel = channel;
+	seq->ledc_ch = ledc_ch;
 	seq->volume = &volume;
 	
 	if(esp_ptr_in_drom(data) || nocopy){
@@ -136,7 +136,7 @@ void DD_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
 
 	current_seq = seq;
 	xTaskCreatePinnedToCore(
-		play_tone_seq_task,
+		tone_seq_task,
 		"buzz",
 		BUZZER_STACK_SIZE,
 		seq,
