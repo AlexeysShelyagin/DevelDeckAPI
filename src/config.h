@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_CONFIG_H
-#define GAMEPAD_CONFIG_H
+#ifndef DD_CONFIG_H
+#define DD_CONFIG_H
 
 #include <Arduino.h>
 
@@ -44,8 +44,8 @@ static int16_t buttons_map[] = {
                                 MENU_BUT_PIN
                             };
 
-enum Buttons_id_t{
-    LEFT_BUT_ID,
+enum Buttons_id_t : uint8_t{
+    LEFT_BUT_ID = 0,
     UP_BUT_ID,
     RIGHT_BUT_ID,
     DOWN_BUT_ID,
@@ -252,12 +252,12 @@ enum Buttons_id_t{
 
 
 // ##################################################################################
-//                            GAMEPAD SYSTEM CONFIG
+//                            DEVELDECK SYSTEM CONFIG
 // ##################################################################################
 
 
 
-const char GAMEPAD_DATA_FILE_NAME[] PROGMEM = "/gamepad.dat";
+const char DEVELDECK_DATA_FILE_NAME[] PROGMEM = "/gamepad.dat";
 const char GAME_CONFIG_FILE_NAME[] PROGMEM = "game.ini";
 
 
@@ -266,9 +266,9 @@ const char GAME_CONFIG_FILE_NAME[] PROGMEM = "game.ini";
 // Minor version number (x.X.x)
 #define DEVELDECK_API_VERSION_MINOR 3
 // Patch version number (x.x.X)
-#define DEVELDECK_API_VERSION_PATCH 1
+#define DEVELDECK_API_VERSION_PATCH 2
 
-const char DEVELDECK_API_VERSION[] PROGMEM = "0.1.1";
+const char DEVELDECK_API_VERSION[] PROGMEM = "0.3.2";
 
 
 #define DUMP_SYS_DATA_ON_INIT
