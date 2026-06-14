@@ -1,17 +1,15 @@
 #include "vibro.h"
 
-bool vib_task_stop = false;
-
-struct Period_task_param_t{
+struct Vibro_task_param_t{
 	uint16_t t1, t2;
 	uint8_t n;
 	uint8_t strength_;
-	uint8_t channel;
+	uint8_t ledc_ch;
 };
 
 
 
-void clean_periodic_params(Period_task_param_t *params){
+void vib_params_free_memory(Vibro_task_param_t *params){
 	if(params == nullptr)
 		return;
 
@@ -19,17 +17,17 @@ void clean_periodic_params(Period_task_param_t *params){
 	params = nullptr;
 }
 
-void vib_periodic_task(void *params){
-	Period_task_param_t *job = (Period_task_param_t *) params;
+void vibro_task(void *params){
+	Vibro_task_param_t *job = (Vibro_task_param_t *) params;
 
 	for(uint8_t i = 0; i < job->n; i++){
-		ledcWrite(job->channel, job->strength_);
+		ledcWrite(job->ledc_ch, job->strength_);
 		vTaskDelay(pdMS_TO_TICKS(job->t1));
-		ledcWrite(job->channel, 0);
+		ledcWrite(job->ledc_ch, 0);
 		vTaskDelay(pdMS_TO_TICKS(job->t2));
 	}
 
-	clean_periodic_params(job);
+	vib_params_free_memory(job);
 
 	vTaskDelete(NULL);
 }
@@ -42,9 +40,9 @@ void DD_vibro::init(uint16_t pin, uint8_t channel_){
 #else
     ledcSetup(channel_, 25000, 8);
 	ledcAttachPin(pin, channel_);
-	channel = channel_;
+	ledc_ch = channel_;
 #endif
-	ledcWrite(channel, 0);
+	ledcWrite(ledc_ch, 0);
 }
 
 uint8_t DD_vibro::calc_strength(uint8_t strength_){
@@ -53,29 +51,29 @@ uint8_t DD_vibro::calc_strength(uint8_t strength_){
 }
 
 void DD_vibro::enable(uint8_t strength_){
-	ledcWrite(channel, calc_strength(strength_));
+	ledcWrite(ledc_ch, calc_strength(strength_));
 }
 
 void DD_vibro::disable(){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted){
 		vTaskDelete(task_handler);
 		task_handler = NULL;
-		clean_periodic_params((Period_task_param_t *) task_params);
+		vib_params_free_memory((Vibro_task_param_t *) task_params);
 	}
 
-	ledcWrite(channel, 0);
+	ledcWrite(ledc_ch, 0);
 }
 
 
-void DD_vibro::enable_for_time(uint16_t time, uint8_t strength_){
+void DD_vibro::pulse(uint16_t time, uint8_t strength_){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
-	task_params = new Period_task_param_t();
-	*(Period_task_param_t*) task_params = (Period_task_param_t){time, 0, 1, calc_strength(strength_), channel};
+	task_params = new Vibro_task_param_t();
+	*(Vibro_task_param_t*) task_params = (Vibro_task_param_t){time, 0, 1, calc_strength(strength_), ledc_ch};
 	
 	xTaskCreatePinnedToCore(
-		vib_periodic_task,
+		vibro_task,
 		"vib",
 		VIBRO_STACK_SIZE,
 		task_params,
@@ -85,15 +83,15 @@ void DD_vibro::enable_for_time(uint16_t time, uint8_t strength_){
 	);
 }
 
-void DD_vibro::enable_periodic(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_){
+void DD_vibro::multipulse(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
-	task_params = new Period_task_param_t();
-	*(Period_task_param_t*) task_params = (Period_task_param_t){time_enabled, time_disabled, repeat_times, calc_strength(strength_), channel};
+	task_params = new Vibro_task_param_t();
+	*(Vibro_task_param_t*) task_params = (Vibro_task_param_t){time_enabled, time_disabled, repeat_times, calc_strength(strength_), ledc_ch};
 
 	xTaskCreatePinnedToCore(
-		vib_periodic_task,
+		vibro_task,
 		"vib",
 		VIBRO_STACK_SIZE,
 		task_params,

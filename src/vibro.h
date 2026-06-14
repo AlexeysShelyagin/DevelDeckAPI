@@ -6,7 +6,7 @@
 #include "config.h"
 
 class DD_vibro{
-    uint8_t channel;
+    uint8_t ledc_ch;
 
     TaskHandle_t task_handler = NULL;
     void *task_params;
@@ -22,8 +22,8 @@ public:
     void enable(uint8_t strength_ = 255);
     void disable();
 
-    void enable_for_time(uint16_t time, uint8_t strength_ = 255);
-    void enable_periodic(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_ = 255);
+    void pulse(uint16_t time, uint8_t strength_ = 255);
+    void multipulse(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_ = 255);
 };
 
 #endif
