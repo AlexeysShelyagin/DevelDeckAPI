@@ -57,7 +57,7 @@ uint8_t DD_UI::main_menu(bool game_active, bool game_select_active, uint8_t init
 
     while(!quit){
         while(ddeck.buttons.event_available()){
-            uint8_t* event = ddeck.buttons.get_button_event();
+            uint8_t* event = ddeck.buttons.get_event();
 
             if(event[LEFT_BUT_ID] == BUT_PRESSED)
                 cursor = buttons[cursor].left_id;
@@ -138,7 +138,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     
     while (!quit){
         while(ddeck.buttons.event_available()){
-            uint8_t* buttons = ddeck.buttons.get_button_event();
+            uint8_t* buttons = ddeck.buttons.get_event();
             
             if(items_n != 0){
                 if(buttons[DOWN_BUT_ID] == BUT_PRESSED){
@@ -340,7 +340,7 @@ uint8_t DD_UI::settings(System_data_t &data){
     while(!quit){
         int8_t change = 0;
         while(ddeck.buttons.event_available()){
-            uint8_t* buttons = ddeck.buttons.get_button_event();
+            uint8_t* buttons = ddeck.buttons.get_event();
 
             if(buttons[DOWN_BUT_ID] == BUT_PRESSED){
                 if(selected == settings_n){
@@ -556,7 +556,7 @@ uint8_t DD_UI::message_box(String msg, std::vector < String > actions, uint16_t 
     
     while(!quit){
         while(ddeck.buttons.event_available()){
-            uint8_t* event = ddeck.buttons.get_button_event();
+            uint8_t* event = ddeck.buttons.get_event();
             
             if(event[LEFT_BUT_ID] == BUT_PRESSED){
                 cursor = buttons[cursor].left_id;

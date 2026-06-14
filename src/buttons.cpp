@@ -3,7 +3,7 @@
 #include "DevelDeckAPI.h"
 
 //ISR definiton
-IRAM_ATTR void handle_button_interrupt(void *args);
+IRAM_ATTR void buttons_isr(void *args);
 
 struct ISR_args_t{
     DD_buttons *buttons;
@@ -11,6 +11,10 @@ struct ISR_args_t{
     gpio_num_t target_pin;
 };
 ISR_args_t args_container[BUTTONS_N];
+
+uint8_t latest_buttons_state;
+
+
 
 void DD_buttons::init(){
     gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
@@ -30,7 +34,7 @@ void DD_buttons::init(){
 
         args_container[i] = {this, i, pin};
 
-        gpio_isr_handler_add(pin, handle_button_interrupt, &args_container[i]);
+        gpio_isr_handler_add(pin, buttons_isr, &args_container[i]);
     }
 
     uint8_t init_state = 0;
@@ -51,17 +55,17 @@ bool DD_buttons::read_state(uint8_t id){
 }
 
 void DD_buttons::add_button_event(uint8_t &state){
-    previous_state = DD_GLOBAL::latest_buttons_state;
+    previous_state = latest_buttons_state;
 
-    DD_GLOBAL::latest_buttons_state = state;
-    button_buff.push(state);
+    latest_buttons_state = state;
+    events.push(state);
 }
 
-uint8_t* DD_buttons::get_button_event(){
-    if(button_buff.empty())
+uint8_t* DD_buttons::get_event(){
+    if(events.empty())
         return nullptr;
     
-    uint8_t event = button_buff.front();
+    uint8_t event = events.front();
     static uint8_t response[BUTTONS_N];
     for(int i = 0; i < BUTTONS_N; i++){
         bool button = (event >> i) & 1;
@@ -73,26 +77,26 @@ uint8_t* DD_buttons::get_button_event(){
             response[i] = (button) ? BUT_STILL_PRESSED : BUT_STILL_RELEASED;
     }
 
-    button_buff.pop();
+    events.pop();
 
     return response;
 }
 
 bool DD_buttons::event_available(){
-    return !button_buff.empty();
+    return !events.empty();
 }
 
 void DD_buttons::clear_queue(){
-    uint16_t size = button_buff.size();
+    uint16_t size = events.size();
     for(int i = 0; i < size; i++)
-        button_buff.pop();
+        events.pop();
 }
 
 
 
 // ----------- BUTTON_ISR -------------
 
-IRAM_ATTR void handle_button_interrupt(void *args){
+IRAM_ATTR void buttons_isr(void *args){
     DD_buttons *buttons = ((ISR_args_t *) args)->buttons;
     int16_t id = ((ISR_args_t *) args)->pin_id;
     gpio_num_t pin = ((ISR_args_t *) args)->target_pin;
@@ -112,19 +116,15 @@ IRAM_ATTR void handle_button_interrupt(void *args){
         return;
     buttons->last_event_time[id] = now;                                 // update last button event time
 
-    uint8_t new_state = ( DD_GLOBAL::latest_buttons_state & ~(1<<id) ) | ( pin_state<<id );    // change state bit
+    uint8_t new_state = ( latest_buttons_state & ~(1<<id) ) | ( pin_state<<id );    // change state bit
     buttons->add_button_event(new_state);
 }
 
 
 // ------------ GLOBAL ----------------
 
-namespace DD_GLOBAL{
-    uint8_t latest_buttons_state;
-}
-
 bool DD_GLOBAL::get_latest_button_state(uint8_t id){
-    return ((DD_GLOBAL::latest_buttons_state >> id) & 1);                // extract last state of one specific button
+    return ((latest_buttons_state >> id) & 1);                // extract last state of one specific button
 }
 
 void DD_GLOBAL::stop_button_interrupts(){
