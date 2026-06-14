@@ -340,15 +340,15 @@ bool DD_display::init(uint16_t width, uint16_t height, uint8_t backlight_channel
 	canvas.fillSprite(0);
 	canvas.setTextFont(1);
 
-	channel = backlight_channel;
+	ledc_ch = backlight_channel;
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
 	ledcAttach(DISP_BACKLIGHT_PIN, 10000, 8);
 	channel = DISP_BACKLIGHT_PIN;
 #else
-	ledcSetup(channel, 10000, 8);
-	ledcAttachPin(DISP_BACKLIGHT_PIN, channel);
+	ledcSetup(ledc_ch, 10000, 8);
+	ledcAttachPin(DISP_BACKLIGHT_PIN, ledc_ch);
 #endif
-	ledcWrite(channel, brightness);
+	ledcWrite(ledc_ch, brightness);
 
 	initialized = true;
 	return true;
@@ -388,7 +388,7 @@ void DD_display::clear_canvas(){
 
 void DD_display::set_brightness(uint8_t brightness_){
 	brightness = brightness_;
-	ledcWrite(channel, brightness);
+	ledcWrite(ledc_ch, brightness);
 }
 
 uint8_t DD_display::get_brightness(){

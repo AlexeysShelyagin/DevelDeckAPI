@@ -1,5 +1,5 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef DD_DISPLAY_H
+#define DD_DISPLAY_H
 
 #include <Arduino.h>
 #include <TFT_eSPI.h>
@@ -22,18 +22,20 @@ extern bool ALLOW_DMA __attribute__((weak));
 
 
 struct Graphics_params_t{
-        uint8_t font_id;
-        uint8_t text_size;
-        uint32_t text_color;
-        bool wrap_x, wrap_y;
-        int16_t cur_x, cur_y;
-        int16_t orig_x, orig_y;
-    };
+    uint8_t font_id = 0;
+    uint8_t text_size = 1;
+    uint32_t text_color = TFT_WHITE;
+    bool wrap_x = true, wrap_y = false;
+    int16_t cur_x = 0, cur_y = 0;
+    int16_t orig_x = 0, orig_y = 0;
+};
+
+
 
 class DD_canvas_t : public TFT_eSprite{
     using TFT_eSprite::TFT_eSprite;
 
-    uint8_t* fonts[FONTS_MAX_N];
+    uint8_t* fonts[FONTS_MAX_N] = {nullptr};
     uint16_t font_h;
     uint8_t dynamic_mem_font = 0;
     uint8_t font_id = 0;
@@ -68,7 +70,7 @@ public:
 
 class DD_display{
     int16_t w, h;
-    uint8_t channel;
+    uint8_t ledc_ch;
     uint8_t brightness = 255;
 
     TFT_eSPI disp = TFT_eSPI();
