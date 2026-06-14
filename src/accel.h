@@ -1,5 +1,5 @@
-#ifndef ACCEL_H
-#define ACCEL_H
+#ifndef DD_ACCEL_H
+#define DD_ACCEL_H
 
 #include <Wire.h>
 #include <Arduino.h>
@@ -7,23 +7,23 @@
 #include "config.h"
 #include "vectors.h"
 
-const float g_const = 9.81;
+const float GRAVITY_MS2 = 9.81f;
 
-class Gamepad_accel{
-    enum chip_type_t{
+class DD_accel{
+    enum chip_type_t : uint8_t{
         BMI160_ID = 0xD1,
         BMI323_ID = 0x43
     };
     uint8_t chip = 0;
 
-    TwoWire accelWire = TwoWire(0);
-    vec3 invert_mask;
+    TwoWire _i2c = TwoWire(0);
 
+    vec3 invert_mask;
     vec3 basis_x;
     vec3 basis_y;
 
 public:
-    Gamepad_accel() = default;
+    DD_accel() = default;
 
     void init(int sda_pin = ACCEL_SDA_PIN, int scl_pin = ACCEL_SCL_PIN);
 
@@ -35,7 +35,7 @@ public:
     void set_as_zero(vec3 accel, bool hold_x_axis = false);
 
     vec3 get_accel();
-    vec2 get_angles(vec3 &accel);
+    vec2 get_angles(vec3 accel);
     vec2 get_angles();
 };
 
