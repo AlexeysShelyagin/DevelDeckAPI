@@ -13,7 +13,7 @@
 #define SD_CS_PIN 21
 #endif
 
-enum FS_obj_type{
+enum FS_obj_type : uint8_t{
     IS_DIR,
     IS_FILE
 };
@@ -33,7 +33,7 @@ class DD_SD_card{
     bool check_root_level(String path);
     bool process_path(String &path, bool absolute);
 public:
-    enum SD_status_t{
+    enum SD_status_t : uint8_t{
         SD_OK,
         SD_FAILED,
         SD_DISCONNECT

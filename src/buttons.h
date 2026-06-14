@@ -6,8 +6,8 @@
 
 #include "config.h"
 
-enum Button_state_t{
-    BUT_NONE,
+enum Button_state_t : uint8_t{
+    BUT_NONE = 0,
     BUT_PRESSED,
     BUT_RELEASED,
     BUT_STILL_PRESSED,

@@ -44,8 +44,8 @@ static int16_t buttons_map[] = {
                                 MENU_BUT_PIN
                             };
 
-enum Buttons_id_t{
-    LEFT_BUT_ID,
+enum Buttons_id_t : uint8_t{
+    LEFT_BUT_ID = 0,
     UP_BUT_ID,
     RIGHT_BUT_ID,
     DOWN_BUT_ID,

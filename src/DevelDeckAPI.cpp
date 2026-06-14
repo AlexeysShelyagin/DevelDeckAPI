@@ -40,8 +40,8 @@ bool distruct_notification = false;
 bool create_notification = false;
 String notification_msg = "";
 
-enum UI_call_t{
-    UI_NONE,
+enum UI_call_t : uint8_t{
+    UI_NONE = 0,
     CALL_MAIN_MENU,
     CALL_GAME_SELECTION_MENU,
     CALL_SETTING_MENU,

@@ -61,7 +61,7 @@ typedef Layer_t* Layer_id_t;
 
 
 class DevelDeck{
-    enum Sys_param_t{
+    enum Sys_param_t : uint16_t{
         INITIALIZED,
         DISPLAY_ENABLED,
         BUTTONS_ENABLED,

@@ -10,7 +10,7 @@
 const float GRAVITY_MS2 = 9.81f;
 
 class DD_accel{
-    enum chip_type_t{
+    enum chip_type_t : uint8_t{
         BMI160_ID = 0xD1,
         BMI323_ID = 0x43
     };
