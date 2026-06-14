@@ -163,7 +163,7 @@ public:
      * 
      * @return battery level in range from 0 to `BATTERY_LEVELS`
      */
-    uint8_t get_battery_charge();
+    uint8_t get_charge();
 
 
 

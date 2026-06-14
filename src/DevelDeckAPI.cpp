@@ -30,7 +30,7 @@ TaskHandle_t display_updater_handler = NULL;
 bool disp_transaction_block = false;
 TaskHandle_t disp_transaction_owner = NULL;
 
-DD_battery::Charge_mode_t batt_mode;
+DD_battery::Mode_t batt_mode;
 float battery_critical_v;
 
 bool DD_GLOBAL::forced_display_update = false;
@@ -126,8 +126,8 @@ void display_update_thread_task(void *params){
 // ====================== SYSTEM EVENT LISTENER PROCESS ==========================================
 
 inline void DevelDeck::battery_listener_implementation(){
-    float voltage = battery.get_battery_voltage();
-    DD_battery::Charge_mode_t batt_mode = battery.get_device_mode(voltage);
+    float voltage = battery.get_voltage();
+    DD_battery::Mode_t batt_mode = battery.get_device_mode(voltage);
 
     if(batt_mode == DD_battery::POWER_OFF)
         ESP.restart();
@@ -173,7 +173,7 @@ inline void DevelDeck::battery_listener_implementation(){
             }
             
             // low charge alarm
-            if(battery.get_battery_charge(voltage) == 0 && !is_discharged){
+            if(battery.get_charge(voltage) == 0 && !is_discharged){
                 if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
                     make_notification_helper(TXT_LOW_CHARGE_ALARM);
                     last_low_charge_alarm = millis();
@@ -243,7 +243,7 @@ void DevelDeck::sys_event_listener_task(void *params){
             }
         }
 
-        if(battery.is_calibrating() && battery.calibration_failed()){
+        if(battery.is_calibrating() && battery.is_calibration_failed()){
             make_notification_helper(BATTERY_CALIBRATION_FAILED_MSG);
             battery.finish_calibration();
         }
@@ -521,8 +521,8 @@ bool DevelDeck::init_SPIFFS(){
 
 // ------------------------- Wrappers ----------------------------
 
-uint8_t DevelDeck::get_battery_charge(){
-    return battery.get_battery_charge();
+uint8_t DevelDeck::get_charge(){
+    return battery.get_charge();
 }
 
 // ---------------------------------------------------------------
@@ -1035,7 +1035,7 @@ void DevelDeck::save_system_settings(){
     system_data->brightness = get_display_brightness();
     system_data->vibro_strength = vibro.strength;
 
-    if(battery.calibrated()){
+    if(battery.is_calibrated()){
         system_data->battery_levels_n = BATTERY_LEVELS;
         float* batt_data = battery.get_calibration_data();
         for(uint8_t i = 0; i < BATTERY_LEVELS; i++)

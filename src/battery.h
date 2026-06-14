@@ -8,6 +8,9 @@
 
 #include "config.h"
 
+// DD_battery class is a wrapper for the global battery instance
+// No other instance should be created
+
 class DD_battery{
     float critical_v;
     float full_v;
@@ -23,9 +26,10 @@ class DD_battery{
     uint32_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
     esp_adc_cal_characteristics_t adc1_chars;
+
 public:
-    enum Charge_mode_t{
-        POWER_ON,
+    enum Mode_t : uint8_t{
+        POWER_ON = 0,
         POWER_OFF,
         CHARGING
     };
@@ -36,17 +40,17 @@ public:
     void init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_);
     void set_voltage_adjustment(float (*v_adj_func_ptr)(float));
 
-    float get_battery_voltage();
-    uint8_t get_battery_charge(float v = 0);
+    float get_voltage();
+    uint8_t get_charge(float v = 0);
 
-    Charge_mode_t get_device_mode(float v = 0);
+    Mode_t get_device_mode(float v = 0);
 
     void start_calibration();
     float* finish_calibration();
     bool is_calibrating();
-    bool calibration_failed();
-
-    bool calibrated();
+    bool is_calibration_failed();
+    bool is_calibrated();
+    
     float* get_calibration_data();
     void set_calibration_data(float *data);
 };
