@@ -73,8 +73,6 @@ public:
      * 
      */
     void clear_queue();
-    
-    void add_button_event(uint8_t &state);
 };
 
 
