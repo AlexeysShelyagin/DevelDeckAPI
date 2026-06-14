@@ -132,7 +132,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     DD_SD_card file_manager;
     file_manager.init(root);
 
-    Game_config_t *game_config = new Game_config_t();
+    DD_GLOBAL::Game_config_t *game_config = new DD_GLOBAL::Game_config_t();
 
     File_mngr_t res = {"", "", nullptr};
     
@@ -317,7 +317,7 @@ void render_setting_param(String value, uint16_t x, uint16_t y, bool active){
     ddeck.canvas->setTextColor(TFT_WHITE);
 }
 
-uint8_t DD_UI::settings(System_data_t &data){
+uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
     bool update_disp = true;
     bool quit = false;
     bool changes = false;
@@ -634,7 +634,7 @@ bool DD_UI::notification(String msg){
     return 1;
 }
 
-void DD_UI::init_game_downloading_screen(Game_config_t game_data, String dir){
+void DD_UI::init_game_downloading_screen(DD_GLOBAL::Game_config_t game_data, String dir){
     ddeck.clear_canvas();
 
     ddeck.canvas->setDefaultGraphicsParams();

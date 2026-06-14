@@ -1,5 +1,5 @@
-#ifndef DEVEL_DECK_API_H
-#define DEVEL_DECK_API_H
+#ifndef DEVELDECK_API_H
+#define DEVELDECK_API_H
 
 #include <Arduino.h>
 #include <vector>
@@ -21,47 +21,50 @@
 typedef DEFAULT_CANVAS_T DD_canvas_t;
 #endif
 
+namespace DD_GLOBAL{
+    /**
+     * @brief Game info for loading screen container
+     * 
+     */
+    struct Game_config_t{
+        String name;                /** Game name */
+        String description;         /** Game description text */
+        String game_path;           /** Path to `game.ini` */
+        String icon_path;           /** Path to game icon */
+        uint8_t minimum_flash;      /** Minimum required flash for installation */
+    };
 
-/**
- * @brief Game info for loading screen container
- * 
- */
-struct Game_config_t{
-    String name;                /** Game name */
-    String description;         /** Game description text */
-    String game_path;           /** Path to `game.ini` */
-    String icon_path;           /** Path to game icon */
-    uint8_t minimum_flash;      /** Minimum required flash for installation */
-};
+    struct System_data_t{
+        uint8_t game_path_size;
+        char game_path[255];
+        uint8_t buzzer_volume;
+        uint8_t brightness;
+        uint8_t vibro_strength;
 
-struct System_data_t{
-    uint8_t game_path_size;
-    char game_path[255];
-    uint8_t buzzer_volume;
-    uint8_t brightness;
-    uint8_t vibro_strength;
+        float battery_critical_v;
+        float battery_charging_v;
+        float battery_only_charging_v;
+        float battery_full_v;
+        
+        uint8_t battery_levels_n;
+        float battery_levels[BATTERY_LEVELS];
+        uint16_t battery_lifetime;
+    };
 
-    float battery_critical_v;
-    float battery_charging_v;
-    float battery_only_charging_v;
-    float battery_full_v;
-    
-    uint8_t battery_levels_n;
-    float battery_levels[BATTERY_LEVELS];
-    uint16_t battery_lifetime;
-};
+    struct Layer_t{
+        DD_canvas_t *canvas;
+        uint16_t x, y;
+    };
 
-struct Layer_t{
-    DD_canvas_t *canvas;
-    uint16_t x, y;
-};
+    extern bool forced_display_update;
+}
 
-typedef Layer_t* Layer_id_t;
+typedef DD_GLOBAL::Layer_t* Layer_id_t;
 
 
 
 class DevelDeck{
-    enum Sys_param_t : uint16_t{
+    enum Sys_flags_t : uint8_t{
         INITIALIZED,
         DISPLAY_ENABLED,
         BUTTONS_ENABLED,
@@ -74,18 +77,20 @@ class DevelDeck{
         SYSTEM_SETTINGS_TO_DEFAULT,
         READY_TO_PLAY
     };
-    uint16_t system_params = 0;
+    uint16_t sys_flags = 0x0000;
+    bool sys_flag(Sys_flags_t id);
+    void sys_flag(Sys_flags_t id, bool val);
 
-    uint8_t brightness = DEFAULT_BRIGHTNESS;
-    System_data_t *system_data;
+    DD_GLOBAL::System_data_t *system_data;
     String game_path;
-
+    
     DD_display *disp;
+    uint8_t brightness = DEFAULT_BRIGHTNESS;
     
     DD_SD_card sd_card;
 
-    std::vector < Layer_t* > layers;
-    Layer_t sys_overlay_layer = {nullptr, 0, 0};
+    std::vector < DD_GLOBAL::Layer_t* > layers;
+    DD_GLOBAL::Layer_t sys_overlay_layer = {nullptr, 0, 0};
 
     bool init_buttons();
     void init_display();
@@ -96,8 +101,6 @@ class DevelDeck{
     void init_battery();
     bool init_SPIFFS();
 
-    bool sys_param(Sys_param_t id);
-    void sys_param(Sys_param_t id, bool val);
     void system_data_dump();
 
     void locate_game();
@@ -147,12 +150,6 @@ public:
      * @param game_func_ override game loop function instead `void loop()` if needed
      */
     void main_loop(void (*game_func_)() = loop);
-
-    /**
-     * @brief Some system level subprocesses are blocked during `game_func()` handling. Call this function to avoid long-term system delay.
-     * 
-     */
-    void give_access_to_subprocess();
 
     void init__();
 
@@ -353,9 +350,9 @@ public:
     void game_downloading_screen(uint8_t percentage);
 
     void save_system_settings();
-    void apply_system_settings(System_data_t *settings);
+    void apply_system_settings(DD_GLOBAL::System_data_t *settings);
 
-    Game_config_t read_game_config(String &config);
+    DD_GLOBAL::Game_config_t read_game_config(String &config);
 };
 
 
@@ -365,12 +362,6 @@ public:
 extern DevelDeck ddeck;
 
 extern bool GAME_FILES_REQUIRED;
-
-
-
-namespace DD_GLOBAL{
-    extern bool forced_display_update;
-}
 
 #define force_sys_disp_update() DD_GLOBAL::forced_display_update = true
 

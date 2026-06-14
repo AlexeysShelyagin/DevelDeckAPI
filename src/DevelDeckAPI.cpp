@@ -67,6 +67,7 @@ struct threaded_update_params_t{
 
 // ========================= DEVELDECK INITIALIZATION BEFORE USER CODE =============================
 
+// Arduino.h initialization function overload
 void init(){
     ddeck.init__();
 }
@@ -360,10 +361,10 @@ void DevelDeck::main_loop(void (*game_func_)()){
 // ================================ TINITIALIZATION ROUTINE ======================================
 
 void DevelDeck::init__(){
-    if(sys_param(INITIALIZED))
+    if(sys_flag(INITIALIZED))
         return;
-    sys_param(INITIALIZED, 1);
-    sys_param(READY_TO_PLAY, 1);
+    sys_flag(INITIALIZED, 1);
+    sys_flag(READY_TO_PLAY, 1);
 
     Serial.begin(115200);
 
@@ -381,9 +382,9 @@ void DevelDeck::init__(){
 
     locate_game();
     if(GAME_FILES_REQUIRED)
-        sys_param(READY_TO_PLAY, sys_param(GAME_FILES_LOCATED));
+        sys_flag(READY_TO_PLAY, sys_flag(GAME_FILES_LOCATED));
     
-    if(sys_param(SYSTEM_SETTINGS_TO_DEFAULT))
+    if(sys_flag(SYSTEM_SETTINGS_TO_DEFAULT))
         save_system_settings();
     else
         apply_system_settings();
@@ -398,7 +399,7 @@ void DevelDeck::init__(){
     init_battery();
     battery_critical_v = system_data->battery_critical_v;
 
-    if(!sys_param(READY_TO_PLAY))
+    if(!sys_flag(READY_TO_PLAY))
         __main_menu();
 
 }
@@ -422,7 +423,7 @@ void DevelDeck::init_display(){
 
     clear_canvas();
 
-    sys_param(DISPLAY_ENABLED, 1);
+    sys_flag(DISPLAY_ENABLED, 1);
 }
 
 
@@ -430,7 +431,7 @@ void DevelDeck::init_display(){
 bool DevelDeck::init_buttons(){
     buttons.init();
 
-    sys_param(BUTTONS_ENABLED, 1);
+    sys_flag(BUTTONS_ENABLED, 1);
 
     return 1;
 }
@@ -440,7 +441,7 @@ bool DevelDeck::init_buttons(){
 bool DevelDeck::init_vibro(){
     vibro.init();
 
-    sys_param(VIBRO_ENABLED, 1);
+    sys_flag(VIBRO_ENABLED, 1);
 
     return 1;
 }
@@ -450,7 +451,7 @@ bool DevelDeck::init_vibro(){
 bool DevelDeck::init_buzzer(){
     buzzer.init();
 
-    sys_param(BUZZER_ENABLED, 1);
+    sys_flag(BUZZER_ENABLED, 1);
 
     return 1;
 }
@@ -460,7 +461,7 @@ bool DevelDeck::init_buzzer(){
 bool DevelDeck::init_accel(){
     accel.init();
 
-    sys_param(ACCEL_ENABLED, 1);
+    sys_flag(ACCEL_ENABLED, 1);
 
     return 1;
 }
@@ -496,7 +497,7 @@ bool DevelDeck::init_SD(){
         return 0;
     }
 
-    sys_param(SD_ENABLED, 1);
+    sys_flag(SD_ENABLED, 1);
     return 1;
 }
 
@@ -506,7 +507,7 @@ bool DevelDeck::init_SPIFFS(){
         return 0;
     }
     
-    sys_param(SPIFFS_ENABLED, 1);
+    sys_flag(SPIFFS_ENABLED, 1);
     return 1;
 }
 
@@ -537,7 +538,7 @@ void DevelDeck::clear_canvas(){
 }
 
 void DevelDeck::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
-    if(!sys_param(DISPLAY_ENABLED))
+    if(!sys_flag(DISPLAY_ENABLED))
 		return;
 
     if(disp_transaction_block || disp_transaction_owner != NULL)
@@ -565,7 +566,7 @@ void DevelDeck::update_display(bool ignore_layers, int16_t x0, int16_t y0, uint1
 
 void DevelDeck::update_display_threaded(bool ignore_layers, float fps_max, 
                                     int16_t x0, int16_t y0, uint16_t w, uint16_t h){
-    if(!sys_param(DISPLAY_ENABLED))
+    if(!sys_flag(DISPLAY_ENABLED))
 		return;
     
     if(!update_display_threaded_available())
@@ -673,7 +674,7 @@ void DevelDeck::move_layer(Layer_id_t &id, uint16_t new_x, uint16_t new_y){
 
 
 void DevelDeck::update_layer(Layer_id_t &id, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
-     if(!sys_param(DISPLAY_ENABLED))
+     if(!sys_flag(DISPLAY_ENABLED))
 		return;
 
     if(disp_transaction_block || disp_transaction_owner != NULL)
@@ -693,7 +694,7 @@ void DevelDeck::update_layer(Layer_id_t &id, int16_t x0, int16_t y0, uint16_t w,
 }
 
 void DevelDeck::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0, int16_t y0, uint16_t w, uint16_t h){
-    if(!sys_param(DISPLAY_ENABLED))
+    if(!sys_flag(DISPLAY_ENABLED))
 		return;
 
     if(id == nullptr)
@@ -771,17 +772,17 @@ void DevelDeck::__main_menu(){
     uint8_t cursor = 0;
 
     while(true){
-        cursor = UI.main_menu(sys_param(READY_TO_PLAY), sys_param(SD_ENABLED), cursor);
+        cursor = UI.main_menu(sys_flag(READY_TO_PLAY), sys_flag(SD_ENABLED), cursor);
         buttons.clear_queue();
 
         if(cursor == 0){
-            if(sys_param(READY_TO_PLAY))
+            if(sys_flag(READY_TO_PLAY))
                 break;  
             else{
                 std::vector < String > buttons = {"Ok", "Cancel"};
                 uint8_t response = UI.message_box(GAME_FILES_NOT_FOUND_MSG, buttons);
                 if(response == 0){
-                    if(!sys_param(SD_ENABLED))
+                    if(!sys_flag(SD_ENABLED))
                         UI.message_box(NO_SD_CARD_MSG);
                     else{
                         user_locate_game_folder();
@@ -834,7 +835,7 @@ void DevelDeck::__settings_menu(){
 
 
 void DevelDeck::__select_game_menu(){
-    if(!sys_param(SD_ENABLED)){
+    if(!sys_flag(SD_ENABLED)){
         UI.message_box(NO_SD_CARD_MSG);
         return;
     }
@@ -924,13 +925,13 @@ void DevelDeck::delete_sys_overlay(){
 
 // -------------- DevelDeck settings and parameters ----------------
 
-bool DevelDeck::sys_param(Sys_param_t id){
-    return system_params >> id & 1;
+bool DevelDeck::sys_flag(Sys_flags_t id){
+    return sys_flags >> id & 1;
 }
 
-void DevelDeck::sys_param(Sys_param_t id, bool val){
-    system_params &= ~(1 << id);
-    system_params |= ((uint8_t) val) << id;
+void DevelDeck::sys_flag(Sys_flags_t id, bool val){
+    sys_flags &= ~(1 << id);
+    sys_flags |= ((uint8_t) val) << id;
 }
 
 void DevelDeck::system_data_dump(){
@@ -964,7 +965,7 @@ void DevelDeck::system_data_dump(){
 
 
 void DevelDeck::locate_game(){
-    if(GAME_FILES_REQUIRED && sys_param(SD_ENABLED)){
+    if(GAME_FILES_REQUIRED && sys_flag(SD_ENABLED)){
         game_path = "";
         for (uint8_t i = 0; i < system_data->game_path_size; i++)
             game_path += system_data->game_path[i];
@@ -974,7 +975,7 @@ void DevelDeck::locate_game(){
         
         uint8_t init_status = game_files.init(game_path);
 
-        sys_param(GAME_FILES_LOCATED, (init_status == DD_SD_card::SD_OK));
+        sys_flag(GAME_FILES_LOCATED, (init_status == DD_SD_card::SD_OK));
     }
 }
 
@@ -983,7 +984,7 @@ void DevelDeck::locate_game(){
 void DevelDeck::init_system_data(){
     system_data = new System_data_t;
 
-    if(!sys_param(SPIFFS_ENABLED))
+    if(!sys_flag(SPIFFS_ENABLED))
         return;
 
     File sys_data = SPIFFS.open(DEVELDECK_DATA_FILE_NAME);
@@ -998,7 +999,7 @@ void DevelDeck::init_system_data(){
         sys_data.write((uint8_t *) empty_data, sizeof(System_data_t));
         system_data = empty_data;
 
-        sys_param(SYSTEM_SETTINGS_TO_DEFAULT, 1);
+        sys_flag(SYSTEM_SETTINGS_TO_DEFAULT, 1);
     }
     else
         sys_data.read((uint8_t *) system_data, sizeof(System_data_t));
@@ -1078,8 +1079,8 @@ void DevelDeck::user_locate_game_folder(){
             save_system_settings();
 
             uint8_t init_status = game_files.init(game_path);
-            sys_param(GAME_FILES_LOCATED, (init_status == DD_SD_card::SD_OK));
-            sys_param(READY_TO_PLAY, (init_status == DD_SD_card::SD_OK));
+            sys_flag(GAME_FILES_LOCATED, (init_status == DD_SD_card::SD_OK));
+            sys_flag(READY_TO_PLAY, (init_status == DD_SD_card::SD_OK));
 
             break;
         }
