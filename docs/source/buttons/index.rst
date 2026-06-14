@@ -58,18 +58,18 @@ Event handling
 -------------------
 
 To determine whether there are unprocessed button events in the queue, use
-:cpp:func:`Gamepad_buttons::event_available`.
+:cpp:func:`DD_buttons::event_available`.
 
-Event data can be retrieved using :cpp:func:`Gamepad_buttons::get_button_event`.
+Event data can be retrieved using :cpp:func:`DD_buttons::get_button_event`.
 This function returns a ``uint8_t*`` pointer to an array containing
 ``BUTTONS_N`` (7) elements. Each element represents the state of a button,
 indexed by its corresponding button ID.
 
-After :cpp:func:`Gamepad_buttons::get_button_event` is called, the event is considered handled and
+After :cpp:func:`DD_buttons::get_button_event` is called, the event is considered handled and
 is removed from the queue.
 
 .. important::
-   Calling :cpp:func:`Gamepad_buttons::event_available` before :cpp:func:`Gamepad_buttons::get_button_event` is **mandatory**. If the queue is empty, :cpp:func:`Gamepad_buttons::event_available` returns ``nullptr``. Dereferencing this pointer will cause an ESP32 **Guru Meditation Error**.
+   Calling :cpp:func:`DD_buttons::event_available` before :cpp:func:`DD_buttons::get_button_event` is **mandatory**. If the queue is empty, :cpp:func:`DD_buttons::event_available` returns ``nullptr``. Dereferencing this pointer will cause an ESP32 **Guru Meditation Error**.
 
 It is implied to read and process all button events while events are available.
 
@@ -78,7 +78,7 @@ Force-clearing queue
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 If necessary, the event queue can be **emptied forcibly** using the
-:cpp:func:`Gamepad_buttons::clear_queue` function.
+:cpp:func:`DD_buttons::clear_queue` function.
 
 This can be useful in scenarios such as:
 
@@ -128,9 +128,9 @@ Common examples
 Direct state read
 ------------------
 
-Button state can be retrieved directly by using :cpp:func:`Gamepad_buttons::read_state`. This function will return **current** button state by its ID.
+Button state can be retrieved directly by using :cpp:func:`DD_buttons::read_state`. This function will return **current** button state by its ID.
 
-Latest (in time) queue event can be accessed using :cpp:func:`Gamepad_buttons::get_latest_state` without scanning all events and marking them as handled.
+Latest (in time) queue event can be accessed using :cpp:func:`DD_buttons::get_latest_state` without scanning all events and marking them as handled.
 
 Common examples
 ^^^^^^^^^^^^^^^^^^
@@ -168,12 +168,12 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_buttons::event_available
-.. doxygenfunction:: Gamepad_buttons::get_button_event
-.. doxygenfunction:: Gamepad_buttons::add_button_event
-.. doxygenfunction:: Gamepad_buttons::clear_queue
-.. doxygenfunction:: Gamepad_buttons::read_state
-.. doxygenfunction:: Gamepad_buttons::get_latest_state
+.. doxygenfunction:: DD_buttons::event_available
+.. doxygenfunction:: DD_buttons::get_button_event
+.. doxygenfunction:: DD_buttons::add_button_event
+.. doxygenfunction:: DD_buttons::clear_queue
+.. doxygenfunction:: DD_buttons::read_state
+.. doxygenfunction:: DD_buttons::get_latest_state
 
 Enumerations
 ^^^^^^^^^^^^^^^^

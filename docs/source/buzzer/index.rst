@@ -15,7 +15,7 @@ The buzzer can be accessed through the ``gamepad.buzzer`` instance. All sound ge
 
 The gamepad uses a **passive buzzer**. It can generate a single frequency (tone) at a time, and the volume can be adjusted. By playing tones in sequence, simple 8-bit style melodies and sound effects can be created.
 
-Any sound currently being played can be stopped at any time using :cpp:func:`Gamepad_buzzer::stop`.
+Any sound currently being played can be stopped at any time using :cpp:func:`DD_buzzer::stop`.
 
 .. note::
    If a new playback request is received while another tone or sequence is already playing, the new request is ignored.
@@ -28,9 +28,9 @@ Any sound currently being played can be stopped at any time using :cpp:func:`Gam
 Playing a Tone
 -----------------
 
-The function :cpp:func:`Gamepad_buzzer::play_tone` plays a tone at the specified frequency **forever**, until :cpp:func:`Gamepad_buzzer::stop` is called.
+The function :cpp:func:`DD_buzzer::play_tone` plays a tone at the specified frequency **forever**, until :cpp:func:`DD_buzzer::stop` is called.
 
-The function :cpp:func:`Gamepad_buzzer::play_for_time` plays a tone for a specified duration (in milliseconds) and stops automatically. This is useful for short sound effects and notifications.
+The function :cpp:func:`DD_buzzer::play_for_time` plays a tone for a specified duration (in milliseconds) and stops automatically. This is useful for short sound effects and notifications.
 
 Common examples
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -62,7 +62,7 @@ Common examples
 Playing a note sequence
 --------------------------
 
-The buzzer can play simple melodies using :cpp:func:`Gamepad_buzzer::play_sequence`.
+The buzzer can play simple melodies using :cpp:func:`DD_buzzer::play_sequence`.
 
 A sequence consists of multiple elements, where each element contains ``frequency`` (tone) and ``duration`` (milliseconds). Elements are played sequentially.
 
@@ -177,12 +177,12 @@ Buzzer volume
 
 Buzzer volume is stored in gamepad settings and is changed by a player. However it can be changed in game code.
 
-:cpp:func:`Gamepad_buzzer::change_volume` function change buzzer volume from ``0`` to ``BUZZER_VOLUME_LEVELS``.
+:cpp:func:`DD_buzzer::change_volume` function change buzzer volume from ``0`` to ``BUZZER_VOLUME_LEVELS``.
 
 .. note::
    The changed volume **does not modify** the user settings and will be discarded after the gamepad reset.
 
-Current volume can be retrieved with :cpp:func:`Gamepad_buzzer::get_volume`.
+Current volume can be retrieved with :cpp:func:`DD_buzzer::get_volume`.
 
 
 API reference
@@ -191,13 +191,13 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_buzzer::play_tone
-.. doxygenfunction:: Gamepad_buzzer::stop
-.. doxygenfunction:: Gamepad_buzzer::play_for_time
-.. doxygenfunction:: Gamepad_buzzer::play_sequence(std::vector<Buzzer_element_t> sequence)
-.. doxygenfunction:: Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size)
-.. doxygenfunction:: Gamepad_buzzer::change_volume
-.. doxygenfunction:: Gamepad_buzzer::get_volume
+.. doxygenfunction:: DD_buzzer::play_tone
+.. doxygenfunction:: DD_buzzer::stop
+.. doxygenfunction:: DD_buzzer::play_for_time
+.. doxygenfunction:: DD_buzzer::play_sequence(std::vector<Buzzer_element_t> sequence)
+.. doxygenfunction:: DD_buzzer::play_sequence(uint16_t *data, uint32_t size)
+.. doxygenfunction:: DD_buzzer::change_volume
+.. doxygenfunction:: DD_buzzer::get_volume
 
 Structures
 ^^^^^^^^^^^^^^^^

@@ -118,18 +118,18 @@ Graphics parameters saving
 
 To avoid multiline redefinitions of graphic styles DevelDeck-API provides cleaner solution. :cpp:struct:`Graphics_params_t` is a container for multiple graphics parameters which can be stored in a single variable. It stores:
 
-- ``font_id`` - custom font id. Uses :cpp:func:`Gamepad_canvas_t::setFont`
+- ``font_id`` - custom font id. Uses :cpp:func:`DD_canvas_t::setFont`
 - ``text_size``, ``text_colors`` - text parameters. Uses :cpp:func:`TFT_eSPI::setTextSize`, :cpp:func:`TFT_eSPI::setTextColor`
 - ``wrap_x``, ``wrap_y`` - text wrap parameters. Uses :cpp:func:`TFT_eSPI::setTextWrap`
 - ``cur_x``, ``cur_y`` - text text cursor. Uses :cpp:func:`TFT_eSPI::setCursor`
 - ``orig_x``, ``orig_y`` - text zero origin. Uses :cpp:func:`TFT_eSPI::setOrigin`
 
 
-Currently used parameters can be read into variable via :cpp:func:`Gamepad_canvas_t::graphicsParams`.
+Currently used parameters can be read into variable via :cpp:func:`DD_canvas_t::graphicsParams`.
 
-Parameters can be applied using :cpp:func:`Gamepad_canvas_t::Gamepad_canvas_t::setGraphicsParams`.
+Parameters can be applied using :cpp:func:`DD_canvas_t::DD_canvas_t::setGraphicsParams`.
 
-Parameters can be reset to default :cpp:func:`Gamepad_canvas_t::Gamepad_canvas_t::setDefaultGraphicsParams`.
+Parameters can be reset to default :cpp:func:`DD_canvas_t::DD_canvas_t::setDefaultGraphicsParams`.
 
 Common examples
 `````````````````````
@@ -155,7 +155,7 @@ Common examples
 Text formating
 ^^^^^^^^^^^^^^^^^^^^
 
-- The line spacing can be adjusted using :cpp:func:`Gamepad_canvas_t::setLineSpacing`. It uses a multiplier value relative to the font height.
+- The line spacing can be adjusted using :cpp:func:`DD_canvas_t::setLineSpacing`. It uses a multiplier value relative to the font height.
 
 
 Custom fonts
@@ -178,11 +178,11 @@ API reference
 Functions
 ^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_canvas_t::setDefaultGraphicsParams
-.. doxygenfunction:: Gamepad_canvas_t::setGraphicsParams
-.. doxygenfunction:: Gamepad_canvas_t::graphicsParams
+.. doxygenfunction:: DD_canvas_t::setDefaultGraphicsParams
+.. doxygenfunction:: DD_canvas_t::setGraphicsParams
+.. doxygenfunction:: DD_canvas_t::graphicsParams
 
-.. doxygenfunction:: Gamepad_canvas_t::setLineSpacing
+.. doxygenfunction:: DD_canvas_t::setLineSpacing
 
 Structures
 ^^^^^^^^^^^^^^

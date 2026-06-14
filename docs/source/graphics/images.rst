@@ -81,14 +81,14 @@ Functions
 ``gamepad.canvas``
 `````````````````````
 
-.. doxygenfunction:: Gamepad_canvas_t::pushImage(int32_t, int32_t, Image_raw16_t&)
-.. doxygenfunction:: Gamepad_canvas_t::pushImage(int32_t, int32_t, Image_raw8_t&)
-.. doxygenfunction:: Gamepad_canvas_t::pushMaskedImage
-.. doxygenfunction:: Gamepad_canvas_t::drawPNGFromFile
+.. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw16_t&)
+.. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw8_t&)
+.. doxygenfunction:: DD_canvas_t::pushMaskedImage
+.. doxygenfunction:: DD_canvas_t::drawPNGFromFile
 
 ``gamepad.game_files``
 ``````````````````````````
 
-.. doxygenfunction:: Gamepad_SD_card::file_read_PNG
-.. doxygenfunction:: Gamepad_SD_card::file_read_raw16
-.. doxygenfunction:: Gamepad_SD_card::file_write_raw16
+.. doxygenfunction:: DD_SD_card::file_read_PNG
+.. doxygenfunction:: DD_SD_card::file_read_raw16
+.. doxygenfunction:: DD_SD_card::file_write_raw16

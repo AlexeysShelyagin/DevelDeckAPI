@@ -185,14 +185,14 @@ public:
     /**
      * @brief Set graphics parameters from variable
      * 
-     * @param params `Gamepad_canvas_t::graphics_params_t` variable with saved parameters
+     * @param params `DD_canvas_t::graphics_params_t` variable with saved parameters
      */
     void setGraphicsParams(Graphics_params_t params);
 
     /**
      * @brief Get current graphics parameters
      * 
-     * @return Gamepad_canvas_t::graphics_params_t parameters container variable
+     * @return DD_canvas_t::graphics_params_t parameters container variable
      */
     Graphics_params_t graphicsParams();
 };

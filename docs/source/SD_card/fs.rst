@@ -35,44 +35,44 @@ Managing files and directories
 Open directory
 ^^^^^^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::open_dir`
-- :cpp:func:`Gamepad_SD_card::open_parent_dir` currently does **not support** the ``/..`` path syntax.
+- :cpp:func:`DD_SD_card::open_dir`
+- :cpp:func:`DD_SD_card::open_parent_dir` currently does **not support** the ``/..`` path syntax.
 
 
 Open / close file
 ^^^^^^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::open_file`
-- :cpp:func:`Gamepad_SD_card::close_file`
+- :cpp:func:`DD_SD_card::open_file`
+- :cpp:func:`DD_SD_card::close_file`
 
 
 Create directory or file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::make_dir`
-- :cpp:func:`Gamepad_SD_card::create_file`
-- :cpp:func:`Gamepad_SD_card::open_file` — also creates and opens an empty file if it does not exist.
+- :cpp:func:`DD_SD_card::make_dir`
+- :cpp:func:`DD_SD_card::create_file`
+- :cpp:func:`DD_SD_card::open_file` — also creates and opens an empty file if it does not exist.
 
 Rename
 ^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::rename` - renames a directory or file
+- :cpp:func:`DD_SD_card::rename` - renames a directory or file
 
 Delete directory or file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::remove_dir` - typically used in the recursive mode
-- :cpp:func:`Gamepad_SD_card::remove_file`
+- :cpp:func:`DD_SD_card::remove_dir` - typically used in the recursive mode
+- :cpp:func:`DD_SD_card::remove_file`
 
 Directory or file info
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::exists` - check if a file or directory exists
-- :cpp:func:`Gamepad_SD_card::is_dir` - check if a path refers to a directory
-- :cpp:func:`Gamepad_SD_card::current_dir` - absolute path of the currently opened directory
-- :cpp:func:`Gamepad_SD_card::list_dir` - returns an ``std::vector`` of elements in the current directory
-- :cpp:func:`Gamepad_SD_card::get_file_size`
-- :cpp:func:`Gamepad_SD_card::get_file_reference` - returns an ``FS::File*`` pointer to an opened file
+- :cpp:func:`DD_SD_card::exists` - check if a file or directory exists
+- :cpp:func:`DD_SD_card::is_dir` - check if a path refers to a directory
+- :cpp:func:`DD_SD_card::current_dir` - absolute path of the currently opened directory
+- :cpp:func:`DD_SD_card::list_dir` - returns an ``std::vector`` of elements in the current directory
+- :cpp:func:`DD_SD_card::get_file_size`
+- :cpp:func:`DD_SD_card::get_file_reference` - returns an ``FS::File*`` pointer to an opened file
 
 Common examples
 ^^^^^^^^^^^^^^^^^^^
@@ -132,35 +132,35 @@ Reading and writing files
     For functions with a read/write ``position`` parameter, pass ``-1`` to use the current cursor position. ``-1`` is the default value.
 
 .. note::
-    Only **static** data types can be written to or read from files using :cpp:func:`Gamepad_SD_card::file_read_variable` and :cpp:func:`Gamepad_SD_card::file_write`. Pointer contents are **not** handled.
+    Only **static** data types can be written to or read from files using :cpp:func:`DD_SD_card::file_read_variable` and :cpp:func:`DD_SD_card::file_write`. Pointer contents are **not** handled.
 
 Most functions return a ``bool`` status indicating whether the operation was **successful** (``0`` - FAILED, ``1`` - SUCCESS). These values **should not be ignored** to avoid reading from or writing to invalid data locations.
 
 Reading
 ^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::seek` - change cursor position
-- :cpp:func:`Gamepad_SD_card::pos` - get cursor position
-- :cpp:func:`Gamepad_SD_card::file_available` - check if the cursor is at EOF
-- :cpp:func:`Gamepad_SD_card::file_read` - read an N-byte data chunk
-- :cpp:func:`Gamepad_SD_card::file_read_variable` - read **static** data type
-- :cpp:func:`Gamepad_SD_card::file_read_string`- read the entire file as ``String``
-- :cpp:func:`Gamepad_SD_card::file_getline` - read a line as ``String`` until **newline**
-- :cpp:func:`Gamepad_SD_card::file_read_PNG` - decode PNG into ``Image_raw16_t``
-- :cpp:func:`Gamepad_SD_card::read_raw16` - read a RAW image
+- :cpp:func:`DD_SD_card::seek` - change cursor position
+- :cpp:func:`DD_SD_card::pos` - get cursor position
+- :cpp:func:`DD_SD_card::file_available` - check if the cursor is at EOF
+- :cpp:func:`DD_SD_card::file_read` - read an N-byte data chunk
+- :cpp:func:`DD_SD_card::file_read_variable` - read **static** data type
+- :cpp:func:`DD_SD_card::file_read_string`- read the entire file as ``String``
+- :cpp:func:`DD_SD_card::file_getline` - read a line as ``String`` until **newline**
+- :cpp:func:`DD_SD_card::file_read_PNG` - decode PNG into ``Image_raw16_t``
+- :cpp:func:`DD_SD_card::read_raw16` - read a RAW image
 
 
 
 Writing
 ^^^^^^^^^^^^^^
 
-- :cpp:func:`Gamepad_SD_card::seek` - change cursor position
-- :cpp:func:`Gamepad_SD_card::pos` - get cursor position
-- :cpp:func:`Gamepad_SD_card::save_file` - save current changes without closing file
-- :cpp:func:`Gamepad_SD_card::file_write` - write an N-byte data chunk
-- :cpp:func:`Gamepad_SD_card::file_print` - print a ``String``
-- :cpp:func:`Gamepad_SD_card::file_println` - print a ``String`` with a newline
-- :cpp:func:`Gamepad_SD_card::write_raw16` - write a RAW image
+- :cpp:func:`DD_SD_card::seek` - change cursor position
+- :cpp:func:`DD_SD_card::pos` - get cursor position
+- :cpp:func:`DD_SD_card::save_file` - save current changes without closing file
+- :cpp:func:`DD_SD_card::file_write` - write an N-byte data chunk
+- :cpp:func:`DD_SD_card::file_print` - print a ``String``
+- :cpp:func:`DD_SD_card::file_println` - print a ``String`` with a newline
+- :cpp:func:`DD_SD_card::write_raw16` - write a RAW image
 
 
 Common examples
@@ -273,46 +273,51 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_SD_card::open_dir
-.. doxygenfunction:: Gamepad_SD_card::open_parent_dir
-.. doxygenfunction:: Gamepad_SD_card::open_file(String, bool)
-.. doxygenfunction:: Gamepad_SD_card::open_file(String, const char*, bool)
-.. doxygenfunction:: Gamepad_SD_card::close_file
-.. doxygenfunction:: Gamepad_SD_card::make_dir
-.. doxygenfunction:: Gamepad_SD_card::create_file
-.. doxygenfunction:: Gamepad_SD_card::rename
-.. doxygenfunction:: Gamepad_SD_card::remove_dir
-.. doxygenfunction:: Gamepad_SD_card::remove_file
-.. doxygenfunction:: Gamepad_SD_card::exists
-.. doxygenfunction:: Gamepad_SD_card::is_dir
-.. doxygenfunction:: Gamepad_SD_card::current_dir
-.. doxygenfunction:: Gamepad_SD_card::list_dir
-.. doxygenfunction:: Gamepad_SD_card::get_file_size
-.. doxygenfunction:: Gamepad_SD_card::get_file_reference
+.. doxygenfunction:: DD_SD_card::list_dir
+.. doxygenfunction:: DD_SD_card::current_dir
+.. doxygenfunction:: DD_SD_card::exists
+.. doxygenfunction:: DD_SD_card::is_dir
+.. doxygenfunction:: DD_SD_card::open_dir
+.. doxygenfunction:: DD_SD_card::open_parent_dir
+.. doxygenfunction:: DD_SD_card::open_file(String, bool)
+.. doxygenfunction:: DD_SD_card::open_file(String, const char*, bool)
+.. doxygenfunction:: DD_SD_card::close_file
+.. doxygenfunction:: DD_SD_card::make_dir
+.. doxygenfunction:: DD_SD_card::remove_dir
+.. doxygenfunction:: DD_SD_card::make_file
+.. doxygenfunction:: DD_SD_card::remove_file
+.. doxygenfunction:: DD_SD_card::rename
 
-.. doxygenfunction:: Gamepad_SD_card::seek
-.. doxygenfunction:: Gamepad_SD_card::pos
-.. doxygenfunction:: Gamepad_SD_card::file_available
-.. doxygenfunction:: Gamepad_SD_card::save_file
+.. doxygenfunction:: DD_SD_card::file_ref
+.. doxygenfunction:: DD_SD_card::file_size
+.. doxygenfunction:: DD_SD_card::save_file
+.. doxygenfunction:: DD_SD_card::file_available
+
+.. doxygenfunction:: DD_SD_card::seek
+.. doxygenfunction:: DD_SD_card::pos
     
-.. doxygenfunction:: Gamepad_SD_card::file_read
-.. doxygenfunction:: Gamepad_SD_card::file_read_variable
-.. doxygenfunction:: Gamepad_SD_card::file_read_string
-.. doxygenfunction:: Gamepad_SD_card::file_getline
-.. doxygenfunction:: Gamepad_SD_card::file_read_PNG
-.. doxygenfunction:: Gamepad_SD_card::file_read_raw16
+.. doxygenfunction:: DD_SD_card::read
+.. doxygenfunction:: DD_SD_card::read_as_string
+.. doxygenfunction:: DD_SD_card::getline
+.. doxygenfunction:: DD_SD_card::read_variable
+.. doxygenfunction:: DD_SD_card::read_PNG(Image_raw16_t*, bool)
+.. doxygenfunction:: DD_SD_card::read_PNG(Image_raw16_t&, bool)
+.. doxygenfunction:: DD_SD_card::read_raw16(Image_raw16_t*, int)
+.. doxygenfunction:: DD_SD_card::read_raw16(Image_raw16_t&, int)
 
-.. doxygenfunction:: Gamepad_SD_card::file_write
-.. doxygenfunction:: Gamepad_SD_card::file_print
-.. doxygenfunction:: Gamepad_SD_card::file_println
-.. doxygenfunction:: Gamepad_SD_card::file_write_raw16
+.. doxygenfunction:: DD_SD_card::write
+.. doxygenfunction:: DD_SD_card::print
+.. doxygenfunction:: DD_SD_card::println
+.. doxygenfunction:: DD_SD_card::printf
+.. doxygenfunction:: DD_SD_card::write_raw16(Image_raw16_t*, int)
+.. doxygenfunction:: DD_SD_card::write_raw16(Image_raw16_t&, int)
 
 
 
 Structures
 ^^^^^^^^^^^^^^^^
 
-.. doxygenstruct:: File_name_t
+.. doxygenstruct:: Dir_entry_t
     :members:
     :undoc-members:
 

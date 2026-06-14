@@ -68,7 +68,7 @@ public:
     /**
      * @brief Play tone sequence. Each tone play for specified duration one by one
      * 
-     * @param sequence `std::vector` filled with `Gamepad_buzzer::Buzz_tone_t` sound data
+     * @param sequence `std::vector` filled with `DD_buzzer::Buzz_tone_t` sound data
      */
     void play_sequence(std::vector < Buzz_tone_t > &sequence);
 

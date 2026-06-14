@@ -32,13 +32,13 @@ The default font always has **id = 0** and cannot be unloaded.
 Custom font usage
 -----------------------
 
-A font can be loaded into the API using :cpp:func:`Gamepad_canvas_t::loadFont`. You must specify the slot ID where the font will be stored.
+A font can be loaded into the API using :cpp:func:`DD_canvas_t::loadFont`. You must specify the slot ID where the font will be stored.
 
-Previously loaded fonts can be unloaded (freeing heap memory) by ID using :cpp:func:`Gamepad_canvas_t::unloadFont`.
+Previously loaded fonts can be unloaded (freeing heap memory) by ID using :cpp:func:`DD_canvas_t::unloadFont`.
 
-To set a font as active, use :cpp:func:`Gamepad_canvas_t::setFont`.
+To set a font as active, use :cpp:func:`DD_canvas_t::setFont`.
 
-You can check the currently active font with :cpp:func:`Gamepad_canvas_t::getFontID`.
+You can check the currently active font with :cpp:func:`DD_canvas_t::getFontID`.
 
 PROGMEM font
 ^^^^^^^^^^^^^^^^^^
@@ -90,7 +90,7 @@ Load VLW file
 Load VLW file
 ^^^^^^^^^^^^^^^^^^
 
-To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``gamepad.game_files`` and passed to :cpp:func:`Gamepad_canvas_t::loadFont` via :cpp:func:`Gamepad_SD_card::get_file_reference`.
+To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``gamepad.game_files`` and passed to :cpp:func:`DD_canvas_t::loadFont` via :cpp:func:`DD_SD_card::get_file_reference`.
 
 .. note::
     Loading a font from the SD card takes time because it must be transferred to RAM. It is recommended to load fonts during initialization.
@@ -176,8 +176,8 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_canvas_t::loadFont(File*, uint8_t)
-.. doxygenfunction:: Gamepad_canvas_t::loadFont(const uint8_t[], uint8_t)
-.. doxygenfunction:: Gamepad_canvas_t::unloadFont
-.. doxygenfunction:: Gamepad_canvas_t::setFont
-.. doxygenfunction:: Gamepad_canvas_t::getFontID
+.. doxygenfunction:: DD_canvas_t::loadFont(File*, uint8_t)
+.. doxygenfunction:: DD_canvas_t::loadFont(const uint8_t[], uint8_t)
+.. doxygenfunction:: DD_canvas_t::unloadFont
+.. doxygenfunction:: DD_canvas_t::setFont
+.. doxygenfunction:: DD_canvas_t::getFontID

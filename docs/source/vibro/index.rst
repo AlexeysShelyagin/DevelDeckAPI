@@ -15,16 +15,16 @@ The vibration motor can be controlled through the ``gamepad.vibro`` instance. Al
 
 The vibration strength can be adjusted in the range ``0`` to ``255``.
 
-Any ongoing vibration can be stopped immediately using :cpp:func:`Gamepad_vibro::disable`.
+Any ongoing vibration can be stopped immediately using :cpp:func:`DD_vibro::disable`.
 
 
 
 Vibration
 -----------------
 
-The function :cpp:func:`Gamepad_vibro::enable` enables vibration with specified strength going **forever**, until :cpp:func:`Gamepad_buzzer::stop` is called.
+The function :cpp:func:`DD_vibro::enable` enables vibration with specified strength going **forever**, until :cpp:func:`DD_buzzer::stop` is called.
 
-The function :cpp:func:`Gamepad_vibro::enable_for_time` activates vibration for a specified duration (in milliseconds) and automatically stops after the time expires. This is useful for short feedback events such as button press feedback or in-game actions.
+The function :cpp:func:`DD_vibro::enable_for_time` activates vibration for a specified duration (in milliseconds) and automatically stops after the time expires. This is useful for short feedback events such as button press feedback or in-game actions.
 
 Common examples
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -60,7 +60,7 @@ Common examples
 Periodic Vibration
 -----------------------
 
-The function :cpp:func:`Gamepad_vibro::enable_periodic` allows generating
+The function :cpp:func:`DD_vibro::enable_periodic` allows generating
 a repeating vibration pattern with pauses between pulses.
 
 Function parameters:
@@ -94,7 +94,7 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_vibro::enable
-.. doxygenfunction:: Gamepad_vibro::disable
-.. doxygenfunction:: Gamepad_vibro::enable_for_time
-.. doxygenfunction:: Gamepad_vibro::enable_periodic
+.. doxygenfunction:: DD_vibro::enable
+.. doxygenfunction:: DD_vibro::disable
+.. doxygenfunction:: DD_vibro::enable_for_time
+.. doxygenfunction:: DD_vibro::enable_periodic

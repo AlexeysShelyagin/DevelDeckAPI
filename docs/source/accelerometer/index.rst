@@ -38,9 +38,9 @@ The accelerometer supports two operation modes:
 - **Vertical mode** (default)
 - **Horizontal mode**
 
-Use :cpp:func:`Gamepad_accel::set_vertical_mode` to set the gamepad as zero when held vertically by hand.
+Use :cpp:func:`DD_accel::set_vertical_mode` to set the gamepad as zero when held vertically by hand.
 
-Use :cpp:func:`Gamepad_accel::set_horizontal_mode` to set the gamepad as zero when placed parallel to the ground.
+Use :cpp:func:`DD_accel::set_horizontal_mode` to set the gamepad as zero when placed parallel to the ground.
 
 See the images below for clarity. The grid on the images represents the ground plane.
 
@@ -67,9 +67,9 @@ See the images below for clarity. The grid on the images represents the ground p
 Custom zero orientation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Any orientation can be set as the zero orientation using :cpp:func:`Gamepad_accel::set_current_as_zero`. This is useful for adapting to the player's holding style. The function also allows **blocking the X (roll) axis** to maintain a stable horizontal reference in some games.
+Any orientation can be set as the zero orientation using :cpp:func:`DD_accel::set_current_as_zero`. This is useful for adapting to the player's holding style. The function also allows **blocking the X (roll) axis** to maintain a stable horizontal reference in some games.
 
-Orientation can be set also from acceleration value saved before using :cpp:func:`Gamepad_accel::set_as_zero`.
+Orientation can be set also from acceleration value saved before using :cpp:func:`DD_accel::set_as_zero`.
 
 
 Common examples
@@ -92,7 +92,7 @@ Read incline angles
 -----------------------
 .. TODO: add reference to vec2
 
-The function :cpp:func:`Gamepad_accel::get_angles` returns a ``vec2`` object containing the **X incline** in ``vec.x`` and **Y incline** in ``vec.y``. Angles are measured relative to the :ref:`zero orientation <operation_mode>`. Axis directions are illustrated in :ref:`figure <accel_axes_img>`.
+The function :cpp:func:`DD_accel::get_angles` returns a ``vec2`` object containing the **X incline** in ``vec.x`` and **Y incline** in ``vec.y``. Angles are measured relative to the :ref:`zero orientation <operation_mode>`. Axis directions are illustrated in :ref:`figure <accel_axes_img>`.
 
 Angles can also be calculated from a ``vec3`` acceleration vector.
 
@@ -134,7 +134,7 @@ Common examples
 Read acceleration
 -----------------
 
-Raw acceleration can be read using :cpp:func:`Gamepad_accel::get_accel`.
+Raw acceleration can be read using :cpp:func:`DD_accel::get_accel`.
 
 
 
@@ -144,11 +144,11 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad_accel::set_vertical_mode
-.. doxygenfunction:: Gamepad_accel::set_horizontal_mode
-.. doxygenfunction:: Gamepad_accel::set_current_as_zero
-.. doxygenfunction:: Gamepad_accel::set_as_zero
-.. doxygenfunction:: Gamepad_accel::get_angles()
-.. doxygenfunction:: Gamepad_accel::get_angles(vec3 &accel)
-.. doxygenfunction:: Gamepad_accel::get_accel
-.. doxygenfunction:: Gamepad_accel::auto_calibrate
+.. doxygenfunction:: DD_accel::set_vertical_mode
+.. doxygenfunction:: DD_accel::set_horizontal_mode
+.. doxygenfunction:: DD_accel::set_current_as_zero
+.. doxygenfunction:: DD_accel::set_as_zero
+.. doxygenfunction:: DD_accel::get_angles()
+.. doxygenfunction:: DD_accel::get_angles(vec3 &accel)
+.. doxygenfunction:: DD_accel::get_accel
+.. doxygenfunction:: DD_accel::auto_calibrate
