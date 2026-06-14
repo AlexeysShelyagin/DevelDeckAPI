@@ -4,8 +4,6 @@
 #include "Update.h"
 #include <SD.h>
 
-#include "sd_card.h"
-
 bool OTA_update(File &firmware);
 
 #endif

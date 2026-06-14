@@ -3,9 +3,9 @@
 #include "DevelDeckAPI.h"
 
 void progressCallBack(size_t currSize, size_t totalSize) {
-      Serial.printf("CALLBACK:  Update process at %d of %d bytes...\n", currSize, totalSize);
+      Serial.printf("OTA:  Update process at %d of %d bytes...\n", currSize, totalSize);
 
-      ddeck.game_downloading_screen( (float) currSize / totalSize * 100.0 );
+      ddeck.game_downloading_screen( (float) currSize / totalSize * 100.0f );
 }
 
 bool OTA_update(File &firmware){
@@ -14,16 +14,16 @@ bool OTA_update(File &firmware){
 
     Update.onProgress(progressCallBack);
 
-    Update.begin(firmware.size(), U_FLASH);
+    if(!Update.begin(firmware.size(), U_FLASH))
+        return 0;
     Update.writeStream(firmware);
 
-    if (Update.end())
-          Serial.println("Update finished!");
-    else{
-        Serial.println("Update error!");
+    if (!Update.end()){
+        Serial.println("OTA:  Update error!");
         Serial.println(Update.getError());
         return 0;
     }
+    Serial.println("OTA:  Update finished!");
 
     return 1;
 }
