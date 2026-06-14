@@ -10,14 +10,14 @@ struct Buzzer_sequence_t{
 
 
 
-void clean_buzz_task_params(Buzzer_sequence_t *params){
-	if(params == nullptr)
+void seq_free_memory(Buzzer_sequence_t *seq){
+	if(seq == nullptr)
 		return;
 	
-	if(params->clear_data)
-		delete params->data;
-	delete params;
-	params = nullptr;
+	if(seq->clear_data)
+		delete seq->data;
+	delete seq;
+	seq = nullptr;
 }
 
 void play_tone_seq_task(void *params){
@@ -35,7 +35,7 @@ void play_tone_seq_task(void *params){
 	}
 	ledcWrite(seq->channel, 0);
 
-	clean_buzz_task_params(seq);
+	seq_free_memory(seq);
 
 	vTaskDelete(NULL);
 }
@@ -64,7 +64,7 @@ void DD_buzzer::stop(){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted){
 		vTaskDelete(task_handler);
 		task_handler = NULL;
-		clean_buzz_task_params((Buzzer_sequence_t *) task_params);
+		seq_free_memory((Buzzer_sequence_t *) current_seq);
 	}
 
 	ledcWrite(channel, 0);
@@ -87,7 +87,7 @@ void DD_buzzer::play_for_time(uint16_t freq, uint16_t time){
 	play_sequence(seq_data, 1);
 }
 
-void DD_buzzer::play_sequence(std::vector < Buzzer_element_t > &sequence){
+void DD_buzzer::play_sequence(std::vector < Buzz_tone_t > &sequence){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
@@ -100,10 +100,10 @@ void DD_buzzer::play_sequence(std::vector < Buzzer_element_t > &sequence){
 
 	for(uint32_t i = 0; i < seq->size; i++){
 		seq->data[i*2] = sequence[i].freq;
-		seq->data[i*2 + 1] = sequence[i].timing;
+		seq->data[i*2 + 1] = sequence[i].duration;
 	}
 
-	task_params = seq;
+	current_seq = seq;
 	xTaskCreatePinnedToCore(
 		play_tone_seq_task,
 		"buzz",
@@ -134,7 +134,7 @@ void DD_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
 		seq->clear_data = true;
 	}
 
-	task_params = seq;
+	current_seq = seq;
 	xTaskCreatePinnedToCore(
 		play_tone_seq_task,
 		"buzz",

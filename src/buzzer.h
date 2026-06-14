@@ -6,9 +6,9 @@
 
 #include "config.h"
 
-struct Buzzer_element_t{
+struct Buzz_tone_t{
     uint16_t freq;
-    uint16_t timing;
+    uint16_t duration;
 };
 
 class DD_buzzer{
@@ -17,7 +17,7 @@ class DD_buzzer{
     uint8_t volume_level = DEFAULT_BUZZER_VOLUME;
 
     TaskHandle_t task_handler = NULL;
-    void *task_params;
+    void *current_seq;
 public:
 
     DD_buzzer() = default;
@@ -31,7 +31,7 @@ public:
     uint8_t get_volume();
 
     void play_for_time(uint16_t freq, uint16_t time);
-    void play_sequence(std::vector < Buzzer_element_t > &sequence);
+    void play_sequence(std::vector < Buzz_tone_t > &sequence);
     void play_sequence(uint16_t *data, uint32_t size, bool nocopy = false);
 };
 
