@@ -107,9 +107,9 @@ void DD_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, ui
 
 void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t *image){
 	if(image->alpha)
-		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer);
+		pushMaskedImage(x, y, image->w, image->h, image->img_buff, image->alpha_buff);
 	else
-		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer);
+		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buff);
 }
 
 void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
@@ -118,9 +118,9 @@ void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
 
 void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t *image){
 	if(image->alpha)
-		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer, 8);
+		pushMaskedImage(x, y, image->w, image->h, image->img_buff, image->alpha_buff, 8);
 	else
-		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer, 8);
+		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buff, 8);
 }
 
 void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){

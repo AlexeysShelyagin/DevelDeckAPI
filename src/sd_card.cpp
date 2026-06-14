@@ -364,11 +364,11 @@ int32_t PNG_SD_seek(PNGFILE *handle, int32_t position){
 int PNG_SD_draw(PNGDRAW *pDraw){
     Image_raw16_t *params = (Image_raw16_t *) pDraw->pUser;
 
-    uint16_t *img_buff_ptr = params->img_buffer;
+    uint16_t *img_buff_ptr = params->img_buff;
 	png_decoder->getLineAsRGB565(pDraw, img_buff_ptr + (pDraw->y * pDraw->iWidth), PNG_RGB565_BIG_ENDIAN, 0xffffffff);
 
 	if(params->alpha){
-		uint8_t *alpha_buff_ptr = params->alpha_buffer;
+		uint8_t *alpha_buff_ptr = params->alpha_buff;
         uint16_t line_size = (pDraw->iWidth + 7) >> 3;
 		png_decoder->getAlphaMask(pDraw, alpha_buff_ptr + (pDraw->y * line_size), 255);
 	}
@@ -427,8 +427,8 @@ void DD_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
     file.write((uint8_t *)&img->h, sizeof(uint16_t));
     file.write((uint8_t *)&img->alpha, sizeof(bool));
 
-    uint8_t *img_ptr = (uint8_t *) img->img_buffer;
-    uint8_t *a_ptr = (uint8_t *) img->alpha_buffer;
+    uint8_t *img_ptr = (uint8_t *) img->img_buff;
+    uint8_t *a_ptr = (uint8_t *) img->alpha_buff;
 
     file.write(img_ptr, img->w * img->h * 2);
     
@@ -473,8 +473,8 @@ bool DD_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
         file.read(a_ptr, img->alpha_buff_size);
     }
 
-    img->img_buffer = (uint16_t *) img_ptr;
-    img->alpha_buffer = a_ptr;
+    img->img_buff = (uint16_t *) img_ptr;
+    img->alpha_buff = a_ptr;
     
     return 1;
 }
