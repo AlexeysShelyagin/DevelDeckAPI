@@ -38,11 +38,11 @@ Common examples
 
 .. code-block:: cpp
 
-   while(ddeckbuttons.event_available()){
-      uint8_t *event = ddeckbuttons.get_button_event();
+   while(ddeck.buttons.event_available()){
+      uint8_t *event = ddeck.buttons.get_button_event();
 
       if(event[MENU_BUT_ID] == BUT_PRESSED)
-         ddeckmain_menu();
+         ddeck.main_menu();
    }
 
 
@@ -64,7 +64,7 @@ Common examples
 .. code-block:: cpp
 
    void load_game_from_save(){
-      String path = ddeckfile_manager();
+      String path = ddeck.file_manager();
 
       Serial.println(path);
 

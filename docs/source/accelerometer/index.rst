@@ -10,7 +10,7 @@ Accelerometer
 Overview
 -----------------
 
-The gamepad features a **3-axis accelerometer**, which can be used to measure acceleration and, more commonly, the **inclination angles of the gamepad**. The accelerometer is accessed through the ``ddeckaccel`` instance.
+The gamepad features a **3-axis accelerometer**, which can be used to measure acceleration and, more commonly, the **inclination angles of the gamepad**. The accelerometer is accessed through the ``ddeck.accel`` instance.
 
 The gamepad's incline is measured along the X (roll) and Y (pitch) axes, relative to the :ref:`zero orientation <operation_mode>`.
 
@@ -80,10 +80,10 @@ Common examples
     void game_settings(){
         // ...
         if(/* pressed "calibrate gyro" */)
-            ddeckaccel.set_current_as_zero();
+            ddeck.accel.set_current_as_zero();
         
         if(/* set defaults */)
-            ddeckaccel.set_vertical_mode();
+            ddeck.accel.set_vertical_mode();
     }
 
 
@@ -107,16 +107,16 @@ Common examples
 
     void setup(){
         // Display represents the "ground" plane
-        ddeckaccel.set_horizontal_mode();
-        ddeckmain_loop();
+        ddeck.accel.set_horizontal_mode();
+        ddeck.main_loop();
     }
 
     void loop(){
         // Erase previous frame
-        ddeckcanvas->fillCircle(pos.x, pos.y, R, TFT_BLACK);
+        ddeck.canvas->fillCircle(pos.x, pos.y, R, TFT_BLACK);
 
         // Get accelerometer data
-        vec2 ang = ddeckaccel.get_angles() * (1 / 180.0);
+        vec2 ang = ddeck.accel.get_angles() * (1 / 180.0);
 
         // Recalculate position
         vel += ang * 30;
@@ -125,8 +125,8 @@ Common examples
         last_update = millis();     // sets time scale
 
         // Render frame
-        ddeckcanvas->fillCircle(pos.x, pos.y, R, TFT_RED);
-        ddeckupdate_display();
+        ddeck.canvas->fillCircle(pos.x, pos.y, R, TFT_RED);
+        ddeck.update_display();
     }
 
 

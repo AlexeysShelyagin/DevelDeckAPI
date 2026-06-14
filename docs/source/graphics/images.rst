@@ -23,7 +23,7 @@ Here are some tips on optimizing the image workflow:
 - **Large** and high bitdepth images can be stored in ``.png`` files on the **SD card**
 - Render **Large** files directly from SD card.
 - **Small** but less important images/sprites can be predecoded from ``.png`` into ``raw16_t/raw8_t`` and stored in binary files on the **SD card**. It can save time on loading them. Does **not** save time for large images, because the decoding speed is higher than reading from SD card.
-- Prefer **layers instead canvas** for images. They will **match** the image **bitdepth** better. E.g. you can store multiple layers ``N*Mpx 16bit``, while ``ddeckcanvas`` would be reduced to ``4bit`` and contain only non important graphics.
+- Prefer **layers instead canvas** for images. They will **match** the image **bitdepth** better. E.g. you can store multiple layers ``N*Mpx 16bit``, while ``ddeck.canvas`` would be reduced to ``4bit`` and contain only non important graphics.
 
 .. admonition:: Developer notes
     :class: dev-notes
@@ -78,7 +78,7 @@ Data containers
 Functions
 ^^^^^^^^^^^^^^^^^
 
-``ddeckcanvas``
+``ddeck.canvas``
 `````````````````````
 
 .. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw16_t&)
@@ -86,7 +86,7 @@ Functions
 .. doxygenfunction:: DD_canvas_t::pushMaskedImage
 .. doxygenfunction:: DD_canvas_t::drawPNGFromFile
 
-``ddeckgame_files``
+``ddeck.game_files``
 ``````````````````````````
 
 .. doxygenfunction:: DD_SD_card::file_read_PNG
