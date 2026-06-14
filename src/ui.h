@@ -10,28 +10,31 @@
 namespace DD_GLOBAL{
     struct Game_config_t;
     struct System_data_t;
+
+    struct File_mngr_t{
+        String dir;
+        String file;
+        Game_config_t *game_config;
+    };
 }
 
-struct File_mngr_t{
-    String dir;
-    String file;
-    DD_GLOBAL::Game_config_t *game_config;
-};
 
 
-
+// DD_UI class is just a wrapper for UI functions
+// Do not create DD_UI instance instead DD_GLOBAL::UI
 class DD_UI{
 public:
     DD_UI() = default;
 
     uint8_t main_menu(bool game_active = true, bool game_select_active = true, uint8_t init_cursor = 0);
 
-    File_mngr_t file_manager(bool selecting_game = false, String root = "/");
-    File_mngr_t file_manager(String root);
+    DD_GLOBAL::File_mngr_t file_manager(bool selecting_game = false, String root = "/");
+    DD_GLOBAL::File_mngr_t file_manager(String root);
 
     uint8_t settings(DD_GLOBAL::System_data_t &data);
 
-    uint8_t message_box(String msg, std::vector < String > actions = std::vector < String > (), uint16_t w = 0, uint16_t h = 0, int16_t dx = 0, int16_t dy = 0);
+    uint8_t message_box(String msg, std::vector < String > actions = {},
+                        uint16_t w = 0, uint16_t h = 0, int16_t dx = 0, int16_t dy = 0);
     bool notification(String msg);
 
     void init_game_downloading_screen(DD_GLOBAL::Game_config_t game_data, String dir = "");

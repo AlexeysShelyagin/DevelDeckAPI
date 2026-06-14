@@ -6,16 +6,11 @@ extern TaskHandle_t sys_task_handler;
 
 
 
-String File_mngr_trim(String filename, uint16_t max_len){
+inline String file_mngr_trim(String &filename, uint16_t max_len){
     if(filename.length() <= max_len)
         return filename;
     
-    String res = "";
-    for(uint16_t i = 0; i < max_len - 3; i++)
-        res += filename[i];
-    res += "...";
-
-    return res;
+    return filename.substring(0, max_len - 3) + "...";
 }
 
 
@@ -102,7 +97,7 @@ uint8_t DD_UI::main_menu(bool game_active, bool game_select_active, uint8_t init
     return cursor;
 }
 
-File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
+DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     bool update_disp = true;
     bool update_dir = true;
     bool is_game_folder = false;
@@ -134,7 +129,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
 
     DD_GLOBAL::Game_config_t *game_config = new DD_GLOBAL::Game_config_t();
 
-    File_mngr_t res = {"", "", nullptr};
+    DD_GLOBAL::File_mngr_t res = {"", "", nullptr};
     
     while (!quit){
         while(ddeck.buttons.event_available()){
@@ -266,7 +261,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
                     if(i == cursor.top())
                         ddeck.canvas->print("> ");
                     ddeck.canvas->print((dir[i].type) ? "FILE:   " : "DIR:    ");
-                    ddeck.canvas->println(File_mngr_trim(dir[i].name, (i == cursor.top()) ? max_len - 2 : max_len));
+                    ddeck.canvas->println(file_mngr_trim(dir[i].name, (i == cursor.top()) ? max_len - 2 : max_len));
                 }
 
                 if(items_n == 0)
@@ -302,7 +297,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     return res;
 }
 
-File_mngr_t DD_UI::file_manager(String root){
+DD_GLOBAL::File_mngr_t DD_UI::file_manager(String root){
     return file_manager(false, root);
 }
 
