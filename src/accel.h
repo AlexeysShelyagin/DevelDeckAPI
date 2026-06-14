@@ -9,7 +9,7 @@
 
 const float g_const = 9.81;
 
-class Gamepad_accel{
+class DD_accel{
     enum chip_type_t{
         BMI160_ID = 0xD1,
         BMI323_ID = 0x43
@@ -23,7 +23,7 @@ class Gamepad_accel{
     vec3 basis_y;
 
 public:
-    Gamepad_accel() = default;
+    DD_accel() = default;
 
     void init(int sda_pin = ACCEL_SDA_PIN, int scl_pin = ACCEL_SCL_PIN);
 

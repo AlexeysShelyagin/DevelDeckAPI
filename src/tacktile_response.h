@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_TACKTILE_RESPONSE_H
-#define GAMEPAD_TACKTILE_RESPONSE_H
+#ifndef DD_TACKTILE_RESPONSE_H
+#define DD_TACKTILE_RESPONSE_H
 
 #include <Arduino.h>
 #include <vector>
@@ -11,7 +11,7 @@ struct Buzzer_element_t{
     uint16_t timing;
 };
 
-class Gamepad_buzzer{
+class DD_buzzer{
     uint8_t channel;
     uint8_t volume;
     uint8_t volume_level = DEFAULT_BUZZER_VOLUME;
@@ -20,7 +20,7 @@ class Gamepad_buzzer{
     void *task_params;
 public:
 
-    Gamepad_buzzer() = default;
+    DD_buzzer() = default;
 
     void init(uint16_t pin = BUZZ_PIN, uint8_t channel_ = BUZZ_LEDC_CHANNEL);
 
@@ -37,7 +37,7 @@ public:
 
 
 
-class Gamepad_vibro{
+class DD_vibro{
     uint8_t channel;
 
     TaskHandle_t task_handler = NULL;
@@ -47,7 +47,7 @@ class Gamepad_vibro{
 public:
     uint8_t strength = DEFAULT_VIBRO_STRENGTH;
 
-    Gamepad_vibro() = default;
+    DD_vibro() = default;
 
     void init(uint16_t pin = VIBRO_PIN, uint8_t channel_ = VIBRO_LEDC_CHANNEL);
 

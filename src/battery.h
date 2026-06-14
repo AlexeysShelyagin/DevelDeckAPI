@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_BATTERY_H
-#define GAMEPAD_BATTERY_H
+#ifndef DD_BATTERY_H
+#define DD_BATTERY_H
 
 #include <Arduino.h>
 #include <vector>
@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-class Gamepad_battery{
+class DD_battery{
     float critical_v;
     float full_v;
     float charging_v;
@@ -31,7 +31,7 @@ public:
     };
     uint16_t lifetime = 0;
 
-    Gamepad_battery();
+    DD_battery();
 
     void init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_);
     void set_voltage_adjustment(float (*v_adj_func_ptr)(float));
@@ -52,8 +52,8 @@ public:
 };
 
 
-namespace GAMEPAD_GLOBAL{
-    extern Gamepad_battery battery;
+namespace DD_GLOBAL{
+    extern DD_battery battery;
 }
 
 #endif

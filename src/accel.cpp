@@ -1,6 +1,6 @@
 #include "accel.h"
 
-void Gamepad_accel::init(int sda_pin, int scl_pin){
+void DD_accel::init(int sda_pin, int scl_pin){
     accelWire.begin(sda_pin, scl_pin);
 
     accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
@@ -19,7 +19,7 @@ void Gamepad_accel::init(int sda_pin, int scl_pin){
     auto_calibrate();
 }
 
-void Gamepad_accel::auto_calibrate(){
+void DD_accel::auto_calibrate(){
     accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
     accelWire.write(0x7E); // Command register
     accelWire.write(0x37); // Start accelerometer offset calibration
@@ -35,17 +35,17 @@ void Gamepad_accel::auto_calibrate(){
         chip = accelWire.read();
 }
 
-void Gamepad_accel::set_vertical_mode(){
+void DD_accel::set_vertical_mode(){
     basis_x = vec3(0, 1, 0);
     basis_y = vec3(0, 0, -1);
 }
 
-void Gamepad_accel::set_horizontal_mode(){
+void DD_accel::set_horizontal_mode(){
     basis_x = vec3(0, 1, 0);
     basis_y = vec3(1, 0, 0);
 }
 
-void Gamepad_accel::set_current_as_zero(bool hold_x_axis){
+void DD_accel::set_current_as_zero(bool hold_x_axis){
     vec3 basis_z;
 
     for(uint8_t i = 0; i < ACCEL_CALIBRATION_MEASURE_N; i++){
@@ -56,7 +56,7 @@ void Gamepad_accel::set_current_as_zero(bool hold_x_axis){
     set_as_zero(basis_z);
 }
 
-void Gamepad_accel::set_as_zero(vec3 basis_z, bool hold_x_axis){
+void DD_accel::set_as_zero(vec3 basis_z, bool hold_x_axis){
     if(hold_x_axis)
         basis_z.y = 0;
     basis_z = basis_z.norm();
@@ -65,7 +65,7 @@ void Gamepad_accel::set_as_zero(vec3 basis_z, bool hold_x_axis){
     basis_y = basis_z.cross(basis_x).norm();
 }
 
-vec3 Gamepad_accel::get_accel(){
+vec3 DD_accel::get_accel(){
     int16_t ax = 0, ay = 0, az = 0;
     if(chip == BMI160_ID){
         accelWire.beginTransmission(ACCEL_I2C_ADDRESS);
@@ -92,7 +92,7 @@ vec3 Gamepad_accel::get_accel(){
     return data;
 }
 
-vec2 Gamepad_accel::get_angles(vec3 &accel){
+vec2 DD_accel::get_angles(vec3 &accel){
     vec2 ang = vec2(
         acos(accel.fast_norm().dot(basis_x)) - HALF_PI,
         acos(accel.fast_norm().dot(basis_y)) - HALF_PI
@@ -101,7 +101,7 @@ vec2 Gamepad_accel::get_angles(vec3 &accel){
     return ang * RAD_TO_DEG;
 }
 
-vec2 Gamepad_accel::get_angles(){
+vec2 DD_accel::get_angles(){
     vec3 accel = get_accel();
     return get_angles(accel);
 }

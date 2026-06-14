@@ -4,19 +4,19 @@
 extern SPIClass spi;
 // ==========================================================
 
-Gamepad_SD_card::~Gamepad_SD_card(){
+DD_SD_card::~DD_SD_card(){
     dir.close();
     file.close();
 }
 
-bool Gamepad_SD_card::check_root_level(String path){
+bool DD_SD_card::check_root_level(String path){
     if(path.length() < root.length())
         return 0;
     
     return (path.substring(0, root.length()) == root);
 }
 
-bool Gamepad_SD_card::process_path(String &path, bool absolute){
+bool DD_SD_card::process_path(String &path, bool absolute){
     if(path[0] != '/' && path.length() != 0)
         path = "/" + path;
     
@@ -29,7 +29,7 @@ bool Gamepad_SD_card::process_path(String &path, bool absolute){
     return 1;
 }
 
-uint8_t Gamepad_SD_card::init(String root_limit){
+uint8_t DD_SD_card::init(String root_limit){
     if(initialized)
         return SD_OK;
 
@@ -50,7 +50,7 @@ uint8_t Gamepad_SD_card::init(String root_limit){
     return SD_OK;
 }
 
-bool Gamepad_SD_card::open_dir(String path, bool absolute){
+bool DD_SD_card::open_dir(String path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -64,7 +64,7 @@ bool Gamepad_SD_card::open_dir(String path, bool absolute){
     return dir.isDirectory();
 }
 
-bool Gamepad_SD_card::open_parent_dir(uint8_t levels){
+bool DD_SD_card::open_parent_dir(uint8_t levels){
     if(!initialized)
         return 0;
 
@@ -91,7 +91,7 @@ bool Gamepad_SD_card::open_parent_dir(uint8_t levels){
     return 1;
 } 
 
-std::vector < File_name_t > Gamepad_SD_card::list_dir(){
+std::vector < File_name_t > DD_SD_card::list_dir(){
     std::vector < File_name_t > list;
 
     if(!initialized)
@@ -110,14 +110,14 @@ std::vector < File_name_t > Gamepad_SD_card::list_dir(){
     return list;
 }
 
-String Gamepad_SD_card::current_dir(){
+String DD_SD_card::current_dir(){
     if (!initialized)
         return "";
     
     return dir.path();
 }
 
-bool Gamepad_SD_card::make_dir(String path, bool absolute){
+bool DD_SD_card::make_dir(String path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -146,7 +146,7 @@ bool rmdir_recursive(File &dir){
     return SD.rmdir(dir.path());
 }
 
-bool Gamepad_SD_card::remove_dir(String path, bool recursive, bool absolute){
+bool DD_SD_card::remove_dir(String path, bool recursive, bool absolute){
     if(!initialized)
         return 0;
     
@@ -161,7 +161,7 @@ bool Gamepad_SD_card::remove_dir(String path, bool recursive, bool absolute){
     return SD.rmdir(path);
 }
 
-bool Gamepad_SD_card::exists(String path, bool absolute){
+bool DD_SD_card::exists(String path, bool absolute){
     if(!initialized)
         return 0;
 
@@ -171,7 +171,7 @@ bool Gamepad_SD_card::exists(String path, bool absolute){
     return SD.exists(path);
 }
 
-bool Gamepad_SD_card::is_dir(String path, bool absolute){
+bool DD_SD_card::is_dir(String path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -184,7 +184,7 @@ bool Gamepad_SD_card::is_dir(String path, bool absolute){
     return tmp.isDirectory();
 }
 
-bool Gamepad_SD_card::open_file(String path, const char *mode, bool absolute){
+bool DD_SD_card::open_file(String path, const char *mode, bool absolute){
     if(!initialized)
         return 0;
     
@@ -196,37 +196,37 @@ bool Gamepad_SD_card::open_file(String path, const char *mode, bool absolute){
     return (file);
 }
 
-bool Gamepad_SD_card::open_file(String path, bool absolute){
+bool DD_SD_card::open_file(String path, bool absolute){
     return open_file(path, "r", absolute);
 }
 
-void Gamepad_SD_card::close_file(){
+void DD_SD_card::close_file(){
     file.close();
 }
 
-File *Gamepad_SD_card::get_file_reference(){
+File *DD_SD_card::get_file_reference(){
     return &file;
 }
 
-bool Gamepad_SD_card::file_available(){
+bool DD_SD_card::file_available(){
     return file.available();
 }
 
-bool Gamepad_SD_card::seek(int position){
+bool DD_SD_card::seek(int position){
     if(!file)
         return 0;
 
     return file.seek(position);
 }
 
-int Gamepad_SD_card::pos(){
+int DD_SD_card::pos(){
     if(!file)
         return -1;
     
     return file.position();
 }
 
-uint8_t *Gamepad_SD_card::file_read(int start_pos, int chunk_size){
+uint8_t *DD_SD_card::file_read(int start_pos, int chunk_size){
     if(!file)
         return nullptr;
     
@@ -248,28 +248,28 @@ uint8_t *Gamepad_SD_card::file_read(int start_pos, int chunk_size){
     return data;
 }
 
-String Gamepad_SD_card::file_read_string(){
+String DD_SD_card::file_read_string(){
     if(!file)
         return "";
     
     return file.readString();
 }
 
-String Gamepad_SD_card::file_getline(){
+String DD_SD_card::file_getline(){
     if(!file)
         return "";
 
     return file.readStringUntil('\n');
 }
 
-int Gamepad_SD_card::get_file_size(){
+int DD_SD_card::get_file_size(){
     if(!file)
         return 0;
     
     return file.size();
 }
 
-bool Gamepad_SD_card::file_write(void *data, size_t size, int start_pos){
+bool DD_SD_card::file_write(void *data, size_t size, int start_pos){
     if(!file)
         return 0;
     
@@ -279,28 +279,28 @@ bool Gamepad_SD_card::file_write(void *data, size_t size, int start_pos){
     return file.write(data_ptr, size);
 }
 
-bool Gamepad_SD_card::file_print(String text){
+bool DD_SD_card::file_print(String text){
     if(!file)
         return 0;
     
     return file.print(text);
 }
 
-bool Gamepad_SD_card::file_println(String text){
+bool DD_SD_card::file_println(String text){
     if(!file)
         return 0;
     
     return file.println(text);
 }
 
-void Gamepad_SD_card::save_file(){
+void DD_SD_card::save_file(){
     if(!file)
         return;
     
     file.flush();
 }
 
-bool Gamepad_SD_card::create_file(String path, bool absolute){
+bool DD_SD_card::create_file(String path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -314,7 +314,7 @@ bool Gamepad_SD_card::create_file(String path, bool absolute){
     return 1;
 }
 
-bool Gamepad_SD_card::remove_file(String path, bool absolute){
+bool DD_SD_card::remove_file(String path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -324,7 +324,7 @@ bool Gamepad_SD_card::remove_file(String path, bool absolute){
     return SD.remove(path);
 }
 
-bool Gamepad_SD_card::rename(String curren_path, String new_path, bool absolute){
+bool DD_SD_card::rename(String curren_path, String new_path, bool absolute){
     if(!initialized)
         return 0;
     
@@ -377,7 +377,7 @@ int PNG_SD_draw(PNGDRAW *pDraw){
 	return 1;
 }
 
-bool Gamepad_SD_card::file_read_PNG(Image_raw16_t *img, bool alpha_channel){
+bool DD_SD_card::file_read_PNG(Image_raw16_t *img, bool alpha_channel){
     if(!file)
         return 0;
     
@@ -410,11 +410,11 @@ bool Gamepad_SD_card::file_read_PNG(Image_raw16_t *img, bool alpha_channel){
     return (status == PNG_SUCCESS && img_created);
 }
 
-bool Gamepad_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
+bool DD_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
     return file_read_PNG(&img, alpha_channel);
 }
 
-void Gamepad_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
+void DD_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
     if(!file)
         return;
     
@@ -436,11 +436,11 @@ void Gamepad_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
         file.write(a_ptr, img->alpha_buff_size);
 }
 
-void Gamepad_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
+void DD_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
     file_write_raw16(&img, start_pos);
 }
 
-bool Gamepad_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
+bool DD_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
     if(!file)
         return 0;
     uint64_t t = millis();
@@ -479,6 +479,6 @@ bool Gamepad_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
     return 1;
 }
 
-bool Gamepad_SD_card::file_read_raw16(Image_raw16_t &img, int start_pos){
+bool DD_SD_card::file_read_raw16(Image_raw16_t &img, int start_pos){
     return file_read_PNG(&img, start_pos);
 }

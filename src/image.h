@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_IMAGE_H
-#define GAMEPAD_IMAGE_H
+#ifndef DD_IMAGE_H
+#define DD_IMAGE_H
 
 #include <Arduino.h>
 #include <PNGdec.h>

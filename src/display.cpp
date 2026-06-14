@@ -7,7 +7,7 @@ bool ALLOW_DMA __attribute__((weak)) = true;
 
 
 
-Gamepad_canvas_t::~Gamepad_canvas_t(){
+DD_canvas_t::~DD_canvas_t(){
 	for(uint8_t i = 1; i <= FONTS_MAX_N; i++)
 		unloadFont(i);
 }
@@ -20,7 +20,7 @@ Gamepad_canvas_t::~Gamepad_canvas_t(){
 ** Description:             Render a 16-bit colour image to TFT with a 1bpp mask
 ***************************************************************************************/
 // Can be used with a 16bpp sprite and a 1bpp sprite for the mask
-void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp)
+void DD_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp)
 {
   if (_vpOoB || w < 1 || h < 1) return;
 
@@ -105,25 +105,25 @@ void Gamepad_canvas_t::pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t 
   }
 }
 
-void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t *image){
+void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t *image){
 	if(image->alpha)
 		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer);
 	else
 		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer);
 }
 
-void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
+void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw16_t &image){
 	pushImage(x, y, &image);
 }
 
-void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t *image){
+void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t *image){
 	if(image->alpha)
 		pushMaskedImage(x, y, image->w, image->h, image->img_buffer, image->alpha_buffer, 8);
 	else
 		TFT_eSprite::pushImage(x, y, image->w, image->h, image->img_buffer, 8);
 }
 
-void Gamepad_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){
+void DD_canvas_t::pushImage(int32_t x, int32_t y, Image_raw8_t &image){
 	pushImage(x, y, &image);
 }
 
@@ -134,7 +134,7 @@ static PNG *png_decoder;
 #endif
 
 struct PNG_user_param_t{
-	Gamepad_canvas_t *canvas;
+	DD_canvas_t *canvas;
 	int32_t x;
 	int32_t y;
 	bool alpha;
@@ -176,7 +176,7 @@ int PNG_disp_draw(PNGDRAW *pDraw){
 	return 1;
 }
 
-void Gamepad_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool alpha_channel){
+void DD_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool alpha_channel){
 	if(file == nullptr)
 		return;
 
@@ -208,7 +208,7 @@ void Gamepad_canvas_t::drawPNGFromFile(File *file, int32_t x, int32_t y, bool al
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw file
 ***************************************************************************************/
-void Gamepad_canvas_t::loadFont(File *file, uint8_t id){
+void DD_canvas_t::loadFont(File *file, uint8_t id){
 	if(id == 0)
 		return;
 
@@ -226,7 +226,7 @@ void Gamepad_canvas_t::loadFont(File *file, uint8_t id){
 	dynamic_mem_font |= 1 << (id - 1);
 }
 
-void Gamepad_canvas_t::loadFont(const uint8_t array[], uint8_t id){
+void DD_canvas_t::loadFont(const uint8_t array[], uint8_t id){
 	if(id == 0)
 		return;
 	
@@ -237,7 +237,7 @@ void Gamepad_canvas_t::loadFont(const uint8_t array[], uint8_t id){
 	dynamic_mem_font &= ~(1 << (id - 1));
 }
 
-void Gamepad_canvas_t::unloadFont(uint8_t id){
+void DD_canvas_t::unloadFont(uint8_t id){
 	if(id == 0 || id > FONTS_MAX_N)
 		return;
 	
@@ -254,7 +254,7 @@ void Gamepad_canvas_t::unloadFont(uint8_t id){
 	}
 }
 
-void Gamepad_canvas_t::setFont(uint8_t id){
+void DD_canvas_t::setFont(uint8_t id){
 	if(id == font_id || id > FONTS_MAX_N || fonts[id - 1] == nullptr)
 		return;
 	
@@ -268,15 +268,15 @@ void Gamepad_canvas_t::setFont(uint8_t id){
 	font_h = gFont.yAdvance;
 }
 
-uint8_t Gamepad_canvas_t::getFontID(){
+uint8_t DD_canvas_t::getFontID(){
 	return font_id;
 }
 
-void Gamepad_canvas_t::setLineSpacing(float multiplier){
+void DD_canvas_t::setLineSpacing(float multiplier){
 	gFont.yAdvance = multiplier * font_h;
 }
 
-void Gamepad_canvas_t::setDefaultGraphicsParams(){
+void DD_canvas_t::setDefaultGraphicsParams(){
 	setFont(0);
     setTextSize(1);
     setTextColor(TFT_WHITE);
@@ -285,7 +285,7 @@ void Gamepad_canvas_t::setDefaultGraphicsParams(){
     setOrigin(0, 0);
 }
 
-void Gamepad_canvas_t::setGraphicsParams(Graphics_params_t params){
+void DD_canvas_t::setGraphicsParams(Graphics_params_t params){
 	setFont(params.font_id);
     setTextSize(params.text_size);
     setTextColor(params.text_color);
@@ -294,7 +294,7 @@ void Gamepad_canvas_t::setGraphicsParams(Graphics_params_t params){
     setOrigin(params.orig_x, params.orig_y);
 }
 
-Graphics_params_t Gamepad_canvas_t::graphicsParams(){
+Graphics_params_t DD_canvas_t::graphicsParams(){
 	Graphics_params_t res;
 
 	res.font_id = font_id;
@@ -309,7 +309,7 @@ Graphics_params_t Gamepad_canvas_t::graphicsParams(){
 
 
 
-bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_channel){
+bool DD_display::init(uint16_t width, uint16_t height, uint8_t backlight_channel){
 	w = width;
 	h = height;
 
@@ -354,21 +354,21 @@ bool Gamepad_display::init(uint16_t width, uint16_t height, uint8_t backlight_ch
 	return true;
 }
 
-TFT_eSPI* Gamepad_display::get_display_reference(){
+TFT_eSPI* DD_display::get_display_reference(){
 	return &disp;
 }
 
-Gamepad_canvas_t* Gamepad_display::get_canvas_reference(){
+DD_canvas_t* DD_display::get_canvas_reference(){
 	return &canvas;
 }
 
-void Gamepad_display::display_canvas(){
+void DD_display::display_canvas(){
 	if(!initialized)
 		return;
 	canvas.pushSprite(0, 0);
 }
 
-void Gamepad_display::display_canvas(int16_t x0, int16_t y0, uint16_t window_w, uint16_t window_h){
+void DD_display::display_canvas(int16_t x0, int16_t y0, uint16_t window_w, uint16_t window_h){
 	if(!initialized)
 		return;
 	
@@ -382,21 +382,21 @@ void Gamepad_display::display_canvas(int16_t x0, int16_t y0, uint16_t window_w, 
 		canvas.pushSprite(x0, y0, x0, y0, window_w, window_h);
 }
 
-void Gamepad_display::clear_canvas(){
+void DD_display::clear_canvas(){
 	canvas.fillSprite(0);
 }
 
-void Gamepad_display::set_brightness(uint8_t brightness_){
+void DD_display::set_brightness(uint8_t brightness_){
 	brightness = brightness_;
 	ledcWrite(channel, brightness);
 }
 
-uint8_t Gamepad_display::get_brightness(){
+uint8_t DD_display::get_brightness(){
 	return brightness;
 }
 
-Gamepad_canvas_t* Gamepad_display::create_sprite(uint16_t width, uint16_t height, uint8_t color_depth){
-	Gamepad_canvas_t *sprite = new Gamepad_canvas_t(&disp);
+DD_canvas_t* DD_display::create_sprite(uint16_t width, uint16_t height, uint8_t color_depth){
+	DD_canvas_t *sprite = new DD_canvas_t(&disp);
 
 	sprite->setColorDepth(color_depth);
 	if (heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT) < (float) color_depth / 8.0 * width * height){
@@ -410,7 +410,7 @@ Gamepad_canvas_t* Gamepad_display::create_sprite(uint16_t width, uint16_t height
 	return sprite;
 }
 
-void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x, int16_t disp_y){
+void DD_display::display_sprite(DD_canvas_t *sprite, int16_t disp_x, int16_t disp_y){
 	if(!initialized || sprite == nullptr)
 		return;
 	
@@ -424,7 +424,7 @@ void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x, i
 		sprite->pushSprite(disp_x, disp_y);
 }
 
-void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite, 
+void DD_display::display_sprite(DD_canvas_t *sprite, 
 									int16_t disp_x, int16_t disp_y, 
 									int16_t sprite_x0, int16_t sprite_y0, 
 									uint16_t window_w, uint16_t window_h){
@@ -433,11 +433,11 @@ void Gamepad_display::display_sprite(Gamepad_canvas_t *sprite,
 	sprite->pushSprite(disp_x + sprite_x0, disp_y + sprite_y0, sprite_x0, sprite_y0, window_w, window_h);
 }
 
-void Gamepad_display::clear_sprite(Gamepad_canvas_t *sprite){
+void DD_display::clear_sprite(DD_canvas_t *sprite){
 	sprite->fillSprite(0);
 }
 
-void Gamepad_display::delete_sprite(Gamepad_canvas_t *sprite){
+void DD_display::delete_sprite(DD_canvas_t *sprite){
 	sprite->deleteSprite();
 	delete sprite;
 }

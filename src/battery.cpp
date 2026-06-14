@@ -16,11 +16,11 @@ float default_v_adj(float v){
 
 
 
-Gamepad_battery::Gamepad_battery(){
+DD_battery::DD_battery(){
     v_adj_func = default_v_adj;
 }
 
-void Gamepad_battery::init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_){
+void DD_battery::init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_){
     critical_v = critical_v_;
     full_v = full_v_;
     charging_v = charging_v_;
@@ -34,12 +34,12 @@ void Gamepad_battery::init(float critical_v_, float full_v_, float charging_v_, 
     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0, &adc1_chars);
 }
 
-void Gamepad_battery::set_voltage_adjustment(float (*v_adj_func_ptr)(float)){
+void DD_battery::set_voltage_adjustment(float (*v_adj_func_ptr)(float)){
     v_adj_func = v_adj_func_ptr;
 }
 
 
-float Gamepad_battery::get_battery_voltage(){
+float DD_battery::get_battery_voltage(){
     while(!xSemaphoreTake(batt_pin_mutex, portMAX_DELAY));      // wait until analog read is available
 
     int raw_read = 0;
@@ -55,7 +55,7 @@ float Gamepad_battery::get_battery_voltage(){
     return v_adj_func(v_raw); 
 }
 
-uint8_t Gamepad_battery::get_battery_charge(float v){
+uint8_t DD_battery::get_battery_charge(float v){
     if (v == 0)
         v = get_battery_voltage();
 
@@ -70,7 +70,7 @@ uint8_t Gamepad_battery::get_battery_charge(float v){
     return BATTERY_LEVELS - i;
 }
 
-Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(float v){
+DD_battery::Charge_mode_t DD_battery::get_device_mode(float v){
     if(v == 0)
         v = get_battery_voltage();
     
@@ -82,14 +82,14 @@ Gamepad_battery::Charge_mode_t Gamepad_battery::get_device_mode(float v){
 }
 
 void battery_callibration(void *params){
-    float v = GAMEPAD_GLOBAL::battery.get_battery_voltage();
+    float v = DD_GLOBAL::battery.get_battery_voltage();
     while(v > CRITICAL_V){
-        if(GAMEPAD_GLOBAL::battery.get_device_mode() != Gamepad_battery::POWER_ON){
+        if(DD_GLOBAL::battery.get_device_mode() != DD_battery::POWER_ON){
             calibr_failed = true;
             break;
         }
 
-        calibr_v.push_back(GAMEPAD_GLOBAL::battery.get_battery_voltage());
+        calibr_v.push_back(DD_GLOBAL::battery.get_battery_voltage());
         
         vTaskDelay(BATTERY_CALIBRATION_TIMEOUT);
     }
@@ -97,7 +97,7 @@ void battery_callibration(void *params){
     vTaskDelete(NULL);
 }
 
-void Gamepad_battery::start_calibration(){
+void DD_battery::start_calibration(){
     calibr_failed = false;
 
     xTaskCreatePinnedToCore(
@@ -114,7 +114,7 @@ void Gamepad_battery::start_calibration(){
     calibration_start_time = millis();
 }
 
-float* Gamepad_battery::finish_calibration(){
+float* DD_battery::finish_calibration(){
     if(!calibrating || calibr_v.size() == 0 || calibr_failed){
         calibrating = false;
         return nullptr;
@@ -140,23 +140,23 @@ float* Gamepad_battery::finish_calibration(){
     return voltage_levels;
 }
 
-bool Gamepad_battery::is_calibrating(){
+bool DD_battery::is_calibrating(){
     return calibrating;
 }
 
-bool Gamepad_battery::calibration_failed(){
+bool DD_battery::calibration_failed(){
     return calibr_failed;
 }
 
-bool Gamepad_battery::calibrated(){
+bool DD_battery::calibrated(){
     return (voltage_levels != nullptr);
 }
 
-float* Gamepad_battery::get_calibration_data(){
+float* DD_battery::get_calibration_data(){
     return voltage_levels;
 }
 
-void Gamepad_battery::set_calibration_data(float *data){
+void DD_battery::set_calibration_data(float *data){
     if(data == nullptr){
         voltage_levels = nullptr;
         return;
@@ -173,6 +173,6 @@ void Gamepad_battery::set_calibration_data(float *data){
 
 
 
-namespace GAMEPAD_GLOBAL{
-    Gamepad_battery battery;
+namespace DD_GLOBAL{
+    DD_battery battery;
 }

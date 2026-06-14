@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_UI_H
-#define GAMEPAD_UI_H
+#ifndef DD_UI_H
+#define DD_UI_H
 
 #include <Arduino.h>
 #include <vector>
@@ -18,9 +18,9 @@ struct File_mngr_t{
 
 
 
-class Gamepad_UI{
+class DD_UI{
 public:
-    Gamepad_UI() = default;
+    DD_UI() = default;
 
     uint8_t main_menu(bool game_active = true, bool game_select_active = true, uint8_t init_cursor = 0);
 
@@ -40,26 +40,26 @@ public:
 
 
 
-class Gamepad_UI_button{
-    void (*render_func)(Gamepad_UI_button *, uint8_t, void *);
+class DD_UI_button{
+    void (*render_func)(DD_UI_button *, uint8_t, void *);
 public:
     uint16_t x, y, w, h;
     uint16_t id;
     int16_t up_id = -1, down_id = -1, left_id = -1, right_id = -1;
 
-    Gamepad_UI_button(uint16_t id_ = 0, uint16_t x_ = 0, uint16_t y_ = 0, uint16_t w_ = 0, uint16_t h_ = 0);
+    DD_UI_button(uint16_t id_ = 0, uint16_t x_ = 0, uint16_t y_ = 0, uint16_t w_ = 0, uint16_t h_ = 0);
 
     void set_neighbours(int16_t up_id_ = -1, int16_t down_id_ = -1, int16_t left_id_ = -1, int16_t right_id_ = -1);
 
-    void assign_render_function(void (*render_func_)(Gamepad_UI_button *, uint8_t, void *));
+    void assign_render_function(void (*render_func_)(DD_UI_button *, uint8_t, void *));
     void render(void* params = nullptr, uint8_t skin = 0, bool clear = false);
     void render(uint8_t skin, bool clear = false);
 };
 
 
 
-namespace GAMEPAD_GLOBAL{
-    extern Gamepad_UI UI;
+namespace DD_GLOBAL{
+    extern DD_UI UI;
 
     extern uint32_t notification_destruction_time;
 }

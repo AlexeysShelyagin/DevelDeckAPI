@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_VECTORS_H
-#define GAMEPAD_VECTORS_H
+#ifndef DD_VECTORS_H
+#define DD_VECTORS_H
 
 #include <Arduino.h>
 

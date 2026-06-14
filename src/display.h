@@ -12,7 +12,7 @@
 
 
 // set the type of canvas for external use
-#define GAMEPAD_CANVAS_T_DEFINED
+#define DD_CANVAS_T_DEFINED
 
 
 // Make possible user color depth override
@@ -30,7 +30,7 @@ struct Graphics_params_t{
         int16_t orig_x, orig_y;
     };
 
-class Gamepad_canvas_t : public TFT_eSprite{
+class DD_canvas_t : public TFT_eSprite{
     using TFT_eSprite::TFT_eSprite;
 
     uint8_t* fonts[FONTS_MAX_N];
@@ -38,8 +38,8 @@ class Gamepad_canvas_t : public TFT_eSprite{
     uint8_t dynamic_mem_font = 0;
     uint8_t font_id = 0;
 public:
-    explicit Gamepad_canvas_t(TFT_eSPI *tft) : TFT_eSprite(tft){}
-    ~Gamepad_canvas_t();
+    explicit DD_canvas_t(TFT_eSPI *tft) : TFT_eSprite(tft){}
+    ~DD_canvas_t();
 
 
     void pushMaskedImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *img, uint8_t *mask, uint8_t sbpp = 16);
@@ -66,23 +66,23 @@ public:
 };
 
 
-class Gamepad_display{
+class DD_display{
     int16_t w, h;
     uint8_t channel;
     uint8_t brightness = 255;
 
     TFT_eSPI disp = TFT_eSPI();
-    Gamepad_canvas_t canvas = Gamepad_canvas_t(&disp);
+    DD_canvas_t canvas = DD_canvas_t(&disp);
 
     bool initialized = false;
     uint8_t *canvas_buffer_ptr = nullptr;
 public:
-    Gamepad_display() = default;
+    DD_display() = default;
 
     bool init(uint16_t width = DISP_WIDTH, uint16_t height = DISP_HEIGHT, uint8_t backlight_channel = DISP_BACKLIGHT_LEDC_CHANNEL);
 
     TFT_eSPI* get_display_reference();
-    Gamepad_canvas_t* get_canvas_reference();
+    DD_canvas_t* get_canvas_reference();
 
     void set_brightness(uint8_t brightness_);
     uint8_t get_brightness();
@@ -94,16 +94,16 @@ public:
     void clear_canvas();
     
     // Sprites section
-    Gamepad_canvas_t* create_sprite(uint16_t width, uint16_t height, uint8_t color_depth = 8);
-    void display_sprite(Gamepad_canvas_t *sprite, int16_t disp_x = 0, int16_t disp_y = 0);
+    DD_canvas_t* create_sprite(uint16_t width, uint16_t height, uint8_t color_depth = 8);
+    void display_sprite(DD_canvas_t *sprite, int16_t disp_x = 0, int16_t disp_y = 0);
     void display_sprite(
-        Gamepad_canvas_t *sprite, 
+        DD_canvas_t *sprite, 
         int16_t disp_x, int16_t disp_y, 
         int16_t sprite_x0, int16_t sprite_y0, 
         uint16_t window_w, uint16_t window_h
     );
-    void clear_sprite(Gamepad_canvas_t *sprite);
-    void delete_sprite(Gamepad_canvas_t* sprite);
+    void clear_sprite(DD_canvas_t *sprite);
+    void delete_sprite(DD_canvas_t* sprite);
 };
 
 #endif

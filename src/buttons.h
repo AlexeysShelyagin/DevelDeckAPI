@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_BUTTONS_H
-#define GAMEPAD_BUTTONS_H
+#ifndef DD_BUTTONS_H
+#define DD_BUTTONS_H
 
 #include <queue>
 #include <Arduino.h>
@@ -14,14 +14,14 @@ enum Button_state_t{
     BUT_STILL_RELEASED
 };
 
-class Gamepad_buttons{
+class DD_buttons{
     std::queue < uint8_t > button_buff;
 
     uint8_t previous_state = INVERT_BUTTONS_STATE * -1;
 public:
     uint64_t last_event_time[BUTTONS_N];
 
-    Gamepad_buttons() = default;
+    DD_buttons() = default;
 
     void init();
 
@@ -35,7 +35,7 @@ public:
 };
 
 
-namespace GAMEPAD_GLOBAL{
+namespace DD_GLOBAL{
     extern uint8_t latest_buttons_state;
 
     bool get_latest_button_state(uint8_t id);

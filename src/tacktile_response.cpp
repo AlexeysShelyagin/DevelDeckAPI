@@ -43,7 +43,7 @@ void play_tone_seq_task(void *params){
 }
 
 
-void Gamepad_buzzer::init(uint16_t pin, uint8_t channel_){
+void DD_buzzer::init(uint16_t pin, uint8_t channel_){
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
 	ledcAttach(pin, 100, 8);
 	channel = pin;
@@ -57,12 +57,12 @@ void Gamepad_buzzer::init(uint16_t pin, uint8_t channel_){
 	change_volume(DEFAULT_BUZZER_VOLUME);
 }
 
-void Gamepad_buzzer::play_tone(uint16_t freq){
+void DD_buzzer::play_tone(uint16_t freq){
 	ledcChangeFrequency(channel, freq, 8);
 	ledcWrite(channel, volume);
 }
 
-void Gamepad_buzzer::stop(){
+void DD_buzzer::stop(){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted){
 		vTaskDelete(task_handler);
 		task_handler = NULL;
@@ -72,7 +72,7 @@ void Gamepad_buzzer::stop(){
 	ledcWrite(channel, 0);
 }
 
-void Gamepad_buzzer::change_volume(uint8_t level){
+void DD_buzzer::change_volume(uint8_t level){
 	volume_level = level;
 	if(level >= BUZZER_VOLUME_LEVELS)
 		volume = 100;
@@ -80,16 +80,16 @@ void Gamepad_buzzer::change_volume(uint8_t level){
 		volume = level;
 }
 
-uint8_t Gamepad_buzzer::get_volume(){
+uint8_t DD_buzzer::get_volume(){
 	return volume_level;
 }
 
-void Gamepad_buzzer::play_for_time(uint16_t freq, uint16_t time){
+void DD_buzzer::play_for_time(uint16_t freq, uint16_t time){
 	uint16_t seq_data[2] = {freq, time};
 	play_sequence(seq_data, 1);
 }
 
-void Gamepad_buzzer::play_sequence(std::vector < Buzzer_element_t > &sequence){
+void DD_buzzer::play_sequence(std::vector < Buzzer_element_t > &sequence){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
@@ -117,7 +117,7 @@ void Gamepad_buzzer::play_sequence(std::vector < Buzzer_element_t > &sequence){
 	);
 }
 
-void Gamepad_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
+void DD_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
@@ -186,7 +186,7 @@ void vib_periodic_task(void *params){
 }
 
 
-void Gamepad_vibro::init(uint16_t pin, uint8_t channel_){
+void DD_vibro::init(uint16_t pin, uint8_t channel_){
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
 	ledcAttach(pin, 25000, 8);
 	channel = pin;
@@ -198,16 +198,16 @@ void Gamepad_vibro::init(uint16_t pin, uint8_t channel_){
 	ledcWrite(channel, 0);
 }
 
-uint8_t Gamepad_vibro::calc_strength(uint8_t strength_){
+uint8_t DD_vibro::calc_strength(uint8_t strength_){
 	strength = min(strength, (uint8_t) VIBRO_STRENGTH_LEVELS);
 	return ((float) strength / VIBRO_STRENGTH_LEVELS) * strength_;
 }
 
-void Gamepad_vibro::enable(uint8_t strength_){
+void DD_vibro::enable(uint8_t strength_){
 	ledcWrite(channel, calc_strength(strength_));
 }
 
-void Gamepad_vibro::disable(){
+void DD_vibro::disable(){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted){
 		vTaskDelete(task_handler);
 		task_handler = NULL;
@@ -218,7 +218,7 @@ void Gamepad_vibro::disable(){
 }
 
 
-void Gamepad_vibro::enable_for_time(uint16_t time, uint8_t strength_){
+void DD_vibro::enable_for_time(uint16_t time, uint8_t strength_){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	
@@ -236,7 +236,7 @@ void Gamepad_vibro::enable_for_time(uint16_t time, uint8_t strength_){
 	);
 }
 
-void Gamepad_vibro::enable_periodic(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_){
+void DD_vibro::enable_periodic(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_){
 	if(task_handler != NULL && eTaskGetState(task_handler) != eDeleted)
 		return;
 	

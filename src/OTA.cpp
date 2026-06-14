@@ -5,7 +5,7 @@
 void progressCallBack(size_t currSize, size_t totalSize) {
       Serial.printf("CALLBACK:  Update process at %d of %d bytes...\n", currSize, totalSize);
 
-      gamepad.game_downloading_screen( (float) currSize / totalSize * 100.0 );
+      ddeck.game_downloading_screen( (float) currSize / totalSize * 100.0 );
 }
 
 bool OTA_update(File &firmware){

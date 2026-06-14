@@ -16,8 +16,8 @@
 #include "OTA.h"
 
 
-#ifndef GAMEPAD_CANVAS_T_DEFINED
-typedef DEFAULT_CANVAS_T Gamepad_canvas_t;
+#ifndef DD_CANVAS_T_DEFINED
+typedef DEFAULT_CANVAS_T DD_canvas_t;
 #endif
 
 
@@ -51,7 +51,7 @@ struct System_data_t{
 };
 
 struct Layer_t{
-    Gamepad_canvas_t *canvas;
+    DD_canvas_t *canvas;
     uint16_t x, y;
 };
 
@@ -59,7 +59,7 @@ typedef Layer_t* Layer_id_t;
 
 
 
-class Gamepad{
+class DevelDeck{
     enum Sys_param_t{
         INITIALIZED,
         DISPLAY_ENABLED,
@@ -79,9 +79,9 @@ class Gamepad{
     System_data_t *system_data;
     String game_path;
 
-    Gamepad_display *disp;
+    DD_display *disp;
     
-    Gamepad_SD_card sd_card;
+    DD_SD_card sd_card;
 
     std::vector < Layer_t* > layers;
     Layer_t sys_overlay_layer = {nullptr, 0, 0};
@@ -131,14 +131,14 @@ class Gamepad{
     // --------------------------------
 
 public:
-    Gamepad_canvas_t *canvas = nullptr;
-    Gamepad_buttons buttons;
-    Gamepad_buzzer buzzer;
-    Gamepad_vibro vibro;
-    Gamepad_accel accel;
-    Gamepad_SD_card game_files;
+    DD_canvas_t *canvas = nullptr;
+    DD_buttons buttons;
+    DD_buzzer buzzer;
+    DD_vibro vibro;
+    DD_accel accel;
+    DD_SD_card game_files;
 
-    Gamepad() = default;
+    DevelDeck() = default;
 
     /**
      * @brief Start main game loop
@@ -202,7 +202,7 @@ public:
         int16_t x0 = 0, int16_t y0 = 0, uint16_t w = 0, uint16_t h = 0);
 
     /**
-     * @brief Checks if it is possible to perform `Gamepad::update_display_threaded()`
+     * @brief Checks if it is possible to perform `DevelDeck::update_display_threaded()`
      * 
      * @return true: means previous update has finished
      * @return false: if previous update is in progress
@@ -262,9 +262,9 @@ public:
      * 
      * @param id layer pointer
      * 
-     * @return Gamepad_canvas_t*: pointer to the canvas
+     * @return DD_canvas_t*: pointer to the canvas
      */
-    Gamepad_canvas_t* layer(Layer_id_t &id);
+    DD_canvas_t* layer(Layer_id_t &id);
     
     /**
      * @brief Fills layer black
@@ -318,25 +318,25 @@ public:
     
 
     /**
-     * @brief Enter gamepad main menu function
+     * @brief Enter DevelDeck main menu function
      * 
      */
     void main_menu();
 
     /**
-     * @brief Enter gamepad game selection menu
+     * @brief Enter DevelDeck game selection menu
      * 
      */
     void select_game_menu();
 
     /**
-     * @brief Enter gamepad settings menu
+     * @brief Enter DevelDeck settings menu
      * 
      */
     void settings_menu();
 
     /**
-     * @brief Opens gamepad file manager at game source folder as root
+     * @brief Opens DevelDeck file manager at game source folder as root
      * 
      * @return String: absolute path to file selected by user
      */
@@ -359,19 +359,19 @@ public:
 
 
 
-// ---------- GLOBAL GAMEPAD VARIABLES -----------
+// ---------- GLOBAL DEVELDECK VARIABLES -----------
 
-extern Gamepad gamepad;
+extern DevelDeck ddeck;
 
 extern bool GAME_FILES_REQUIRED;
 
 
 
-namespace GAMEPAD_GLOBAL{
+namespace DD_GLOBAL{
     extern bool forced_display_update;
 }
 
-#define force_sys_disp_update() GAMEPAD_GLOBAL::forced_display_update = true
+#define force_sys_disp_update() DD_GLOBAL::forced_display_update = true
 
 // -----------------------------------------------
 

@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_SD_CARD_H
-#define GAMEPAD_SD_CARD_H
+#ifndef DD_SD_CARD_H
+#define DD_SD_CARD_H
 
 #include "SD.h"
 #include "FS.h"
@@ -24,7 +24,7 @@ struct File_name_t{
     String path;
 };
 
-class Gamepad_SD_card{
+class DD_SD_card{
     File dir;
     File file;
     String root = "";
@@ -39,8 +39,8 @@ public:
         SD_DISCONNECT
     };
 
-    Gamepad_SD_card() = default;
-    ~Gamepad_SD_card();
+    DD_SD_card() = default;
+    ~DD_SD_card();
 
     uint8_t init(String root_limit = "/");
 
