@@ -1,6 +1,6 @@
 {
     "name": "DevelDeck-API",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "keywords": "esp32, game",
     "description": "Framework for DevelDeck by DevelTeam",
     "repository": {
