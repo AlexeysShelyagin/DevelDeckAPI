@@ -4,26 +4,28 @@
 extern SPIClass spi;
 // ==========================================================
 
+
+
 DD_SD_card::~DD_SD_card(){
     dir.close();
     file.close();
 }
 
-bool DD_SD_card::check_root_level(String path){
+bool DD_SD_card::inside_root(String &path){
     if(path.length() < root.length())
         return 0;
     
     return (path.substring(0, root.length()) == root);
 }
 
-bool DD_SD_card::process_path(String &path, bool absolute){
+bool DD_SD_card::resolve_path(String &path, bool absolute){
     if(path[0] != '/' && path.length() != 0)
         path = "/" + path;
     
     if(!absolute)
         path = dir.path() + path;
 
-    if(!check_root_level(path))
+    if(!inside_root(path))
         return 0;
     
     return 1;
@@ -50,11 +52,60 @@ uint8_t DD_SD_card::init(String root_limit){
     return SD_OK;
 }
 
+std::vector < Dir_entry_t > DD_SD_card::list_dir(){
+    std::vector < Dir_entry_t > list;
+
+    if(!initialized)
+        return list;
+
+    File file = dir.openNextFile();
+    while(file){
+        Dir_entry_t tmp = {file.name(), (file.isDirectory()) ? IS_DIR : IS_FILE, file.path()};
+        list.push_back(tmp);
+
+        file = dir.openNextFile();
+    }
+    
+    dir = SD.open(dir.path());
+
+    return list;
+}
+
+String DD_SD_card::current_dir(){
+    if (!initialized)
+        return "";
+    
+    return dir.path();
+}
+
+bool DD_SD_card::exists(String path, bool absolute){
+    if(!initialized)
+        return 0;
+
+    if(!resolve_path(path, absolute))
+        return 0;
+    
+    return SD.exists(path);
+}
+
+bool DD_SD_card::is_dir(String path, bool absolute){
+    if(!initialized)
+        return 0;
+    
+    if(!resolve_path(path, absolute))
+        return 0;
+
+    File tmp;
+    tmp = SD.open(path);
+
+    return tmp.isDirectory();
+}
+
 bool DD_SD_card::open_dir(String path, bool absolute){
     if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
+    if(!resolve_path(path, absolute))
         return 0;
     
     dir = SD.open(path);
@@ -81,7 +132,7 @@ bool DD_SD_card::open_parent_dir(uint8_t levels){
             return 0;
 
         String res_path = current_path.substring(0, i);
-        if(!check_root_level(res_path))
+        if(!inside_root(res_path))
             return 0;
 
         if(!open_dir(res_path, 1))
@@ -91,37 +142,31 @@ bool DD_SD_card::open_parent_dir(uint8_t levels){
     return 1;
 } 
 
-std::vector < File_name_t > DD_SD_card::list_dir(){
-    std::vector < File_name_t > list;
-
+bool DD_SD_card::open_file(String path, const char *mode, bool absolute){
     if(!initialized)
-        return list;
-
-    File file = dir.openNextFile();
-    while(file){
-        File_name_t tmp = {file.name(), (file.isDirectory()) ? IS_DIR : IS_FILE, file.path()};
-        list.push_back(tmp);
-
-        file = dir.openNextFile();
-    }
+        return 0;
     
-    dir = SD.open(dir.path());
+    if(!resolve_path(path, absolute))
+        return 0;
+    
+    file = SD.open(path, mode);
 
-    return list;
+    return (file);
 }
 
-String DD_SD_card::current_dir(){
-    if (!initialized)
-        return "";
-    
-    return dir.path();
+bool DD_SD_card::open_file(String path, bool absolute){
+    return open_file(path, "r", absolute);
+}
+
+void DD_SD_card::close_file(){
+    file.close();
 }
 
 bool DD_SD_card::make_dir(String path, bool absolute){
     if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
+    if(!resolve_path(path, absolute))
         return 0;
 
     return SD.mkdir(path);
@@ -150,7 +195,7 @@ bool DD_SD_card::remove_dir(String path, bool recursive, bool absolute){
     if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
+    if(!resolve_path(path, absolute))
         return 0;
 
     if(recursive){
@@ -161,51 +206,58 @@ bool DD_SD_card::remove_dir(String path, bool recursive, bool absolute){
     return SD.rmdir(path);
 }
 
-bool DD_SD_card::exists(String path, bool absolute){
-    if(!initialized)
-        return 0;
-
-    if(!process_path(path, absolute))
-        return 0;
-    
-    return SD.exists(path);
-}
-
-bool DD_SD_card::is_dir(String path, bool absolute){
+bool DD_SD_card::make_file(String path, bool absolute){
     if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
+    if(!resolve_path(path, absolute))
         return 0;
 
-    File tmp;
-    tmp = SD.open(path);
+    File newfile;
+    newfile = SD.open(path, FILE_WRITE);
+    newfile.close();
 
-    return tmp.isDirectory();
+    return 1;
 }
 
-bool DD_SD_card::open_file(String path, const char *mode, bool absolute){
+bool DD_SD_card::remove_file(String path, bool absolute){
     if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
+    if(!resolve_path(path, absolute))
+        return 0;
+
+    return SD.remove(path);
+}
+
+bool DD_SD_card::rename(String curren_path, String new_path, bool absolute){
+    if(!initialized)
         return 0;
     
-    file = SD.open(path, mode);
-
-    return (file);
+    if(!resolve_path(curren_path, absolute))
+        return 0;
+    if(!resolve_path(new_path, absolute))
+        return 0;
+    
+    return SD.rename(curren_path, new_path);
 }
 
-bool DD_SD_card::open_file(String path, bool absolute){
-    return open_file(path, "r", absolute);
-}
-
-void DD_SD_card::close_file(){
-    file.close();
-}
-
-File *DD_SD_card::get_file_reference(){
+File *DD_SD_card::file_ref(){
     return &file;
+}
+
+int DD_SD_card::file_size(){
+    if(!file)
+        return 0;
+    
+    return file.size();
+}
+
+void DD_SD_card::save_file(){
+    if(!file)
+        return;
+    
+    file.flush();
 }
 
 bool DD_SD_card::file_available(){
@@ -226,7 +278,7 @@ int DD_SD_card::pos(){
     return file.position();
 }
 
-uint8_t *DD_SD_card::file_read(int start_pos, int chunk_size){
+uint8_t *DD_SD_card::read(int start_pos, int chunk_size){
     if(!file)
         return nullptr;
     
@@ -248,28 +300,21 @@ uint8_t *DD_SD_card::file_read(int start_pos, int chunk_size){
     return data;
 }
 
-String DD_SD_card::file_read_string(){
+String DD_SD_card::read_as_string(){
     if(!file)
         return "";
     
     return file.readString();
 }
 
-String DD_SD_card::file_getline(){
+String DD_SD_card::getline(){
     if(!file)
         return "";
 
     return file.readStringUntil('\n');
 }
 
-int DD_SD_card::get_file_size(){
-    if(!file)
-        return 0;
-    
-    return file.size();
-}
-
-bool DD_SD_card::file_write(void *data, size_t size, int start_pos){
+bool DD_SD_card::write(void *data, size_t size, int start_pos){
     if(!file)
         return 0;
     
@@ -279,61 +324,26 @@ bool DD_SD_card::file_write(void *data, size_t size, int start_pos){
     return file.write(data_ptr, size);
 }
 
-bool DD_SD_card::file_print(String text){
+size_t DD_SD_card::print(String text){
     if(!file)
         return 0;
     
     return file.print(text);
 }
 
-bool DD_SD_card::file_println(String text){
+size_t DD_SD_card::println(String text){
     if(!file)
         return 0;
     
     return file.println(text);
 }
 
-void DD_SD_card::save_file(){
+template<typename... Args>
+size_t DD_SD_card::printf(const char *format, Args&&... args){
     if(!file)
-        return;
-    
-    file.flush();
-}
-
-bool DD_SD_card::create_file(String path, bool absolute){
-    if(!initialized)
         return 0;
     
-    if(!process_path(path, absolute))
-        return 0;
-
-    File newfile;
-    newfile = SD.open(path, FILE_WRITE);
-    newfile.close();
-
-    return 1;
-}
-
-bool DD_SD_card::remove_file(String path, bool absolute){
-    if(!initialized)
-        return 0;
-    
-    if(!process_path(path, absolute))
-        return 0;
-
-    return SD.remove(path);
-}
-
-bool DD_SD_card::rename(String curren_path, String new_path, bool absolute){
-    if(!initialized)
-        return 0;
-    
-    if(!process_path(curren_path, absolute))
-        return 0;
-    if(!process_path(new_path, absolute))
-        return 0;
-    
-    return SD.rename(curren_path, new_path);
+    return file.printf(format, std::forward < Args > (args)...);
 }
 
 
@@ -377,7 +387,7 @@ int PNG_SD_draw(PNGDRAW *pDraw){
 	return 1;
 }
 
-bool DD_SD_card::file_read_PNG(Image_raw16_t *img, bool alpha_channel){
+bool DD_SD_card::read_PNG(Image_raw16_t *img, bool alpha_channel){
     if(!file)
         return 0;
     
@@ -410,11 +420,11 @@ bool DD_SD_card::file_read_PNG(Image_raw16_t *img, bool alpha_channel){
     return (status == PNG_SUCCESS && img_created);
 }
 
-bool DD_SD_card::file_read_PNG(Image_raw16_t &img, bool alpha_channel){
-    return file_read_PNG(&img, alpha_channel);
+bool DD_SD_card::read_PNG(Image_raw16_t &img, bool alpha_channel){
+    return read_PNG(&img, alpha_channel);
 }
 
-void DD_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
+void DD_SD_card::write_raw16(Image_raw16_t *img, int start_pos){
     if(!file)
         return;
     
@@ -436,11 +446,11 @@ void DD_SD_card::file_write_raw16(Image_raw16_t *img, int start_pos){
         file.write(a_ptr, img->alpha_buff_size);
 }
 
-void DD_SD_card::file_write_raw16(Image_raw16_t &img, int start_pos){
-    file_write_raw16(&img, start_pos);
+void DD_SD_card::write_raw16(Image_raw16_t &img, int start_pos){
+    write_raw16(&img, start_pos);
 }
 
-bool DD_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
+bool DD_SD_card::read_raw16(Image_raw16_t *img, int start_pos){
     if(!file)
         return 0;
     uint64_t t = millis();
@@ -479,6 +489,6 @@ bool DD_SD_card::file_read_raw16(Image_raw16_t *img, int start_pos){
     return 1;
 }
 
-bool DD_SD_card::file_read_raw16(Image_raw16_t &img, int start_pos){
-    return file_read_PNG(&img, start_pos);
+bool DD_SD_card::read_raw16(Image_raw16_t &img, int start_pos){
+    return read_PNG(&img, start_pos);
 }

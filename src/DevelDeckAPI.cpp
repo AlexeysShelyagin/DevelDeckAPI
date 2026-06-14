@@ -859,7 +859,7 @@ void DevelDeck::__select_game_menu(){
         sd_card.open_file(file.game_config->game_path);
 
         UI.init_game_downloading_screen(*file.game_config, file.dir);
-        if( OTA_update(*sd_card.get_file_reference()) ){
+        if( OTA_update(*sd_card.file_ref()) ){
             system_data->game_path_size = file.dir.length();
             for(uint8_t i = 0; i < system_data->game_path_size; i++)
                 system_data->game_path[i] = file.dir[i];
@@ -1067,7 +1067,7 @@ void DevelDeck::user_locate_game_folder(){
         
         sd_card.open_dir(selected.dir, true);
         sd_card.open_file(GAME_CONFIG_FILE_NAME);
-        String file = sd_card.file_read_string();
+        String file = sd_card.read_as_string();
         sd_card.close_file();
         Game_config_t config = read_game_config(file);
 

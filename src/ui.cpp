@@ -119,7 +119,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     uint16_t orig_y = (ddeck.canvas->height() - FILE_MANAGER_H) / 2;
     ddeck.canvas->setOrigin(orig_x, orig_y);
 
-    std::vector < File_name_t > dir;
+    std::vector < Dir_entry_t > dir;
     std::stack < uint16_t > cursor;
     std::stack < uint16_t > scroll;
     cursor.push(0);
@@ -217,7 +217,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
                 for(uint16_t i = 0; i < dir.size(); i++){
                     if(dir[i].name == GAME_CONFIG_FILE_NAME){
                         file_manager.open_file(GAME_CONFIG_FILE_NAME);
-                        String file = file_manager.file_read_string();
+                        String file = file_manager.read_as_string();
                         *game_config = ddeck.read_game_config(file);
                         file_manager.close_file();
                         
@@ -238,7 +238,7 @@ File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
             if(is_game_folder){
                 if(game_config->icon_path != ""){
                     file_manager.open_file(game_config->icon_path);
-                    ddeck.canvas->drawPNGFromFile(file_manager.get_file_reference(), 0, 0, true);
+                    ddeck.canvas->drawPNGFromFile(file_manager.file_ref(), 0, 0, true);
                     file_manager.close_file();
 
                     ddeck.canvas->setCursor(GAME_ICON_SIZE + 2, 0);
@@ -653,7 +653,7 @@ void DD_UI::init_game_downloading_screen(DD_GLOBAL::Game_config_t game_data, Str
 
         temp_fs.open_file(game_data.icon_path);
         ddeck.canvas->drawPNGFromFile(
-            temp_fs.get_file_reference(), 
+            temp_fs.file_ref(), 
             (ddeck.canvas->width() - GAME_ICON_SIZE) / 2, 
             ddeck.canvas->fontHeight() + y0 + 4, 
             true

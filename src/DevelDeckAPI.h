@@ -363,6 +363,8 @@ extern DevelDeck ddeck;
 
 extern bool GAME_FILES_REQUIRED;
 
+#define current_file() ddeck.game_files.file_ref()
+
 #define force_sys_disp_update() DD_GLOBAL::forced_display_update = true
 
 // -----------------------------------------------

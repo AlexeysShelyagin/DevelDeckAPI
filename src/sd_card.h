@@ -14,15 +14,17 @@
 #endif
 
 enum FS_obj_type : uint8_t{
-    IS_DIR,
-    IS_FILE
+    IS_FILE = 0,
+    IS_DIR = 1
 };
 
-struct File_name_t{
+struct Dir_entry_t{
     String name;
     bool type;
     String path;
 };
+
+
 
 class DD_SD_card{
     File dir;
@@ -30,8 +32,9 @@ class DD_SD_card{
     String root = "";
     bool initialized = false;
 
-    bool check_root_level(String path);
-    bool process_path(String &path, bool absolute);
+    bool inside_root(String &path);
+    bool resolve_path(String &path, bool absolute);
+
 public:
     enum SD_status_t : uint8_t{
         SD_OK,
@@ -44,53 +47,55 @@ public:
 
     uint8_t init(String root_limit = "/");
 
-    bool open_dir(String path, bool absolute = false);
-    bool open_parent_dir(uint8_t levels = 1);
-    std::vector < File_name_t > list_dir();
+    std::vector < Dir_entry_t > list_dir();
     String current_dir();
-    bool make_dir(String path, bool absolute = false);
-    bool remove_dir(String path, bool recursive = false, bool absolute = false);
-
     bool exists(String path, bool absolute = false);
     bool is_dir(String path, bool absolute = false);
-    
+
+    bool open_dir(String path, bool absolute = false);
+    bool open_parent_dir(uint8_t levels = 1);
+
     bool open_file(String path, const char *mode = "r", bool absolute = false);
     bool open_file(String path, bool absolute);
     void close_file();
-    File *get_file_reference();
 
+    bool make_dir(String path, bool absolute = false);
+    bool remove_dir(String path, bool recursive = false, bool absolute = false);
+    
+    bool make_file(String path, bool absolute = false);
+    bool remove_file(String path, bool absolute = false);
+    bool rename(String curren_path, String new_path, bool absolute = false);
+    
+
+
+    File *file_ref();
+    int file_size();
+    void save_file();
     bool file_available();
     
-    uint8_t *file_read(int start_pos = -1, int chunk_size = 1);
-    String file_read_string();
-    String file_getline();
+    uint8_t *read(int start_pos = -1, int chunk_size = 1);
+    String read_as_string();
+    String getline();
 
     template < class T >
-    T *file_read_variable(int start_pos = -1){
-        return (T*) file_read(start_pos, sizeof(T));
+    T *read_variable(int start_pos = -1){
+        return reinterpret_cast < T* > ( read(start_pos, sizeof(T)) );
     }
-
-    int get_file_size();
 
     bool seek(int position);
     int pos();
-    bool file_write(void *data, size_t size, int start_pos = -1);
-    bool file_print(String text = "");
-    bool file_println(String text = "");
+    bool write(void *data, size_t size, int start_pos = -1);
+    size_t print(String text = "");
+    size_t println(String text = "");
+    template<typename... Args>
+    size_t printf(const char *format, Args&&... args);
 
-    void save_file();
-
-    bool create_file(String path, bool absolute = false);
-    bool remove_file(String path, bool absolute = false);
-    
-    bool rename(String curren_path, String new_path, bool absolute = false);
-
-    bool file_read_PNG(Image_raw16_t *img, bool alpha_channel = false);
-    bool file_read_PNG(Image_raw16_t &img, bool alpha_channel = false);
-    void file_write_raw16(Image_raw16_t *img, int start_pos = -1);
-    void file_write_raw16(Image_raw16_t &img, int start_pos = -1);
-    bool file_read_raw16(Image_raw16_t *img, int start_pos = -1);
-    bool file_read_raw16(Image_raw16_t &img, int start_pos = -1);
+    bool read_PNG(Image_raw16_t *img, bool alpha_channel = false);
+    bool read_PNG(Image_raw16_t &img, bool alpha_channel = false);
+    void write_raw16(Image_raw16_t *img, int start_pos = -1);
+    void write_raw16(Image_raw16_t &img, int start_pos = -1);
+    bool read_raw16(Image_raw16_t *img, int start_pos = -1);
+    bool read_raw16(Image_raw16_t &img, int start_pos = -1);
 };
 
 #endif
