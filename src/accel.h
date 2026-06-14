@@ -1,5 +1,5 @@
-#ifndef ACCEL_H
-#define ACCEL_H
+#ifndef DD_ACCEL_H
+#define DD_ACCEL_H
 
 #include <Wire.h>
 #include <Arduino.h>
@@ -7,7 +7,7 @@
 #include "config.h"
 #include "vectors.h"
 
-const float g_const = 9.81;
+const float GRAVITY_MS2 = 9.81f;
 
 class DD_accel{
     enum chip_type_t{
@@ -16,9 +16,9 @@ class DD_accel{
     };
     uint8_t chip = 0;
 
-    TwoWire accelWire = TwoWire(0);
-    vec3 invert_mask;
+    TwoWire _i2c = TwoWire(0);
 
+    vec3 invert_mask;
     vec3 basis_x;
     vec3 basis_y;
 
@@ -35,7 +35,7 @@ public:
     void set_as_zero(vec3 accel, bool hold_x_axis = false);
 
     vec3 get_accel();
-    vec2 get_angles(vec3 &accel);
+    vec2 get_angles(vec3 accel);
     vec2 get_angles();
 };
 
