@@ -3,18 +3,38 @@
 #include "DevelDeckAPI.h"
 
 //ISR definiton
-IRAM_ATTR void handle_button_interrupt();
-//
+IRAM_ATTR void buttons_isr(void *args);
 
-void Gamepad_buttons::init(){
-    for (int i = 0; i < BUTTONS_N; i++){
+struct ISR_args_t{
+    DD_buttons *buttons;
+    int16_t pin_id;
+    gpio_num_t target_pin;
+};
+ISR_args_t args_container[BUTTONS_N];
+
+uint8_t latest_buttons_state;
+
+
+
+void DD_buttons::init(){
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+
+    for (int16_t i = 0; i < BUTTONS_N; i++){
         if (buttons_map[i] == -1) 
             continue;
         
-        pinMode(buttons_map[i], INPUT);
-        
-        attachInterrupt(buttons_map[i], handle_button_interrupt, CHANGE);
-        
+        gpio_num_t pin = (gpio_num_t) buttons_map[i];
+
+        gpio_config_t pin_config = {};
+        pin_config.pin_bit_mask = (1ULL << pin);
+        pin_config.mode = GPIO_MODE_INPUT;
+        pin_config.pull_up_en = GPIO_PULLUP_DISABLE;
+        pin_config.intr_type = GPIO_INTR_ANYEDGE;
+        gpio_config(&pin_config);
+
+        args_container[i] = {this, i, pin};
+
+        gpio_isr_handler_add(pin, buttons_isr, &args_container[i]);
     }
 
     uint8_t init_state = 0;
@@ -26,26 +46,26 @@ void Gamepad_buttons::init(){
     add_button_event(init_state);
 }
 
-bool Gamepad_buttons::get_latest_state(uint8_t id){
-    return ((latest_state >> id) & 1);                // extract last state of one specific button
+bool DD_buttons::get_latest_state(uint8_t id){
+    return DD_GLOBAL::get_latest_button_state(id);
 }
 
-bool Gamepad_buttons::read_state(uint8_t id){
+bool DD_buttons::read_state(uint8_t id){
     return digitalRead(buttons_map[id]) ^ INVERT_BUTTONS_STATE;
 }
 
-void Gamepad_buttons::add_button_event(uint8_t &state){
-    previous_state = latest_state;
+void DD_buttons::add_button_event(uint8_t &state){
+    previous_state = latest_buttons_state;
 
-    latest_state = state;
-    button_buff.push(state);
+    latest_buttons_state = state;
+    events.push(state);
 }
 
-uint8_t* Gamepad_buttons::get_button_event(){
-    if(button_buff.empty())
+uint8_t* DD_buttons::get_event(){
+    if(events.empty())
         return nullptr;
     
-    uint8_t event = button_buff.front();
+    uint8_t event = events.front();
     static uint8_t response[BUTTONS_N];
     for(int i = 0; i < BUTTONS_N; i++){
         bool button = (event >> i) & 1;
@@ -57,51 +77,61 @@ uint8_t* Gamepad_buttons::get_button_event(){
             response[i] = (button) ? BUT_STILL_PRESSED : BUT_STILL_RELEASED;
     }
 
-    button_buff.pop();
+    events.pop();
 
     return response;
 }
 
-bool Gamepad_buttons::event_available(){
-    return !button_buff.empty();
+bool DD_buttons::event_available(){
+    return !events.empty();
 }
 
-void Gamepad_buttons::clear_queue(){
-    uint16_t size = button_buff.size();
+void DD_buttons::clear_queue(){
+    uint16_t size = events.size();
     for(int i = 0; i < size; i++)
-        button_buff.pop();
+        events.pop();
 }
 
 
 
 // ----------- BUTTON_ISR -------------
 
-IRAM_ATTR void handle_button_interrupt(){
-    uint8_t state = 0;
-    uint64_t current_time = millis();
-    bool update = false;
-
-    for (int i = 0; i < BUTTONS_N; i++){
-        if (buttons_map[i] == -1)                                                                       // check button enabled
-            continue;
-
-        bool button_state = digitalRead(buttons_map[i]);
-        if (gamepad.buttons.get_latest_state(i) != button_state){                                         // does any button really change its state?
-            if (current_time - gamepad.buttons.last_event_time[i] < BUTTON_FILTERING_TIME)              // filter out bouncing
-                continue;
-
-            gamepad.buttons.last_event_time[i] = current_time;                                          // update last button event time
-            update = true;                                                                              // mark that changes actually occured
-        }
-
-        state |= digitalRead(buttons_map[i]) << i;                                                      // write full keyboard state
-    }
-
-    if(!update)
+IRAM_ATTR void buttons_isr(void *args){
+    DD_buttons *buttons = ((ISR_args_t *) args)->buttons;
+    int16_t id = ((ISR_args_t *) args)->pin_id;
+    gpio_num_t pin = ((ISR_args_t *) args)->target_pin;
+    
+    if(id == -1)
         return;
 
+    uint8_t pin_state = gpio_get_level(pin);
     if(INVERT_BUTTONS_STATE)
-        state = ~state;
+        pin_state = !pin_state;
 
-    gamepad.buttons.add_button_event(state);
+    if(DD_GLOBAL::get_latest_button_state(id) == pin_state)        // filter out false interrupts
+        return;
+    
+    uint64_t now = millis();
+    if (now - buttons->last_event_time[id] < BUTTON_FILTERING_TIME)     // filter out bouncing
+        return;
+    buttons->last_event_time[id] = now;                                 // update last button event time
+
+    uint8_t new_state = ( latest_buttons_state & ~(1<<id) ) | ( pin_state<<id );    // change state bit
+    buttons->add_button_event(new_state);
+}
+
+
+// ------------ GLOBAL ----------------
+
+bool DD_GLOBAL::get_latest_button_state(uint8_t id){
+    return ((latest_buttons_state >> id) & 1);                // extract last state of one specific button
+}
+
+void DD_GLOBAL::stop_button_interrupts(){
+    for (int i = 0; i < BUTTONS_N; i++)
+        gpio_isr_handler_remove((gpio_num_t) buttons_map[i]);
+}
+
+void DD_GLOBAL::resume_button_interrupts(){
+    ddeck.buttons.init();
 }

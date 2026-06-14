@@ -1,67 +1,70 @@
-#ifndef DEVEL_DECK_API_H
-#define DEVEL_DECK_API_H
+#ifndef DEVELDECK_API_H
+#define DEVELDECK_API_H
 
 #include <Arduino.h>
 #include <vector>
-
 
 #include "SPI_v3x_compat.h"
 #include "config.h"
 #include "buttons.h"
 #include "display.h"
 #include "accel.h"
-#include "tacktile_response.h"
+#include "buzzer.h"
+#include "vibro.h"
 #include "battery.h"
 #include "sd_card.h"
 #include "ui.h"
 #include "OTA.h"
 
 
-#ifndef GAMEPAD_CANVAS_T_DEFINED
-typedef DEFAULT_CANVAS_T Gamepad_canvas_t;
+#ifndef DD_CANVAS_T_DEFINED
+typedef DEFAULT_CANVAS_T DD_canvas_t;
 #endif
 
+namespace DD_GLOBAL{
+    /**
+     * @brief Game info for loading screen container
+     * 
+     */
+    struct Game_config_t{
+        String name;                /** Game name */
+        String description;         /** Game description text */
+        String game_path;           /** Path to `game.ini` */
+        String icon_path;           /** Path to game icon */
+        uint8_t minimum_flash;      /** Minimum required flash for installation */
+    };
 
-/**
- * @brief Game info for loading screen container
- * 
- */
-struct Game_config_t{
-    String name;                /** Game name */
-    String description;         /** Game description text */
-    String game_path;           /** Path to `game.ini` */
-    String icon_path;           /** Path to game icon */
-    uint8_t minimum_flash;      /** Minimum required flash for installation */
-};
+    struct System_data_t{
+        uint8_t game_path_size;
+        char game_path[255];
+        uint8_t buzzer_volume;
+        uint8_t brightness;
+        uint8_t vibro_strength;
 
-struct System_data_t{
-    uint8_t game_path_size;
-    char game_path[255];
-    uint8_t buzzer_volume;
-    uint8_t brightness;
-    uint8_t vibro_strength;
+        float battery_critical_v;
+        float battery_charging_v;
+        float battery_only_charging_v;
+        float battery_full_v;
+        
+        uint8_t battery_levels_n;
+        float battery_levels[BATTERY_LEVELS];
+        uint16_t battery_lifetime;
+    };
 
-    float battery_critical_v;
-    float battery_charging_v;
-    float battery_only_charging_v;
-    float battery_full_v;
-    
-    uint8_t battery_levels_n;
-    float battery_levels[BATTERY_LEVELS];
-    uint16_t battery_lifetime;
-};
+    struct Layer_t{
+        DD_canvas_t *canvas;
+        uint16_t x, y;
+    };
 
-struct Layer_t{
-    Gamepad_canvas_t *canvas;
-    uint16_t x, y;
-};
+    extern bool forced_display_update;
+}
 
-typedef Layer_t* Layer_id_t;
+typedef DD_GLOBAL::Layer_t* Layer_id_t;
 
 
 
-class Gamepad{
-    enum Sys_param_t{
+class DevelDeck{
+    enum Sys_flags_t : uint8_t{
         INITIALIZED,
         DISPLAY_ENABLED,
         BUTTONS_ENABLED,
@@ -74,25 +77,20 @@ class Gamepad{
         SYSTEM_SETTINGS_TO_DEFAULT,
         READY_TO_PLAY
     };
-    uint16_t system_params = 0;
+    uint16_t sys_flags = 0x0000;
+    bool sys_flag(Sys_flags_t id);
+    void sys_flag(Sys_flags_t id, bool val);
 
-    uint8_t brightness = DEFAULT_BRIGHTNESS;
-    System_data_t *system_data;
+    DD_GLOBAL::System_data_t *system_data;
     String game_path;
+    
+    DD_display *disp;
+    uint8_t brightness = DEFAULT_BRIGHTNESS;
+    
+    DD_SD_card sd_card;
 
-    TaskHandle_t battery_listener_handler = NULL;
-    TaskHandle_t system_data_updater_handler = NULL;
-    TaskHandle_t forced_main_menu_handler = NULL;
-    TaskHandle_t display_updater_handler = NULL;
-
-    Gamepad_display *disp;
-    Gamepad_battery batt;
-    Gamepad_SD_card sd_card;
-
-    std::vector < Layer_t* > layers;
-    std::vector < Layer_t* > sys_layers;
-
-    void (*game_func)();
+    std::vector < DD_GLOBAL::Layer_t* > layers;
+    DD_GLOBAL::Layer_t sys_overlay_layer = {nullptr, 0, 0};
 
     bool init_buttons();
     void init_display();
@@ -103,8 +101,6 @@ class Gamepad{
     void init_battery();
     bool init_SPIFFS();
 
-    bool sys_param(Sys_param_t id);
-    void sys_param(Sys_param_t id, bool val);
     void system_data_dump();
 
     void locate_game();
@@ -112,20 +108,41 @@ class Gamepad{
     void apply_system_settings();
     void user_locate_game_folder();
 
-    void on_charge_screen();
+    void on_charge_mode();
+
+    void __main_menu();
+    void __select_game_menu();
+    void __settings_menu();
+    String __file_manager();
+
+
+    // ---------- system event listener --------------
+
+    uint32_t last_charge_check = 0;
+    uint32_t last_low_charge_alarm = 0;
+    float deadband_v = 0;
+    bool is_discharged = false;
+    bool resume_system = false;
+    uint8_t brightness_before_suspension;
+    inline void battery_listener_implementation();
+
+    bool menu_pressed = false;
+    uint64_t menu_pressed_st;
+    inline void forced_main_menu_listener_implementation();
+
+    static void sys_event_listener_task(void *params);
+
+    // --------------------------------
 
 public:
+    DD_canvas_t *canvas = nullptr;
+    DD_buttons buttons;
+    DD_buzzer buzzer;
+    DD_vibro vibro;
+    DD_accel accel;
+    DD_SD_card game_files;
 
-    SemaphoreHandle_t semaphore = NULL;
-
-    Gamepad_canvas_t *canvas = nullptr;
-    Gamepad_buttons buttons;
-    Gamepad_buzzer buzzer;
-    Gamepad_vibro vibro;
-    Gamepad_accel accel;
-    Gamepad_SD_card game_files;
-
-    Gamepad() = default;
+    DevelDeck() = default;
 
     /**
      * @brief Start main game loop
@@ -133,12 +150,6 @@ public:
      * @param game_func_ override game loop function instead `void loop()` if needed
      */
     void main_loop(void (*game_func_)() = loop);
-
-    /**
-     * @brief Some system level subprocesses are blocked during `game_func()` handling. Call this function to avoid long-term system delay.
-     * 
-     */
-    void give_access_to_subprocess();
 
     void init__();
 
@@ -149,7 +160,7 @@ public:
      * 
      * @return battery level in range from 0 to `BATTERY_LEVELS`
      */
-    uint8_t get_battery_charge();
+    uint8_t get_charge();
 
 
 
@@ -189,7 +200,7 @@ public:
         int16_t x0 = 0, int16_t y0 = 0, uint16_t w = 0, uint16_t h = 0);
 
     /**
-     * @brief Checks if it is possible to perform `Gamepad::update_display_threaded()`
+     * @brief Checks if it is possible to perform `DevelDeck::update_display_threaded()`
      * 
      * @return true: means previous update has finished
      * @return false: if previous update is in progress
@@ -249,9 +260,9 @@ public:
      * 
      * @param id layer pointer
      * 
-     * @return Gamepad_canvas_t*: pointer to the canvas
+     * @return DD_canvas_t*: pointer to the canvas
      */
-    Gamepad_canvas_t* layer(Layer_id_t &id);
+    DD_canvas_t* layer(Layer_id_t &id);
     
     /**
      * @brief Fills layer black
@@ -305,25 +316,25 @@ public:
     
 
     /**
-     * @brief Enter gamepad main menu function
+     * @brief Enter DevelDeck main menu function
      * 
      */
     void main_menu();
 
     /**
-     * @brief Enter gamepad game selection menu
+     * @brief Enter DevelDeck game selection menu
      * 
      */
     void select_game_menu();
 
     /**
-     * @brief Enter gamepad settings menu
+     * @brief Enter DevelDeck settings menu
      * 
      */
     void settings_menu();
 
     /**
-     * @brief Opens gamepad file manager at game source folder as root
+     * @brief Opens DevelDeck file manager at game source folder as root
      * 
      * @return String: absolute path to file selected by user
      */
@@ -333,23 +344,28 @@ public:
 
     // ----------- API-only functions ------------
 
-    Layer_id_t create_system_layer(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    Layer_id_t create_sys_overlay(uint16_t width, uint16_t height, uint16_t x = 0, uint16_t y = 0, uint8_t color_depth = 1);
+    void delete_sys_overlay();
 
     void game_downloading_screen(uint8_t percentage);
 
     void save_system_settings();
-    void apply_system_settings(System_data_t *settings);
+    void apply_system_settings(DD_GLOBAL::System_data_t *settings);
 
-    Game_config_t read_game_config(String &config);
+    DD_GLOBAL::Game_config_t read_game_config(String &config);
 };
 
 
 
-// ---------- GLOBAL GAMEPAD VARIABLES -----------
+// ---------- GLOBAL DEVELDECK VARIABLES -----------
 
-extern Gamepad gamepad;
+extern DevelDeck ddeck;
 
 extern bool GAME_FILES_REQUIRED;
+
+#define current_file() ddeck.game_files.file_ref()
+
+#define force_sys_disp_update() DD_GLOBAL::forced_display_update = true
 
 // -----------------------------------------------
 

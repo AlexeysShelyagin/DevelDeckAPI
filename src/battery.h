@@ -1,5 +1,5 @@
-#ifndef GAMEPAD_BATTERY_H
-#define GAMEPAD_BATTERY_H
+#ifndef DD_BATTERY_H
+#define DD_BATTERY_H
 
 #include <Arduino.h>
 #include <vector>
@@ -8,45 +8,56 @@
 
 #include "config.h"
 
-class Gamepad_battery{
+// DD_battery class is a wrapper for the global battery instance
+// No other instance should be created
+
+class DD_battery{
     float critical_v;
     float full_v;
     float charging_v;
-    float only_charging_v;
+    float power_off_v;
 
+    SemaphoreHandle_t batt_pin_mutex;
+    
     float (*v_adj_func)(float);
     float *voltage_levels = nullptr;
 
     bool calibrating = false;
-    uint64_t calibration_start_time;
+    uint32_t calibration_start_time;
     TaskHandle_t calibration_handler = NULL;
     esp_adc_cal_characteristics_t adc1_chars;
+
 public:
-    enum Charge_mode_t{
-        POWER_ON,
-        ONLY_CHARHING,
-        POWER_ON_CHARGING
+    enum Mode_t : uint8_t{
+        POWER_ON = 0,
+        POWER_OFF,
+        CHARGING
     };
     uint16_t lifetime = 0;
 
-    Gamepad_battery();
+    DD_battery();
 
     void init(float critical_v_, float full_v_, float charging_v_, float only_charging_v_);
     void set_voltage_adjustment(float (*v_adj_func_ptr)(float));
 
-    float get_battery_voltage();
-    uint8_t get_battery_charge();
+    float get_voltage();
+    uint8_t get_charge(float v = 0);
 
-    Charge_mode_t get_device_mode();
+    Mode_t get_device_mode(float v = 0);
 
     void start_calibration();
     float* finish_calibration();
     bool is_calibrating();
-    bool calibration_failed();
-
-    bool calibrated();
+    bool is_calibration_failed();
+    bool is_calibrated();
+    
     float* get_calibration_data();
-    void set_calibration_data(float data[BATTERY_LEVELS]);
+    void set_calibration_data(float *data);
 };
+
+
+namespace DD_GLOBAL{
+    extern DD_battery battery;
+}
 
 #endif

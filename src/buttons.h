@@ -1,28 +1,27 @@
-#ifndef GAMEPAD_BUTTONS_H
-#define GAMEPAD_BUTTONS_H
+#ifndef DD_BUTTONS_H
+#define DD_BUTTONS_H
 
 #include <queue>
 #include <Arduino.h>
 
 #include "config.h"
 
-enum Button_state_t{
-    BUT_NONE,
+enum Button_event_t : uint8_t{
+    BUT_NONE = 0,
     BUT_PRESSED,
     BUT_RELEASED,
     BUT_STILL_PRESSED,
     BUT_STILL_RELEASED
 };
 
-class Gamepad_buttons{
-    std::queue < uint8_t > button_buff;
+class DD_buttons{
+    std::queue < uint8_t > events;
 
-    uint8_t latest_state, previous_state = INVERT_BUTTONS_STATE * -1;
-
+    uint8_t previous_state = INVERT_BUTTONS_STATE * 0xFF;
 public:
     uint64_t last_event_time[BUTTONS_N];
 
-    Gamepad_buttons() = default;
+    DD_buttons() = default;
 
     void init();
 
@@ -59,7 +58,7 @@ public:
      * 
      * @return uint8_t*: array of `BUTTONS_N` elements with state of each button according to its id
      */
-    uint8_t* get_button_event();
+    uint8_t* get_event();
 
     /**
      * @brief Checks are there any unhandled buttons events
@@ -74,6 +73,16 @@ public:
      * 
      */
     void clear_queue();
+    
+    void add_button_event(uint8_t &state);
 };
+
+
+namespace DD_GLOBAL{
+    bool get_latest_button_state(uint8_t id);
+    
+    void stop_button_interrupts();
+    void resume_button_interrupts();
+}
 
 #endif
