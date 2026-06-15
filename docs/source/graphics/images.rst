@@ -40,7 +40,7 @@ Here are some tips on optimizing the image workflow:
 
         You can try to draw directly from a PNG or raw file during the frame rendering. But the SD card read speed is limited (roughly ``1.4MB/s`` if you are lucky). It can be faster to load raw image from file, but for larger images PNG decoding usually works faster.
 
-        Another problem is that SD card and display share the same SPI bus. So, unfortunately, you can no read the image file during :cpp:func:`Gamepad::update_display_threaded`. So it is recommended to use the precious heap space to store frequently used sprites.
+        Another problem is that SD card and display share the same SPI bus. So, unfortunately, you can no read the image file during :cpp:func:`DevelDeck::update_display_threaded`. So it is recommended to use the precious heap space to store frequently used sprites.
 
         It is common approach to perform image rendering on different ESP32 core while the main one will handle user input, and calculations for the game. It is possible to render image to the specific ``layer`` while the main thread is rendering on a ``canvas``.
 

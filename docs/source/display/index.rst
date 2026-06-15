@@ -12,7 +12,7 @@ Canvas
 
 The ``ddeck.canvas`` instance is the main drawing surface used to render graphics for the display. It represents an image buffer on which any :ref:`graphics functions <graphics_section>` can be composed before showing on the display.
 
-Canvas can be cleared (filled black) using :cpp:func:`Gamepad::clear_canvas`.
+Canvas can be cleared (filled black) using :cpp:func:`DevelDeck::clear_canvas`.
 
 It is implied to fully render frame on canvas and then :ref:`update the display <disp_update_section>`.
 
@@ -45,7 +45,7 @@ Canvas bitdepth can be owerriden via global flag:
 Display Update
 -----------------
 
-Call :cpp:func:`Gamepad::update_display` for update. It is a procedure of transfering ``ddeck.canvas`` image buffer to the display. Only after that player would see the rendered image.
+Call :cpp:func:`DevelDeck::update_display` for update. It is a procedure of transfering ``ddeck.canvas`` image buffer to the display. Only after that player would see the rendered image.
 
 Since image buffer stores large amount of data, it **takes a while** to transfer it to the display.
 
@@ -64,9 +64,9 @@ Threaded Update
 
 Updates can cause lags if the calculations beteween updates take considering amount of time. In this case further optimization is needed.
 
-The :cpp:func:`Gamepad::update_display_threaded` optimizes display update by performing transfer in the second core. This method is preferable in fps-sensetive appliacations. While being more optimized the method requires more from the user.
+The :cpp:func:`DevelDeck::update_display_threaded` optimizes display update by performing transfer in the second core. This method is preferable in fps-sensetive appliacations. While being more optimized the method requires more from the user.
 
-This section also applicable to :cpp:func:`Gamepad::update_layer_threaded`.
+This section also applicable to :cpp:func:`DevelDeck::update_layer_threaded`.
 
 The typical aplication **timeline diagram** is presented below.
 
@@ -139,7 +139,7 @@ Window (region-wise) update
 
 It is possible to transfer only a specific rectangular window of a canvas or layer to the display instead of updating the entire frame.
 
-Both :cpp:func:`Gamepad::update_display` and :cpp:func:`Gamepad::update_display_threaded` support region-based updates. The region is defined via the following parameters:
+Both :cpp:func:`DevelDeck::update_display` and :cpp:func:`DevelDeck::update_display_threaded` support region-based updates. The region is defined via the following parameters:
 
 - ``x0``, ``y0`` — starting (upper-left) point of the window to transfer (relative to canvas origin)
 - ``w``, ``h`` — width and height of the window
@@ -190,7 +190,7 @@ Key requirements for implementation:
   
 - A **fine-grained renderer** (pixel-by-pixel or block-by-block)
 - A **render-transfer** synchronization mechanism
-- Use of :cpp:func:`Gamepad::update_display_threaded` for asynchronous transfer
+- Use of :cpp:func:`DevelDeck::update_display_threaded` for asynchronous transfer
 - Proper handling of **flickering and tearing**
 
 
@@ -243,7 +243,7 @@ The DevelDeck API provides a set of experimentally found stable FPS values, defi
 API reference
 -----------------
 
-.. doxygenfunction:: Gamepad::clear_canvas
-.. doxygenfunction:: Gamepad::update_display
-.. doxygenfunction:: Gamepad::update_display_threaded
-.. doxygenfunction:: Gamepad::update_display_threaded_available
+.. doxygenfunction:: DevelDeck::clear_canvas
+.. doxygenfunction:: DevelDeck::update_display
+.. doxygenfunction:: DevelDeck::update_display_threaded
+.. doxygenfunction:: DevelDeck::update_display_threaded_available

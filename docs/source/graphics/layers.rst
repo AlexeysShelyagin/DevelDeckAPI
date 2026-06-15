@@ -27,7 +27,7 @@ Layer Manipulation
 Layer Creation
 ^^^^^^^^^^^^^^^^^
 
-Use :cpp:func:`Gamepad::create_layer` to create a new layer. You must specify:
+Use :cpp:func:`DevelDeck::create_layer` to create a new layer. You must specify:
 
 - **Width and height**
 - **Top-left corner position**
@@ -47,15 +47,15 @@ The function returns a :cpp:type:`Layer_id_t` object, which serves as a referenc
 Deletion
 ^^^^^^^^^^^^^
 
-Use :cpp:func:`Gamepad::delete_layer` to remove a layer and free its memory. Any further use of the deleted layer will result in a **memory access error**.
+Use :cpp:func:`DevelDeck::delete_layer` to remove a layer and free its memory. Any further use of the deleted layer will result in a **memory access error**.
 
 
 Other Operations
 ^^^^^^^^^^^^^^^^^^
 
-- Check if a layer exists using :cpp:func:`Gamepad::layer_exists`
-- Clear a layer using :cpp:func:`Gamepad::clear_layer` (fills with black)
-- Move a layer using :cpp:func:`Gamepad::move_layer`
+- Check if a layer exists using :cpp:func:`DevelDeck::layer_exists`
+- Clear a layer using :cpp:func:`DevelDeck::clear_layer` (fills with black)
+- Move a layer using :cpp:func:`DevelDeck::move_layer`
 
 
 
@@ -64,8 +64,8 @@ Rendering
 
 Layers are rendered **on top of the base canvas in creation order** when using:
 
-- :cpp:func:`Gamepad::update_display`
-- :cpp:func:`Gamepad::update_display_threaded`
+- :cpp:func:`DevelDeck::update_display`
+- :cpp:func:`DevelDeck::update_display_threaded`
 
 You can render only the base canvas by setting ``ignore_layers = true``.
 
@@ -82,23 +82,23 @@ Each layer (including the base canvas) is transferred to the display as a **sepa
    The final composited image exists **only on the display**. Layers do **not** modify the base canvas or other layers.
 
 .. note::
-   Rendering layers via :cpp:func:`Gamepad::update_display` is **not recommended** for performance-sensitive scenarios.
+   Rendering layers via :cpp:func:`DevelDeck::update_display` is **not recommended** for performance-sensitive scenarios.
 
 
 Layer Update
 ^^^^^^^^^^^^^^^
 
-A single layer can be rendered independently using :cpp:func:`Gamepad::update_layer`.
+A single layer can be rendered independently using :cpp:func:`DevelDeck::update_layer`.
 
 
 Threaded Layer Update
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-A threaded variant is available: :cpp:func:`Gamepad::update_layer_threaded`.
+A threaded variant is available: :cpp:func:`DevelDeck::update_layer_threaded`.
 
 Refer to :ref:`disp_threaded_update_section` for details.
 
-The function :cpp:func:`Gamepad::update_display_threaded_available` applies to both canvas and layers.
+The function :cpp:func:`DevelDeck::update_display_threaded_available` applies to both canvas and layers.
 
 DMA update
 ^^^^^^^^^^^^^^^
@@ -231,15 +231,15 @@ API Reference
 Functions
 ^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad::create_layer
-.. doxygenfunction:: Gamepad::delete_layer
-.. doxygenfunction:: Gamepad::layer_exists
-.. doxygenfunction:: Gamepad::layer
-.. doxygenfunction:: Gamepad::update_layer
-.. doxygenfunction:: Gamepad::update_layer_threaded
+.. doxygenfunction:: DevelDeck::create_layer
+.. doxygenfunction:: DevelDeck::delete_layer
+.. doxygenfunction:: DevelDeck::layer_exists
+.. doxygenfunction:: DevelDeck::layer
+.. doxygenfunction:: DevelDeck::update_layer
+.. doxygenfunction:: DevelDeck::update_layer_threaded
 
-.. doxygenfunction:: Gamepad::clear_layer
-.. doxygenfunction:: Gamepad::move_layer
+.. doxygenfunction:: DevelDeck::clear_layer
+.. doxygenfunction:: DevelDeck::move_layer
 
 
 Datatypes

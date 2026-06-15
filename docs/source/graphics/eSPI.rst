@@ -10,7 +10,7 @@ TFT_eSPI
 Overview
 -----------------------
 
-The gamepad canvas graphics module inherits all the functionality from the `TFT_eSPI by Bodmer <https://github.com/Bodmer/TFT_eSPI>`_ and extends it.
+The DevelDeck's canvas graphics module inherits all the functionality from the `TFT_eSPI by Bodmer <https://github.com/Bodmer/TFT_eSPI>`_ and extends it.
 
 ``ddeck.canvas`` instance and layers **support any graphics functions** from ``TFT_eSPI`` and ``TFT_eSprite``.
 
@@ -110,7 +110,7 @@ Shape-based drawings
 
 
 
-TFT_eSPI extentions (for gamepad)
+TFT_eSPI extentions (for DevelDeck)
 -----------------------------------
 
 Graphics parameters saving

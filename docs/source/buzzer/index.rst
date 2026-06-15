@@ -13,7 +13,7 @@ Overview
 
 The buzzer can be accessed through the ``ddeck.buzzer`` instance. All sound generation is handled in a separate subprocess, ensuring that audio playback does **not block or interrupt** the main application logic.
 
-The gamepad uses a **passive buzzer**. It can generate a single frequency (tone) at a time, and the volume can be adjusted. By playing tones in sequence, simple 8-bit style melodies and sound effects can be created.
+The DevelDeck uses a **passive buzzer**. It can generate a single frequency (tone) at a time, and the volume can be adjusted. By playing tones in sequence, simple 8-bit style melodies and sound effects can be created.
 
 Any sound currently being played can be stopped at any time using :cpp:func:`DD_buzzer::stop`.
 
@@ -175,7 +175,7 @@ Music example
 Buzzer volume
 -----------------
 
-Buzzer volume is stored in gamepad settings and is changed by a player. However it can be changed in game code.
+Buzzer volume is stored in DevelDeck settings and is changed by a player. However it can be changed in game code.
 
 :cpp:func:`DD_buzzer::change_volume` function change buzzer volume from ``0`` to ``BUZZER_VOLUME_LEVELS``.
 

@@ -6,7 +6,7 @@ Game folder structure
 General concept
 -----------------
 
-To make a game on an SD card be recognizable by the gamepad, it is **necessary** to create a **game folder** containing all the resources. The folder name should match the game name for better navigation by the player.
+To make a game on an SD card be recognizable by the DevelDeck, it is **necessary** to create a **game folder** containing all the resources. The folder name should match the game name for better navigation by the player.
 
 The minimum required file structure is as follows:
 
@@ -18,7 +18,7 @@ The minimum required file structure is as follows:
 
 Where:
 
-- ``game.ini`` - the game configuration file, serving as a marker for the gamepad.
+- ``game.ini`` - the game configuration file, serving as a marker for the DevelDeck.
 - ``firmware.bin`` - the executable game source code file.
 
 A game folder can contain additional resource files such as icon, sprites, audio sequences, save files, etc.
@@ -40,7 +40,7 @@ Here is an example of an extended game folder structure:
 ``game.ini`` File
 -----------------
 
-The ``game.ini`` file is the core configuration for the game. It is parsed by the gamepad API to display game information and locate all necessary files for installation.
+The ``game.ini`` file is the core configuration for the game. It is parsed by the DevelDeck API to display game information and locate all necessary files for installation.
 
 Obligatory Fields
 ^^^^^^^^^^^^^^^^^^^^^

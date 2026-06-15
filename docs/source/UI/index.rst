@@ -11,22 +11,22 @@ Standart UI
 Overview
 -------------------
 
-Gamepad API provides basic built-in UI functions for minimal necessary interactions with gamepad. It gives user possibility to change sytem settings and load different game from SD card.
+DevelDeck API provides basic built-in UI functions for minimal necessary interactions with gamepad. It gives user possibility to change sytem settings and load different game from SD card.
 
-UI functions are functions of ``gamepad`` instance.
+UI functions are functions of ``ddeck`` instance.
 
 .. note::
-   Each gamepadAPI UI function call discards unhandled ``button events``.
+   Each DevelDeck-API UI function call discards unhandled ``button events``.
 
 Main menu
 -------------------
 
-Main menu is an initial gamepad menu where player can e.g. start game, change game or go to settings.
+Main menu is an initial DevelDeck menu where player can e.g. start game, change game or go to settings.
 
-:cpp:func:`Gamepad::Gamepad::main_menu` is used to call main menu.
+:cpp:func:`DevelDeck::DevelDeck::main_menu` is used to call main menu.
 
 .. warning::
-   It is a **game developer's responsibility** to include :cpp:func:`Gamepad::Gamepad::main_menu` call in game. In other case it would be impossible to change game and settings (only forced call would work).
+   It is a **game developer's responsibility** to include :cpp:func:`DevelDeck::DevelDeck::main_menu` call in game. In other case it would be impossible to change game and settings (only forced call would work).
 
 .. note::
    Main menu can be called forcively by:
@@ -50,7 +50,7 @@ Common examples
 File manager
 -------------------
 
-:cpp:func:`Gamepad::file_manager` is an embeded file manager for player file selection. This function returns ``String`` with **absolute path** to the file/folder.
+:cpp:func:`DevelDeck::file_manager` is an embeded file manager for player file selection. This function returns ``String`` with **absolute path** to the file/folder.
 
 .. note::
    File manager ``root`` directory is a **game files directory**. It is not possible to manage another game files.
@@ -76,14 +76,14 @@ Common examples
 Game selection menu
 -------------------
 
-Game can be changed to another without main menu call, but directly with a use of :cpp:func:`Gamepad::Gamepad::select_game_menu`.
+Game can be changed to another without main menu call, but directly with a use of :cpp:func:`DevelDeck::DevelDeck::select_game_menu`.
 
 
 
 Settings menu
 -------------------
 
-Gamepad settings menu can be opened without main menu call, but directly with a use of :cpp:func:`Gamepad::Gamepad::settings_menu`.
+DevelDeck settings menu can be opened without main menu call, but directly with a use of :cpp:func:`DevelDeck::DevelDeck::settings_menu`.
 
 
 
@@ -93,7 +93,7 @@ API reference
 Functions
 ^^^^^^^^^^^^^^^^
 
-.. doxygenfunction:: Gamepad::main_menu
-.. doxygenfunction:: Gamepad::file_manager
-.. doxygenfunction:: Gamepad::select_game_menu
-.. doxygenfunction:: Gamepad::settings_menu
+.. doxygenfunction:: DevelDeck::main_menu
+.. doxygenfunction:: DevelDeck::file_manager
+.. doxygenfunction:: DevelDeck::select_game_menu
+.. doxygenfunction:: DevelDeck::settings_menu

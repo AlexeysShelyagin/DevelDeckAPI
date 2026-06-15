@@ -102,7 +102,7 @@ public:
     /**
      * @brief Draw contentes of PNG file directly to display
      * 
-     * @note Usage of `Gamepad::game_files.get_file_reference()` is recommended for `*file` param
+     * @note Usage of `DevelDeck::game_files.get_file_reference()` is recommended for `*file` param
      * 
      * @param file pointer to PNG file
      * @param x 
@@ -116,7 +116,7 @@ public:
     /**
      * @brief Load font from the `.vlw` file and assign `id` to it.
      * 
-     * @note Usage of `Gamepad::game_files.get_file_reference()` is recommended for `*file` param
+     * @note Usage of `DevelDeck::game_files.get_file_reference()` is recommended for `*file` param
      * 
      * @note id = 0 is default system font. It is impossible to overwrite it
      * 

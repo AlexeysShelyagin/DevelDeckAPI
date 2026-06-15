@@ -115,7 +115,7 @@ public:
      * 
      * @note If file does not exist it would be created
      * 
-     * @note `FS::file` opened file reference is stored inside `Gamepad::game_files`
+     * @note `FS::file` opened file reference is stored inside `DevelDeck::game_files`
      * 
      * @param path path to the file
      * @param mode "r" | "w" | "a" - read, write or append modes. Read is default
@@ -130,7 +130,7 @@ public:
      * 
      * @note If file does not exist it would be created
      * 
-     * @note `FS::file` opened file reference is stored inside `Gamepad::game_files`
+     * @note `FS::file` opened file reference is stored inside `DevelDeck::game_files`
      * 
      * @param path path to the file
      * @param absolute set true if path is absolute

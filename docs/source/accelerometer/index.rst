@@ -10,9 +10,9 @@ Accelerometer
 Overview
 -----------------
 
-The gamepad features a **3-axis accelerometer**, which can be used to measure acceleration and, more commonly, the **inclination angles of the gamepad**. The accelerometer is accessed through the ``ddeck.accel`` instance.
+The DevelDeck features a **3-axis accelerometer**, which can be used to measure acceleration and, more commonly, the **inclination angles of the gamepad**. The accelerometer is accessed through the ``ddeck.accel`` instance.
 
-The gamepad's incline is measured along the X (roll) and Y (pitch) axes, relative to the :ref:`zero orientation <operation_mode>`.
+The DevelDeck's incline is measured along the X (roll) and Y (pitch) axes, relative to the :ref:`zero orientation <operation_mode>`.
 
 .. note::
     The positive direction of both axes corresponds to the positive direction on the display.

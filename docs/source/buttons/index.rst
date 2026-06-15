@@ -11,7 +11,7 @@ Buttons
 Overview
 -------------------
 
-All button interactions are handled by the **gamepadAPI** using system interrupts. When a button event occurs, it is immediately captured by the interrupt handler and stored in an internal event queue.
+All button interactions are handled by the **DevelDeck-API** using system interrupts. When a button event occurs, it is immediately captured by the interrupt handler and stored in an internal event queue.
 
 Events remain in the queue until they are requested by the API user. This ensures that no button interactions are lost, even if multiple events occur between successive API calls.
 
@@ -36,7 +36,7 @@ Each button is assigned a unique ID. The buttons are enumerated using the follow
    :width: 60%
    :align: center
 
-   Button layout on the gamepad
+   Button layout on the DevelDeck
 
 
 Possible states
