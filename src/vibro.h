@@ -19,10 +19,37 @@ public:
 
     void init(uint16_t pin = VIBRO_PIN, uint8_t channel_ = VIBRO_LEDC_CHANNEL);
 
+
+    /**
+     * @brief Turn vibro on
+     * 
+     * @param strength_ vibro strength from 0 to 255
+     */
     void enable(uint8_t strength_ = 255);
+
+    /**
+     * @brief Disable any vibration
+     * 
+     */
     void disable();
 
+
+    /**
+     * @brief Vibrate for a period of time
+     * 
+     * @param time (ms) vibration duration
+     * @param strength_ vibro strength from 0 to 255
+     */
     void pulse(uint16_t time, uint8_t strength_ = 255);
+
+    /**
+     * @brief Vibrate multiple times with delay between
+     * 
+     * @param time_enabled (ms) vibration duration
+     * @param time_disabled (ms) time delay between vibrations
+     * @param repeat_times number of vibrations
+     * @param strength_ vibro strength from 0 to 255
+     */
     void multipulse(uint16_t time_enabled, uint16_t time_disabled, uint8_t repeat_times, uint8_t strength_ = 255);
 };
 

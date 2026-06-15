@@ -1,0 +1,11 @@
+sphinx>=7.0
+sphinx-rtd-theme>=2.0
+myst-parser>=2.0
+esbonio
+recommonmark
+sphinx-autobuild
+rstcheck>=6.1.0
+breathe
+sphinx-copybutton
+sphinx-togglebutton
+Pygments>=2.10

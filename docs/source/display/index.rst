@@ -1,0 +1,249 @@
+*********************
+Display
+*********************
+
+.. contents::
+    :local:
+    :depth: 2
+
+
+Canvas
+-----------------
+
+The ``ddeck.canvas`` instance is the main drawing surface used to render graphics for the display. It represents an image buffer on which any :ref:`graphics functions <graphics_section>` can be composed before showing on the display.
+
+Canvas can be cleared (filled black) using :cpp:func:`DevelDeck::clear_canvas`.
+
+It is implied to fully render frame on canvas and then :ref:`update the display <disp_update_section>`.
+
+Since ``ddeck.canvas`` is is a pointer, its functions must be accessed via ``->``.
+
+.. code-block:: cpp
+
+    ddeck.clear_canvas();
+    ddeck.canvas->fillRect(0, 0, 100, 100, TFT_RED);
+    ddeck.canvas->setCursor(0, 0);
+
+
+Bitdepth
+^^^^^^^^^^^^
+
+Canvas bitdepth can be owerriden via global flag:
+
+.. code-block:: cpp
+    
+    // can be 1, 4 or 8
+    uint8_t CANVAS_COLOR_DEPTH = 1;
+
+    void setup(){
+    // ...
+
+
+
+.. _disp_update_section:
+
+Display Update
+-----------------
+
+Call :cpp:func:`DevelDeck::update_display` for update. It is a procedure of transfering ``ddeck.canvas`` image buffer to the display. Only after that player would see the rendered image.
+
+Since image buffer stores large amount of data, it **takes a while** to transfer it to the display.
+
+.. note::
+    It takes from ``23.7ms`` to ``29.3 ms`` (depending on contents) to update display.
+
+.. note::
+    Frequent updates can cause :ref:`flickering <flickering_section>`.
+
+
+
+.. _disp_threaded_update_section:
+
+Threaded Update
+-----------------
+
+Updates can cause lags if the calculations beteween updates take considering amount of time. In this case further optimization is needed.
+
+The :cpp:func:`DevelDeck::update_display_threaded` optimizes display update by performing transfer in the second core. This method is preferable in fps-sensetive appliacations. While being more optimized the method requires more from the user.
+
+This section also applicable to :cpp:func:`DevelDeck::update_layer_threaded`.
+
+The typical aplication **timeline diagram** is presented below.
+
+.. figure:: threaded_diagram.png
+   :alt: Threaded update timeline diagram
+   :width: 90%
+   :align: center
+
+   Common threaded update execution timeline
+
+.. note::
+    Frequent updates can cause :ref:`flickering <flickering_section>`.
+
+Availability
+^^^^^^^^^^^^^^^^^^
+
+.. warning::
+    It is not possible to update ``ddeck.canvas`` or use ``ddeck.game_files`` during threaded update due to image buffer memory region and SPI bus are busy. Interaction with them may cause **core fatal error**.
+
+.. figure:: threaded_corruption.png
+   :alt: Forbiden action diagram
+   :width: 90%
+   :align: center
+
+   Unallowed parallel operations
+
+To check if the parallel update is not running use :cpp:func:`update_display_threaded_available`. If the frame is ready but threaded update is busy, code **must wait** until it would be available.
+
+Common examples
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: cpp
+
+    /*
+    * In this example fps would hold at around 40 FPS before calc_time reaches
+    * 23ms (display update time), after that it will drop with the higher
+    * "calculation" time. 
+    */
+    
+    uint16_t calc_time = 1;
+    uint64_t last_update = 0;
+
+    void loop() {
+        // delay will pretend lots of calculatons
+        // calc_time changes over time to show the parallelization effect
+        delay(calc_time / 10);
+        if(++calc_time > 500)
+            calc_time = 1;
+
+        // wait until previous update finishes
+        while(!ddeck.update_display_threaded_available());
+
+        ddeck.clear_canvas();
+        ddeck.canvas->fillRect(millis() / 10 % 320, 100, 10, 10, TFT_RED);  // running rectangle
+        ddeck.canvas->setCursor(0, 0);
+        float fps = 1000.0 / (millis() - last_update);
+        // print current fps and calc_time (time program spent on calculations)
+        ddeck.canvas->printf("fps: %f      calc_time: %d", fps, calc_time / 10);
+        
+        // start threaded update
+        last_update = millis();
+        ddeck.update_display_threaded();
+    }
+
+
+
+
+Window (region-wise) update
+---------------------------
+
+It is possible to transfer only a specific rectangular window of a canvas or layer to the display instead of updating the entire frame.
+
+Both :cpp:func:`DevelDeck::update_display` and :cpp:func:`DevelDeck::update_display_threaded` support region-based updates. The region is defined via the following parameters:
+
+- ``x0``, ``y0`` — starting (upper-left) point of the window to transfer (relative to canvas origin)
+- ``w``, ``h`` — width and height of the window
+
+Using partial updates can significantly reduce display refresh time when only a portion of the screen changes.
+
+.. note::
+    The displayed image may temporarily differ from the full canvas contents when partial updates are used.
+
+.. note::
+    Region updates are applied to **only one layer** (including the base canvas) and do not affect others. Coordinates are always relative to the layer position (``(0, 0)`` for ``ddeck.canvas``).
+
+Optimization
+^^^^^^^^^^^^^^^^^
+
+Region-based updates are a **highly effective optimization technique** for **FPS-sensitive applications**. Below are common strategies for leveraging this feature.
+
+Dynamic bounding box
+`````````````````````````
+
+The most common approach is to **track or compute** the bounding box of all changes that occur between frames, and update only that region.
+
+For example:
+
+- Moving objects - update only previous and new positions
+- UI changes - update only affected widgets
+
+Segment-wise rendering
+````````````````````````
+
+This approach involves **modifying the canvas while it is being transferred** to the display. The goal is to overlap rendering and transfer operations to reduce idle time.
+
+Instead of updating a single large region, the image is divided into smaller blocks (tiles), and processed sequentially.
+
+.. figure:: segmentwise_rendering.png
+   :alt: Segement-wise update diagram
+   :width: 60%
+   :align: center
+
+   Segement-wise update memory diagram
+
+.. note::
+    Only appliacations that use **pixel-by-pixel** or **fine-grained** rendering benefit significantly from this approach.
+
+.. TODO: demonstration image
+
+Key requirements for implementation:
+  
+- A **fine-grained renderer** (pixel-by-pixel or block-by-block)
+- A **render-transfer** synchronization mechanism
+- Use of :cpp:func:`DevelDeck::update_display_threaded` for asynchronous transfer
+- Proper handling of **flickering and tearing**
+
+
+
+.. _flickering_section:
+
+Flickering
+-----------------
+
+In addition to the gam's refresh rate (FPS), the display operates on its own internal clock, scanning the frame buffer line by line. When these two rates are not synchronized, visual artifacts such as flickering and tearing lines may appear.
+
+The issue is illustrated in the timing diagram below.
+
+.. figure:: async_update.png
+   :alt: Asynchronous refresh diagram
+   :width: 90%
+   :align: center
+
+   Asynchronous display transfer timings causing flickering (via tearing line)
+
+In this example, the SPI transfer rate does not align with an integer number of **full display refresh cycles**, causing the tearing line to shift position with each update.
+
+To solve this issue, the **FPS should be limited** to stable value so frame updates align with full display refresh cycles. While this does not eliminate the tearing line entirely, it stabilizes its position and prevents visible flickering or movement.
+
+.. figure:: sync_update.png
+   :alt: Synchronized refresh diagram
+   :width: 90%
+   :align: center
+
+   Synchronized transfer rate matching display refresh cycles
+
+Embedded solution
+^^^^^^^^^^^^^^^^^
+
+.. warning::
+    This section is experimental and may not work reliably in all cases. This feature is unfinished.
+
+.. note::
+    The display refresh rate (ST7789) is approximately ``210-220 FPS``. The most stable results are typically achieved using odd divisors of this value. For example:
+    ``212 FPS / 7 ≈ 30.304 FPS (in-game)``.
+
+The DevelDeck API provides a set of experimentally found stable FPS values, defined as ``NO_FLICKERING_FPS_<N>``, where ``N`` ranges from ``1`` to ``6``.
+
+.. code-block:: cpp
+
+    // Limit to ~30.304 FPS
+    ddeck.update_display_threaded(true, NO_FLICKERING_FPS_1);
+
+
+API reference
+-----------------
+
+.. doxygenfunction:: DevelDeck::clear_canvas
+.. doxygenfunction:: DevelDeck::update_display
+.. doxygenfunction:: DevelDeck::update_display_threaded
+.. doxygenfunction:: DevelDeck::update_display_threaded_available
