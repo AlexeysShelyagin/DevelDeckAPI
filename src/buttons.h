@@ -6,13 +6,17 @@
 
 #include "config.h"
 
-enum Button_event_t : uint8_t{
+enum Button_event_type_t : uint8_t{
     BUT_NONE = 0,
     BUT_PRESSED,
     BUT_RELEASED,
     BUT_STILL_PRESSED,
     BUT_STILL_RELEASED
 };
+
+typedef uint8_t* But_events_t;
+
+
 
 class DD_buttons{
     std::queue < uint8_t > events;
@@ -51,14 +55,14 @@ public:
      * 
      * @param state new state raw data
      */
-    void add_button_event(uint8_t &state);
+    void add_event(uint8_t &state);
 
     /**
      * @brief Get buttons data for the next event in queue. After call the event is considered as handled
      * 
-     * @return uint8_t*: array of `BUTTONS_N` elements with state of each button according to its id
+     * @return But_events_t: array of `BUTTONS_N` elements with state of each button according to its id
      */
-    uint8_t* get_event();
+    But_events_t get_event();
 
     /**
      * @brief Checks are there any unhandled buttons events

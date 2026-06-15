@@ -43,7 +43,7 @@ void DD_buttons::init(){
     }
     if(INVERT_BUTTONS_STATE)
         init_state = ~init_state;
-    add_button_event(init_state);
+    add_event(init_state);
 }
 
 bool DD_buttons::get_latest_state(uint8_t id){
@@ -54,14 +54,14 @@ bool DD_buttons::read_state(uint8_t id){
     return digitalRead(buttons_map[id]) ^ INVERT_BUTTONS_STATE;
 }
 
-void DD_buttons::add_button_event(uint8_t &state){
+void DD_buttons::add_event(uint8_t &state){
     previous_state = latest_buttons_state;
 
     latest_buttons_state = state;
     events.push(state);
 }
 
-uint8_t* DD_buttons::get_event(){
+But_events_t DD_buttons::get_event(){
     if(events.empty())
         return nullptr;
     
@@ -117,7 +117,7 @@ IRAM_ATTR void buttons_isr(void *args){
     buttons->last_event_time[id] = now;                                 // update last button event time
 
     uint8_t new_state = ( latest_buttons_state & ~(1<<id) ) | ( pin_state<<id );    // change state bit
-    buttons->add_button_event(new_state);
+    buttons->add_event(new_state);
 }
 
 
