@@ -35,7 +35,7 @@ uint8_t DD_SD_card::init(String root_limit){
     if(initialized)
         return SD_OK;
 
-    if(!SD.begin(SD_CS_PIN, spi, SD_SPI_FREQUENCY))     // Use the same SPI bus as display
+    if(!SD.begin(DD_SD_CS_PIN, spi, DD_SD_SPI_FREQUENCY))     // Use the same SPI bus as display
         return SD_FAILED;
         
     if(SD.cardType() == CARD_NONE)

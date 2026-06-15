@@ -10,7 +10,7 @@ struct ISR_args_t{
     int16_t pin_id;
     gpio_num_t target_pin;
 };
-ISR_args_t args_container[BUTTONS_N];
+ISR_args_t args_container[DD_BUTTONS_N];
 
 uint8_t latest_buttons_state;
 
@@ -19,7 +19,7 @@ uint8_t latest_buttons_state;
 void DD_buttons::init(){
     gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
 
-    for (int16_t i = 0; i < BUTTONS_N; i++){
+    for (int16_t i = 0; i < DD_BUTTONS_N; i++){
         if (buttons_map[i] == -1) 
             continue;
         
@@ -38,10 +38,10 @@ void DD_buttons::init(){
     }
 
     uint8_t init_state = 0;
-    for(uint8_t i = 0; i < BUTTONS_N; i++){
+    for(uint8_t i = 0; i < DD_BUTTONS_N; i++){
         init_state |= read_state(i) << i;
     }
-    if(INVERT_BUTTONS_STATE)
+    if(DD_BUTTONS_INV)
         init_state = ~init_state;
     add_event(init_state);
 }
@@ -51,7 +51,7 @@ bool DD_buttons::get_latest_state(uint8_t id){
 }
 
 bool DD_buttons::read_state(uint8_t id){
-    return digitalRead(buttons_map[id]) ^ INVERT_BUTTONS_STATE;
+    return digitalRead(buttons_map[id]) ^ DD_BUTTONS_INV;
 }
 
 void DD_buttons::add_event(uint8_t &state){
@@ -66,8 +66,8 @@ But_events_t DD_buttons::get_event(){
         return nullptr;
     
     uint8_t event = events.front();
-    static uint8_t response[BUTTONS_N];
-    for(int i = 0; i < BUTTONS_N; i++){
+    static uint8_t response[DD_BUTTONS_N];
+    for(int i = 0; i < DD_BUTTONS_N; i++){
         bool button = (event >> i) & 1;
         bool prev = (previous_state >> i) & 1;
         
@@ -105,14 +105,14 @@ IRAM_ATTR void buttons_isr(void *args){
         return;
 
     uint8_t pin_state = gpio_get_level(pin);
-    if(INVERT_BUTTONS_STATE)
+    if(DD_BUTTONS_INV)
         pin_state = !pin_state;
 
     if(DD_GLOBAL::get_latest_button_state(id) == pin_state)        // filter out false interrupts
         return;
     
     uint64_t now = millis();
-    if (now - buttons->last_event_time[id] < BUTTON_FILTERING_TIME)     // filter out bouncing
+    if (now - buttons->last_event_time[id] < DD_BUTTON_FILTERING_TIME_MS)     // filter out bouncing
         return;
     buttons->last_event_time[id] = now;                                 // update last button event time
 
@@ -128,7 +128,7 @@ bool DD_GLOBAL::get_latest_button_state(uint8_t id){
 }
 
 void DD_GLOBAL::stop_button_interrupts(){
-    for (int i = 0; i < BUTTONS_N; i++)
+    for (int i = 0; i < DD_BUTTONS_N; i++)
         gpio_isr_handler_remove((gpio_num_t) buttons_map[i]);
 }
 

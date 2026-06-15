@@ -9,8 +9,8 @@
 #include "config.h"
 #include "image.h"
 
-#ifndef SD_CS_PIN
-#define SD_CS_PIN 21
+#ifndef DD_SD_CS_PIN
+#define DD_SD_CS_PIN 21
 #endif
 
 enum FS_obj_type : uint8_t{

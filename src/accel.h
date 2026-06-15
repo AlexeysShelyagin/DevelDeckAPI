@@ -25,7 +25,7 @@ class DD_accel{
 public:
     DD_accel() = default;
 
-    void init(int sda_pin = ACCEL_SDA_PIN, int scl_pin = ACCEL_SCL_PIN);
+    void init(int sda_pin = DD_ACCEL_SDA_PIN, int scl_pin = DD_ACCEL_SCL_PIN);
 
     /**
      * @brief Accelerometer chip initial calibration

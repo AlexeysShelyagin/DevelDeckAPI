@@ -134,7 +134,7 @@ inline void DevelDeck::battery_listener_implementation(){
         ESP.restart();
     
     if(batt_mode == DD_battery::POWER_ON){
-        if(millis() - last_charge_check > BATTERY_LEVEL_CHECK_TIMEOUT || is_discharged){
+        if(millis() - last_charge_check > DD_TIMEOUT_BATTERY_LEVEL_CHECK || is_discharged){
             last_charge_check = millis();
 
             if(voltage <= battery_critical_v + deadband_v){
@@ -146,21 +146,21 @@ inline void DevelDeck::battery_listener_implementation(){
                     if(battery.is_calibrating()){
                         finish_batt_calibration = true;
                         trigger_system();
-                        vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+                        vTaskDelay(pdMS_TO_TICKS(DD_NOTIFICATION_PRESENSE_TIME));
                     }
                     
                     // suspension
                     suspend_game();
 
                     // notification
-                    make_notification_helper(TXT_DISCHARGED);
-                    vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+                    make_notification_helper(DDTXT_DISCHARGED);
+                    vTaskDelay(pdMS_TO_TICKS(DD_NOTIFICATION_PRESENSE_TIME));
                     disp_transaction_block = true;      // save the world
                     brightness_before_suspension = ddeck.get_display_brightness();
                     ddeck.set_display_brightness(0);
                     vTaskDelay(50);
 
-                    esp_sleep_enable_timer_wakeup(1000ULL * BATTERY_LIGHT_SLEEP_CHECK_TIMEOUT);
+                    esp_sleep_enable_timer_wakeup(1000ULL * DD_TIMEOUT_BATTERY_LIGHT_SLEEP_CHECK);
 
                     vTaskSuspend(sys_task_handler);
                 }
@@ -175,8 +175,8 @@ inline void DevelDeck::battery_listener_implementation(){
             
             // low charge alarm
             if(battery.get_charge(voltage) == 0 && !is_discharged){
-                if(millis() - last_low_charge_alarm >= BATTERY_LOW_CHARGE_ALARM_TIMEOUT){
-                    make_notification_helper(TXT_LOW_CHARGE_ALARM);
+                if(millis() - last_low_charge_alarm >= DD_TIMEOUT_BATTERY_LOW_CHARGE_ALARM){
+                    make_notification_helper(DDTXT_LOW_CHARGE_ALARM);
                     last_low_charge_alarm = millis();
                 }
             }
@@ -216,7 +216,7 @@ inline void DevelDeck::forced_main_menu_listener_implementation(){
         menu_pressed = false;
 
     if(menu_pressed){
-        if(now_time - menu_pressed_st >= FORCED_MENU_HOLD_TIME * 1000){
+        if(now_time - menu_pressed_st >= DD_FORCED_MENU_HOLD_TIME * 1000){
             forced_main_menu_call = true;
             suspend_game();
             trigger_system();
@@ -245,12 +245,12 @@ void DevelDeck::sys_event_listener_task(void *params){
         }
 
         if(battery.is_calibrating() && battery.is_calibration_failed()){
-            make_notification_helper(BATTERY_CALIBRATION_FAILED_MSG);
+            make_notification_helper(DDMSG_BATTERY_CALIBRATION_FAILED);
             battery.finish_calibration();
         }
 
         if(!ddeck.is_discharged)
-            ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(SYSTEM_EVENT_CHECK_TIMEOUT));
+            ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(DD_TIMEOUT_SYS_EVENT_CHECK));
         else
             vTaskDelay(1);
     }
@@ -280,15 +280,15 @@ void game_task(void *params){
 void DevelDeck::main_loop(void (*game_func_)()){
     game_loop = game_func_;
 
-    vTaskPrioritySet(NULL, SYS_TASK_PRIORITY);
+    vTaskPrioritySet(NULL, DD_TASK_PRIORITY_SYS);
     sys_task_handler = xTaskGetCurrentTaskHandle();
     
     xTaskCreatePinnedToCore(
         game_task,
         "game",
-        GAME_STACK_SIZE,
+        DD_STACK_SIZE_GAME,
         NULL,
-        GAME_LOOP_TASK_PRIORITY,
+        DD_TASK_PRIORITY_GAME_LOOP,
         &game_task_handler,
         THIS_CORE
     );
@@ -296,9 +296,9 @@ void DevelDeck::main_loop(void (*game_func_)()){
     xTaskCreatePinnedToCore(
         sys_event_listener_task,
         "sys_events",
-        SYS_EVENT_LISTENER_STACK_SIZE,
+        DD_STACK_SIZE_SYS_EVENT_LISTENER,
         this,
-        SYS_EVENTS_TASK_PRIORITY,
+        DD_TASK_PRIORITY_SYS_EVENTS,
         &sys_event_listener_task_handler,
         THIS_CORE
     );
@@ -331,8 +331,8 @@ void DevelDeck::main_loop(void (*game_func_)()){
             if(battery.finish_calibration() != nullptr)
                 ddeck.save_system_settings();
             else{
-                make_notification_helper(BATTERY_CALIBRATION_FAILED_MSG);
-                vTaskDelay(pdMS_TO_TICKS(NOTIFICATION_PRESENSE_TIME));
+                make_notification_helper(DDMSG_BATTERY_CALIBRATION_FAILED);
+                vTaskDelay(pdMS_TO_TICKS(DD_NOTIFICATION_PRESENSE_TIME));
             }
         }
 
@@ -389,7 +389,7 @@ void DevelDeck::init__(){
     else
         apply_system_settings();
 
-#ifdef DUMP_SYS_DATA_ON_INIT
+#ifdef DD_DUMP_SYS_DATA_ON_INIT
     system_data_dump();
 #endif
 
@@ -410,14 +410,14 @@ void DevelDeck::init_display(){
     disp = new DD_display();
 
     if(system_data->brightness == 0){
-        system_data->brightness = BRIGHTNESS_LEVELS;
-        brightness = BRIGHTNESS_LEVELS;
+        system_data->brightness = DISP_BRIGHTNESS_LEVELS;
+        brightness = DISP_BRIGHTNESS_LEVELS;
     }
     set_display_brightness(brightness);
 
     canvas = disp->get_canvas_reference();
     if(!(disp->init())){
-        Serial.println(TXT_DISPAY_FAILED);
+        Serial.println(DDTXT_DISPAY_FAILED);
         return;
     }
 
@@ -489,11 +489,11 @@ bool DevelDeck::init_SD(){
     uint8_t resp = sd_card.init();
 
     if(resp == DD_SD_card::SD_FAILED){
-        Serial.println(TXT_SD_FAILED);
+        Serial.println(DDTXT_SD_FAILED);
         return 0;
     }
     if(resp == DD_SD_card::SD_DISCONNECT){
-        Serial.println(TXT_SD_DISCONNECT);
+        Serial.println(DDTXT_SD_DISCONNECT);
         return 0;
     }
 
@@ -503,7 +503,7 @@ bool DevelDeck::init_SD(){
 
 bool DevelDeck::init_SPIFFS(){
     if(!SPIFFS.begin(true)){
-        Serial.println(TXT_SPIFFS_FAILED);
+        Serial.println(DDTXT_SPIFFS_FAILED);
         return 0;
     }
     
@@ -585,9 +585,9 @@ void DevelDeck::update_display_threaded(bool ignore_layers, float fps_max,
     xTaskCreatePinnedToCore(
         display_update_thread_task,
         "disp",
-        DISPLAY_UPDATE_THREAD_STACK_SIZE,
+        DD_STACK_SIZE_DISPLAY_UPDATE_THREAD,
         update_job,
-        DISP_THREADED_TASK_PRIORITY,
+        DD_TASK_PRIORITY_DISP_THREADED,
         &display_updater_handler,
         DIFFERENT_CORE
     );
@@ -604,12 +604,12 @@ bool DevelDeck::update_display_threaded_available(){
 void DevelDeck::set_display_brightness(uint8_t brightness_){
     brightness = brightness_;
 
-    if(brightness >= BRIGHTNESS_LEVELS)
+    if(brightness >= DISP_BRIGHTNESS_LEVELS)
         disp->set_brightness(255);
     else if(brightness == 0)
         disp->set_brightness(0);
     else
-        disp->set_brightness(254.0 / (BRIGHTNESS_LEVELS - 1) * (brightness - 1) + 1);
+        disp->set_brightness(254.0 / (DISP_BRIGHTNESS_LEVELS - 1) * (brightness - 1) + 1);
 }
 
 uint8_t DevelDeck::get_display_brightness(){
@@ -715,9 +715,9 @@ void DevelDeck::update_layer_threaded(Layer_id_t &id, float fps_max, int16_t x0,
     xTaskCreatePinnedToCore(
         display_update_thread_task,
         "disp",
-        DISPLAY_UPDATE_THREAD_STACK_SIZE,
+        DD_STACK_SIZE_DISPLAY_UPDATE_THREAD,
         update_job,
-        DISP_THREADED_TASK_PRIORITY,
+        DD_TASK_PRIORITY_DISP_THREADED,
         &display_updater_handler,
         DIFFERENT_CORE
     );
@@ -780,10 +780,10 @@ void DevelDeck::__main_menu(){
                 break;  
             else{
                 std::vector < String > buttons = {"Ok", "Cancel"};
-                uint8_t response = UI.message_box(GAME_FILES_NOT_FOUND_MSG, buttons);
+                uint8_t response = UI.message_box(DDMSG_GAME_FILES_NOT_FOUND, buttons);
                 if(response == 0){
                     if(!sys_flag(SD_ENABLED))
-                        UI.message_box(NO_SD_CARD_MSG);
+                        UI.message_box(DDMSG_NO_SD_CARD);
                     else{
                         user_locate_game_folder();
                     }
@@ -820,11 +820,11 @@ void DevelDeck::__settings_menu(){
     }
     if(resp == 3){
         if(battery.get_device_mode() == DD_battery::CHARGING)
-            UI.notification(UNPLUG_FOR_CALIBRATION_MSG);
+            UI.notification(DDMSG_UNPLUG_FOR_CALIBRATION);
         else{
             if(!battery.is_calibrating()){
                 battery.start_calibration();
-                UI.notification(BATTERY_CALIBRATION_MSG);
+                UI.notification(DDMSG_BATTERY_CALIBRATION);
             }
         }
     }
@@ -836,7 +836,7 @@ void DevelDeck::__settings_menu(){
 
 void DevelDeck::__select_game_menu(){
     if(!sys_flag(SD_ENABLED)){
-        UI.message_box(NO_SD_CARD_MSG);
+        UI.message_box(DDMSG_NO_SD_CARD);
         return;
     }
 
@@ -849,7 +849,7 @@ void DevelDeck::__select_game_menu(){
     }
 
     if(file.game_config->minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
-        UI.notification(TXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
+        UI.notification(DDTXT_UNSUPPORTED_DEVICE + String(file.game_config->minimum_flash) + "MB required");
         buttons.clear_queue();
         return;
     }
@@ -1084,7 +1084,7 @@ void DevelDeck::user_locate_game_folder(){
 
             break;
         }
-        UI.message_box(NOT_GAME_FOLDER_MSG);
+        UI.message_box(DDMSG_NOT_GAME_FOLDER);
     }
 }
 
@@ -1159,8 +1159,8 @@ void DevelDeck::on_charge_mode(){
     esp_sleep_wakeup_cause_t cause;
 
     DD_GLOBAL::stop_button_interrupts();
-    for(uint8_t i = 0; i < BUTTONS_N; i++)
-        gpio_wakeup_enable((gpio_num_t) buttons_map[i], (INVERT_BUTTONS_STATE) ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
+    for(uint8_t i = 0; i < DD_BUTTONS_N; i++)
+        gpio_wakeup_enable((gpio_num_t) buttons_map[i], (DD_BUTTONS_INV) ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
     esp_sleep_enable_gpio_wakeup();
     
     while(battery.get_device_mode() == DD_battery::POWER_OFF){
@@ -1169,7 +1169,7 @@ void DevelDeck::on_charge_mode(){
             delay(50);
             set_display_brightness(brightness_before);
 
-            delay(NOTIFICATION_PRESENSE_TIME);
+            delay(DD_NOTIFICATION_PRESENSE_TIME);
 
             set_display_brightness(0);
             delay(50);

@@ -107,9 +107,9 @@ void DD_buzzer::play_sequence(std::vector < Buzz_tone_t > &sequence){
 	xTaskCreatePinnedToCore(
 		tone_seq_task,
 		"buzz",
-		BUZZER_STACK_SIZE,
+		DD_STACK_SIZE_BUZZER,
 		seq,
-		BUZZER_TASK_PRIORITY,
+		DD_TASK_PRIORITY_BUZZER,
 		&task_handler,
 		DIFFERENT_CORE
 	);
@@ -138,9 +138,9 @@ void DD_buzzer::play_sequence(uint16_t *data, uint32_t size, bool nocopy){
 	xTaskCreatePinnedToCore(
 		tone_seq_task,
 		"buzz",
-		BUZZER_STACK_SIZE,
+		DD_STACK_SIZE_BUZZER,
 		seq,
-		BUZZER_TASK_PRIORITY,
+		DD_TASK_PRIORITY_BUZZER,
 		&task_handler,
 		DIFFERENT_CORE
 	);

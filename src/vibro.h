@@ -17,7 +17,7 @@ public:
 
     DD_vibro() = default;
 
-    void init(uint16_t pin = VIBRO_PIN, uint8_t channel_ = VIBRO_LEDC_CHANNEL);
+    void init(uint16_t pin = DD_VIBRO_PIN, uint8_t channel_ = DD_VIBRO_LEDC_CHANNEL);
 
 
     /**
