@@ -26,7 +26,7 @@ public:
 
     DD_buzzer() = default;
 
-    void init(uint16_t pin = BUZZ_PIN, uint8_t channel_ = BUZZ_LEDC_CHANNEL);
+    void init(uint16_t pin = DD_BUZZ_PIN, uint8_t channel_ = DD_BUZZ_LEDC_CHANNEL);
 
 
     /**

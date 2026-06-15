@@ -211,7 +211,7 @@ class DD_display{
 public:
     DD_display() = default;
 
-    bool init(uint16_t width = DISP_WIDTH, uint16_t height = DISP_HEIGHT, uint8_t backlight_channel = DISP_BACKLIGHT_LEDC_CHANNEL);
+    bool init(uint16_t width = DISP_WIDTH, uint16_t height = DISP_HEIGHT, uint8_t backlight_channel = DD_DISP_BACKLIGHT_LEDC_CHANNEL);
 
     TFT_eSPI* get_display_reference();
     DD_canvas_t* get_canvas_reference();

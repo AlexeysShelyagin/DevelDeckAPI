@@ -6,7 +6,7 @@ namespace DD_GLOBAL{
 
 
 
-const float INV_DIVIDER_VAL = (float) (BATTERY_DIVIDER_R1 + BATTERY_DIVIDER_R2) / BATTERY_DIVIDER_R1;
+const float INV_DIVIDER_VAL = (float) (DD_BATTERY_DIV_R1 + DD_BATTERY_DIV_R2) / DD_BATTERY_DIV_R1;
 
 std::vector < float > calibr_v;
 bool calibr_failed = false;
@@ -32,7 +32,7 @@ void callibration_task(void *params){
 
         calibr_v.push_back(DD_GLOBAL::battery.get_voltage());
         
-        vTaskDelay(BATTERY_CALIBRATION_TIMEOUT);
+        vTaskDelay(DD_TIMEOUT_BATTERY_CALIBRATION);
     }
 
     vTaskDelete(NULL);
@@ -53,7 +53,7 @@ void DD_battery::init(float critical_v_, float full_v_, float charging_v_, float
     batt_pin_mutex = xSemaphoreCreateMutex();
 
     adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(BATTERY_ADC_CHANNEL, ADC_ATTEN_DB_12);
+    adc1_config_channel_atten(DD_BATTERY_ADC_CHANNEL, ADC_ATTEN_DB_12);
     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 0, &adc1_chars);
 }
 
@@ -67,7 +67,7 @@ float DD_battery::get_voltage(){
 
     int raw_read = 0;
     for(uint8_t i = 0; i < BATTERY_N_OF_MEASURES; i++)
-        raw_read += adc1_get_raw(BATTERY_ADC_CHANNEL);
+        raw_read += adc1_get_raw(DD_BATTERY_ADC_CHANNEL);
     raw_read = (float) raw_read / BATTERY_N_OF_MEASURES;
 
     float v_raw = esp_adc_cal_raw_to_voltage(raw_read, &adc1_chars);
@@ -110,9 +110,9 @@ void DD_battery::start_calibration(){
     xTaskCreatePinnedToCore(
         callibration_task,
         "batt_calibr",
-        BATTERY_CALIBRATION_STACK_SIZE,
+        DD_STACK_SIZE_BATTERY_CALIBRATION,
         NULL,
-        BATTERY_CALIBRATION_TASK_PRIORITY,
+        DD_TASK_PRIORITY_BATTERY_CALIBRATION,
         &calibration_handler,
         DIFFERENT_CORE
     );

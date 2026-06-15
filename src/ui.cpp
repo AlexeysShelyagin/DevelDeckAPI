@@ -110,8 +110,8 @@ DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     ddeck.canvas->setTextSize(1);
     ddeck.canvas->setTextColor(TFT_WHITE);
 
-    uint16_t orig_x = (ddeck.canvas->width() - FILE_MANAGER_W) / 2;
-    uint16_t orig_y = (ddeck.canvas->height() - FILE_MANAGER_H) / 2;
+    uint16_t orig_x = (ddeck.canvas->width() - DD_FILE_MANAGER_W) / 2;
+    uint16_t orig_y = (ddeck.canvas->height() - DD_FILE_MANAGER_H) / 2;
     ddeck.canvas->setOrigin(orig_x, orig_y);
 
     std::vector < Dir_entry_t > dir;
@@ -121,8 +121,8 @@ DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
     scroll.push(0);
     uint16_t items_n = 0;
 
-    uint16_t max_len = (FILE_MANAGER_W - 4) / ddeck.canvas->textWidth("a") - 10;
-    uint16_t max_items = (FILE_MANAGER_H - 4) / ddeck.canvas->fontHeight();
+    uint16_t max_len = (DD_FILE_MANAGER_W - 4) / ddeck.canvas->textWidth("a") - 10;
+    uint16_t max_items = (DD_FILE_MANAGER_H - 4) / ddeck.canvas->fontHeight();
     
     DD_SD_card file_manager;
     file_manager.init(root);
@@ -225,8 +225,8 @@ DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
         
         if(update_disp){
             ddeck.canvas->setOrigin(orig_x, orig_y);
-            ddeck.canvas->fillRect(0, 0, FILE_MANAGER_W, FILE_MANAGER_H, TFT_BLACK);
-            ddeck.canvas->drawRect(0, 0, FILE_MANAGER_W, FILE_MANAGER_H, TFT_WHITE);
+            ddeck.canvas->fillRect(0, 0, DD_FILE_MANAGER_W, DD_FILE_MANAGER_H, TFT_BLACK);
+            ddeck.canvas->drawRect(0, 0, DD_FILE_MANAGER_W, DD_FILE_MANAGER_H, TFT_WHITE);
             ddeck.canvas->setOrigin(orig_x + 2, orig_y + 2);
             ddeck.canvas->setCursor(0, 0);
 
@@ -236,21 +236,21 @@ DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
                     ddeck.canvas->drawPNGFromFile(file_manager.file_ref(), 0, 0, true);
                     file_manager.close_file();
 
-                    ddeck.canvas->setCursor(GAME_ICON_SIZE + 2, 0);
+                    ddeck.canvas->setCursor(DD_GAME_ICON_SIZE + 2, 0);
                 }
 
                 ddeck.canvas->setTextSize(2);
 
                 ddeck.canvas->print(game_config->name);
 
-                ddeck.canvas->setCursor(0, GAME_ICON_SIZE + 4);
+                ddeck.canvas->setCursor(0, DD_GAME_ICON_SIZE + 4);
                 ddeck.canvas->println(game_config->description);
 
                 if(game_config->minimum_flash * 1024 * 1024 > ESP.getFlashChipSize()){
                     ddeck.canvas->setTextSize(1);
-                    ddeck.canvas->setCursor(4, FILE_MANAGER_H - ddeck.canvas->fontHeight() - 8);
+                    ddeck.canvas->setCursor(4, DD_FILE_MANAGER_H - ddeck.canvas->fontHeight() - 8);
                     ddeck.canvas->setTextColor(TFT_RED);
-                    ddeck.canvas->print(TXT_USUPPORTED_ON_DEVICE);
+                    ddeck.canvas->print(DDTXT_USUPPORTED_ON_DEVICE);
                     ddeck.canvas->setTextColor(TFT_WHITE);
                 }
 
@@ -270,12 +270,12 @@ DD_GLOBAL::File_mngr_t DD_UI::file_manager(bool selecting_game, String root){
                 if(items_n > max_items){
                     ddeck.canvas->setOrigin(orig_x, orig_y);
 
-                    ddeck.canvas->drawRect(FILE_MANAGER_W - 6, 0, 6, FILE_MANAGER_H, TFT_WHITE);
+                    ddeck.canvas->drawRect(DD_FILE_MANAGER_W - 6, 0, 6, DD_FILE_MANAGER_H, TFT_WHITE);
                     ddeck.canvas->fillRect(
-                        FILE_MANAGER_W - 4, 
-                        round(((float) scroll.top() / items_n) * (FILE_MANAGER_H - 6)) + 2,
+                        DD_FILE_MANAGER_W - 4, 
+                        round(((float) scroll.top() / items_n) * (DD_FILE_MANAGER_H - 6)) + 2,
                         2, 
-                        round(((float) max_items / items_n) * (FILE_MANAGER_H - 6) - 0.01) + 2,
+                        round(((float) max_items / items_n) * (DD_FILE_MANAGER_H - 6) - 0.01) + 2,
                         TFT_WHITE
                     );
                 }
@@ -326,11 +326,11 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
     ddeck.canvas->setTextSize(2);
     ddeck.canvas->setTextColor(TFT_WHITE);
 
-    String setting_names[] = {TXT_BUZZ_VOL, TXT_BRIGHTNESS, TXT_VIBRO, TXT_BATT_CALIBR, TXT_BATT_LIFETIME, TXT_FACTORY_RESET};
+    String setting_names[] = {DDTXT_BUZZ_VOL, DDTXT_BRIGHTNESS, DDTXT_VIBRO, DDTXT_BATT_CALIBR, DDTXT_BATT_LIFETIME, DDTXT_FACTORY_RESET};
     uint8_t settings_n = sizeof(setting_names) / sizeof(String);
     selected = settings_n;
     uint8_t line_h = round(ddeck.canvas->fontHeight() * 1.5);
-    uint8_t max_items = SETTINGS_H / line_h;
+    uint8_t max_items = DD_SETTINGS_H / line_h;
 
     while(!quit){
         int8_t change = 0;
@@ -373,7 +373,7 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
                 if(selected == settings_n){
                     if(changes){
                         std::vector < String > optns = {"Save", "Discard"};
-                        changes = !message_box(TXT_SAVE_MSG, optns);
+                        changes = !message_box(DDTXT_SAVE_Q, optns);
                     }
                     quit = true;
                 }
@@ -398,7 +398,7 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
             ddeck.canvas->setCursor(0, 0);
             ddeck.canvas->setTextSize(2);
             ddeck.canvas->setTextWrap(1);
-            ddeck.canvas->print(BATTERY_CALIBRATION_ALERT);
+            ddeck.canvas->print(DDMSG_BATTERY_CALIBRATION_ALERT);
             ddeck.update_display();
 
             std::vector < String > optns = {"Cancel", "Calibrate"};
@@ -408,7 +408,7 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
         }
         else if(selected == 5){
             std::vector < String > optns = {"No", "Yes"};
-            if(message_box(FACTORY_RESET_MSG, optns))
+            if(message_box(DDMSG_FACTORY_RESET, optns))
                 return 2;
             selected = settings_n;
         }
@@ -420,7 +420,7 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
                 data.buzzer_volume = max(min(data.buzzer_volume + change, BUZZER_VOLUME_LEVELS), 0);
                 break;
             case 1:
-                data.brightness = max(min(data.brightness + change, BRIGHTNESS_LEVELS), 1);
+                data.brightness = max(min(data.brightness + change, DISP_BRIGHTNESS_LEVELS), 1);
                 break;
             case 2:
                 data.vibro_strength = max(min(data.vibro_strength + change, VIBRO_STRENGTH_LEVELS), 0);
@@ -440,7 +440,7 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
                 
                 ddeck.canvas->print(setting_names[i]);
 
-                uint16_t param_x = SETTINGS_W - 10;
+                uint16_t param_x = DD_SETTINGS_W - 10;
                 uint16_t param_y = (i - scroll) * line_h;
                 switch (i){
                 case 0:
@@ -469,12 +469,12 @@ uint8_t DD_UI::settings(DD_GLOBAL::System_data_t &data){
             }
 
             if(settings_n > max_items){
-                ddeck.canvas->drawRect(SETTINGS_W - 6, 0, 6, SETTINGS_H, TFT_WHITE);
+                ddeck.canvas->drawRect(DD_SETTINGS_W - 6, 0, 6, DD_SETTINGS_H, TFT_WHITE);
                 ddeck.canvas->fillRect(
-                    SETTINGS_W - 4, 
-                    round(((float) scroll / settings_n) * (SETTINGS_H - 6)) + 2,
+                    DD_SETTINGS_W - 4, 
+                    round(((float) scroll / settings_n) * (DD_SETTINGS_H - 6)) + 2,
                     2, 
-                    round(((float) max_items / settings_n) * (SETTINGS_H - 6)) + 2,
+                    round(((float) max_items / settings_n) * (DD_SETTINGS_H - 6)) + 2,
                     TFT_WHITE
                 );
             }
@@ -517,7 +517,7 @@ uint8_t DD_UI::message_box(String msg, std::vector < String > actions, uint16_t 
     if(h == 0) h = 100;
     Layer_id_t msg_layer = ddeck.create_sys_overlay(w, h, dx + (DISP_WIDTH - w) / 2, dy + (DISP_HEIGHT - h) / 2, 1);
     if(msg_layer == nullptr){
-        Serial.println(TXT_UNABLE_CREATE_MSGBOX);
+        Serial.println(DDTXT_UNABLE_CREATE_MSGBOX);
         return 0;
     }
 
@@ -531,7 +531,7 @@ uint8_t DD_UI::message_box(String msg, std::vector < String > actions, uint16_t 
     }
     
     if(actions.size() == 0)
-        actions.push_back(MSG_BOX_DEFAULT_ACTION);
+        actions.push_back(DD_MSGBOX_DEFAULT_ACTION);
     
     uint8_t buttons_n = actions.size();
     uint16_t indent = round((float) w / buttons_n);
@@ -599,7 +599,7 @@ uint8_t DD_UI::message_box(String msg, std::vector < String > actions, uint16_t 
 bool DD_UI::notification(String msg){
     Layer_id_t notif_layer = ddeck.create_sys_overlay(200, 100, 60, 70, 1);
     if(notif_layer == nullptr){                     // layer creation failed or sys_overlay already exists
-        Serial.println(TXT_UNABLE_CREATE_NOTIFF);
+        Serial.println(DDTXT_UNABLE_CREATE_NOTIFF);
         return 0;
     }
 
@@ -624,7 +624,7 @@ bool DD_UI::notification(String msg){
 
     ddeck.update_display();
 
-    DD_GLOBAL::notification_destruction_time = millis() + NOTIFICATION_PRESENSE_TIME;
+    DD_GLOBAL::notification_destruction_time = millis() + DD_NOTIFICATION_PRESENSE_TIME;
 
     return 1;
 }
@@ -640,7 +640,7 @@ void DD_UI::init_game_downloading_screen(DD_GLOBAL::Game_config_t game_data, Str
     ddeck.canvas->setCursor(cursor_x, y0);
     ddeck.canvas->print(game_data.name);
 
-    ddeck.canvas->drawRect(10, ddeck.canvas->fontHeight() + GAME_ICON_SIZE + y0 + 8, ddeck.canvas->width() - 20, 8, TFT_WHITE);
+    ddeck.canvas->drawRect(10, ddeck.canvas->fontHeight() + DD_GAME_ICON_SIZE + y0 + 8, ddeck.canvas->width() - 20, 8, TFT_WHITE);
 
     if(game_data.icon_path != ""){
         DD_SD_card temp_fs;
@@ -649,13 +649,13 @@ void DD_UI::init_game_downloading_screen(DD_GLOBAL::Game_config_t game_data, Str
         temp_fs.open_file(game_data.icon_path);
         ddeck.canvas->drawPNGFromFile(
             temp_fs.file_ref(), 
-            (ddeck.canvas->width() - GAME_ICON_SIZE) / 2, 
+            (ddeck.canvas->width() - DD_GAME_ICON_SIZE) / 2, 
             ddeck.canvas->fontHeight() + y0 + 4, 
             true
         );
         temp_fs.close_file();
 
-        ddeck.canvas->setCursor(GAME_ICON_SIZE + 2, 0);
+        ddeck.canvas->setCursor(DD_GAME_ICON_SIZE + 2, 0);
     }
 
     ddeck.update_display();
@@ -665,7 +665,7 @@ void DD_UI::game_downloading_screen(uint8_t percentage){
     ddeck.canvas->setTextSize(2);
 
     uint16_t width = round((float) percentage / 100.0 * (ddeck.canvas->width() - 24));
-    uint16_t start_h = ddeck.canvas->fontHeight() + GAME_ICON_SIZE + 30;
+    uint16_t start_h = ddeck.canvas->fontHeight() + DD_GAME_ICON_SIZE + 30;
 
     ddeck.canvas->fillRect(12, start_h, ddeck.canvas->width() - 24, 4, TFT_BLACK);
     ddeck.canvas->fillRect(12, start_h, width, 4, TFT_WHITE);
