@@ -29,9 +29,46 @@ public:
     Image_raw16_t& operator=(const Image_raw16_t&) = delete;
     Image_raw16_t& operator=(Image_raw16_t&& other) noexcept;
 
+
+
+    /**
+     * @brief Reserve memory for the image
+     * 
+     * @param w_ 
+     * @param h_
+     * @param alpha_ set true to store alpha layer
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param alpha_data alpha data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(const void *image_data, uint16_t w_, uint16_t h_);
+
+    /**
+     * @brief Delete all image data and free the memory
+     * 
+     */
     void clear();
 };
 
@@ -41,8 +78,38 @@ public:
     Image_raw8_t(Image_raw16_t &img);
     // TODO: explicit Image_raw8_t(Image_raw16_t &&img);
 
+    /**
+     * @brief Reserve memory for the image
+     * 
+     * @param w_ 
+     * @param h_
+     * @param alpha_ set true to store alpha layer
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(uint16_t w_, uint16_t h_, bool alpha_ = false);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param alpha_data alpha data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(const void *image_data, const void *alpha_data, uint16_t w_, uint16_t h_);
+
+    /**
+     * @brief Assign a PROGMEM data to the image
+     * 
+     * @param image_data image data pointer
+     * @param w_ width
+     * @param h_ height
+     * @return true: created successfully
+     * @return false: unable to create, not enough space in heap
+     */
     bool create(const void *image_data, uint16_t w_, uint16_t h_);
 };
 

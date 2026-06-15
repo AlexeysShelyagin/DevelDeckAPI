@@ -1,4 +1,2 @@
-license.txt
-keywords.txt
-
-docs
+docs/source/.venv
+docs/source/_build

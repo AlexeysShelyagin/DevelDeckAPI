@@ -1,0 +1,30 @@
+/* Target the official Sphinx logo container */
+.wy-side-nav-search img.logo {
+    max-height: 250px;       /* Adjust to your preference */
+    width: auto;
+    background-color: transparent; /* Ensures no weird white boxes */
+    margin-bottom: 10px;
+    border-radius: 5px;      /* Optional: rounds the corners */
+}
+
+.wy-side-nav-search > a {
+    display: flex;
+    flex-direction: column; /* Stacked: Logo on top, Text below */
+    align-items: center;
+}
+
+/* Code blocks styles*/
+.highlight pre, 
+.highlight pre span {
+    font-weight: 550;
+}
+
+/* dev notes */
+.admonition.dev-notes {
+    background-color: #f1f1f1;
+}
+
+.admonition.dev-notes > .admonition-title {
+    background-color: #bdbdbd;
+    font-weight: bold;
+}
