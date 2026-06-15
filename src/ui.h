@@ -11,6 +11,10 @@ namespace DD_GLOBAL{
     struct Game_config_t;
     struct System_data_t;
 
+    /**
+     * @brief File manager returned data container
+     * 
+     */
     struct File_mngr_t{
         String dir;
         String file;

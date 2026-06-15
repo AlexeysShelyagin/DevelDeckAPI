@@ -1,0 +1,154 @@
+#####################
+Accelerometer
+#####################
+
+.. contents::
+    :local:
+    :depth: 2
+
+
+Overview
+-----------------
+
+The DevelDeck features a **3-axis accelerometer**, which can be used to measure acceleration and, more commonly, the **inclination angles of the gamepad**. The accelerometer is accessed through the ``ddeck.accel`` instance.
+
+The DevelDeck's incline is measured along the X (roll) and Y (pitch) axes, relative to the :ref:`zero orientation <operation_mode>`.
+
+.. note::
+    The positive direction of both axes corresponds to the positive direction on the display.
+
+.. _accel_axes_img:
+
+.. figure:: accel_axes.png
+   :alt: Accelerometer axes positions
+   :width: 80%
+   :align: center
+
+   Axes positions in respect to accelerometer zero
+
+
+
+.. _operation_mode:
+
+Operation Modes (Zero Orientation)
+-------------------------------------
+
+The accelerometer supports two operation modes:
+
+- **Vertical mode** (default)
+- **Horizontal mode**
+
+Use :cpp:func:`DD_accel::set_vertical_mode` to set the gamepad as zero when held vertically by hand.
+
+Use :cpp:func:`DD_accel::set_horizontal_mode` to set the gamepad as zero when placed parallel to the ground.
+
+See the images below for clarity. The grid on the images represents the ground plane.
+
+.. hlist::
+   :columns: 2
+
+   * .. figure:: horizontal_mode.png
+        :alt: Horizontal mode
+        :width: 100%
+        :align: center
+
+        Horizontal mode
+
+   * .. figure:: vertical_mode.png
+        :alt: Vertical mode
+        :width: 100%
+        :align: center
+
+        Vertical mode
+
+.. note::
+    It is not recommended to use any operation mode where the angle can reach :math:`90^\circ` due to high measurement instability.
+
+Custom zero orientation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Any orientation can be set as the zero orientation using :cpp:func:`DD_accel::set_current_as_zero`. This is useful for adapting to the player's holding style. The function also allows **blocking the X (roll) axis** to maintain a stable horizontal reference in some games.
+
+Orientation can be set also from acceleration value saved before using :cpp:func:`DD_accel::set_as_zero`.
+
+
+Common examples
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: cpp
+
+    void game_settings(){
+        // ...
+        if(/* pressed "calibrate gyro" */)
+            ddeck.accel.set_current_as_zero();
+        
+        if(/* set defaults */)
+            ddeck.accel.set_vertical_mode();
+    }
+
+
+
+Read incline angles
+-----------------------
+.. TODO: add reference to vec2
+
+The function :cpp:func:`DD_accel::get_angles` returns a ``vec2`` object containing the **X incline** in ``vec.x`` and **Y incline** in ``vec.y``. Angles are measured relative to the :ref:`zero orientation <operation_mode>`. Axis directions are illustrated in :ref:`figure <accel_axes_img>`.
+
+Angles can also be calculated from a ``vec3`` acceleration vector.
+
+Common examples
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: cpp
+
+    vec2 pos(DISP_WIDTH / 2, DISP_HEIGHT / 2);
+    vec2 vel;
+    uint64_t last_update = 0;
+
+    void setup(){
+        // Display represents the "ground" plane
+        ddeck.accel.set_horizontal_mode();
+        ddeck.main_loop();
+    }
+
+    void loop(){
+        // Erase previous frame
+        ddeck.canvas->fillCircle(pos.x, pos.y, R, TFT_BLACK);
+
+        // Get accelerometer data
+        vec2 ang = ddeck.accel.get_angles() * (1 / 180.0);
+
+        // Recalculate position
+        vel += ang * 30;
+        vel -= vel.norm() * (20 * (millis() - last_update) / 1000.0);
+        pos += vel * ((millis() - last_update) / 1000.0);
+        last_update = millis();     // sets time scale
+
+        // Render frame
+        ddeck.canvas->fillCircle(pos.x, pos.y, R, TFT_RED);
+        ddeck.update_display();
+    }
+
+
+
+Read acceleration
+-----------------
+
+Raw acceleration can be read using :cpp:func:`DD_accel::get_accel`.
+
+
+
+API reference
+-----------------
+
+Functions
+^^^^^^^^^^^^^^^^
+
+.. doxygenfunction:: DD_accel::set_vertical_mode
+.. doxygenfunction:: DD_accel::set_horizontal_mode
+.. doxygenfunction:: DD_accel::set_current_as_zero
+.. doxygenfunction:: DD_accel::set_as_zero
+.. doxygenfunction:: DD_accel::get_angles()
+.. doxygenfunction:: DD_accel::get_angles(vec3 accel)
+.. doxygenfunction:: DD_accel::get_accel
+.. doxygenfunction:: DD_accel::auto_calibrate

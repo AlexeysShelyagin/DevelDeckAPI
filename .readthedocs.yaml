@@ -1,0 +1,24 @@
+# Read the Docs configuration file
+
+version: 2
+
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.13"
+  apt_packages:
+    - doxygen
+  commands:
+    - cd docs/doxygen; doxygen Doxyfile
+    #
+    - mkdir docs/doxygen_deps; cd docs/doxygen_deps; curl -o TFT_eSPI.h https://raw.githubusercontent.com/Bodmer/TFT_eSPI/master/TFT_eSPI.h; curl -o TFT_eSprite.h https://raw.githubusercontent.com/Bodmer/TFT_eSPI/master/Extensions/Sprite.h
+    - cd docs/doxygen; doxygen Doxyfile_TFT_eSPI
+    #
+    - python -m pip install -r docs/requirements.txt
+    - pygmentize -S friendly -f html > docs/source/_static/pygments.css
+    - python -m sphinx -E -b html docs/source $READTHEDOCS_OUTPUT/html
+
+# Build documentation in the "docs/" directory with Sphinx
+sphinx:
+   configuration: docs/source/conf.py
+   builder: html
