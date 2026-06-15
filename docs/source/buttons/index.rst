@@ -60,16 +60,16 @@ Event handling
 To determine whether there are unprocessed button events in the queue, use
 :cpp:func:`DD_buttons::event_available`.
 
-Event data can be retrieved using :cpp:func:`DD_buttons::get_button_event`.
+Event data can be retrieved using :cpp:func:`DD_buttons::get_event`.
 This function returns a ``uint8_t*`` pointer to an array containing
 ``BUTTONS_N`` (7) elements. Each element represents the state of a button,
 indexed by its corresponding button ID.
 
-After :cpp:func:`DD_buttons::get_button_event` is called, the event is considered handled and
+After :cpp:func:`DD_buttons::get_event` is called, the event is considered handled and
 is removed from the queue.
 
 .. important::
-   Calling :cpp:func:`DD_buttons::event_available` before :cpp:func:`DD_buttons::get_button_event` is **mandatory**. If the queue is empty, :cpp:func:`DD_buttons::event_available` returns ``nullptr``. Dereferencing this pointer will cause an ESP32 **Guru Meditation Error**.
+   Calling :cpp:func:`DD_buttons::event_available` before :cpp:func:`DD_buttons::get_event` is **mandatory**. If the queue is empty, :cpp:func:`DD_buttons::event_available` returns ``nullptr``. Dereferencing this pointer will cause an ESP32 **Guru Meditation Error**.
 
 It is implied to read and process all button events while events are available.
 
@@ -95,7 +95,7 @@ Common examples
       // Process all button events since the previous loop iteration
       while(ddeck.buttons.event_available()){
          // Get button event (array indexed by button IDs)
-         uint8_t *event = ddeck.buttons.get_button_event();
+         uint8_t *event = ddeck.buttons.get_event();
          
 
          // Perform jump only on button press (click)
@@ -169,7 +169,7 @@ Functions
 ^^^^^^^^^^^^^^^^
 
 .. doxygenfunction:: DD_buttons::event_available
-.. doxygenfunction:: DD_buttons::get_button_event
+.. doxygenfunction:: DD_buttons::get_event
 .. doxygenfunction:: DD_buttons::add_button_event
 .. doxygenfunction:: DD_buttons::clear_queue
 .. doxygenfunction:: DD_buttons::read_state
@@ -179,4 +179,4 @@ Enumerations
 ^^^^^^^^^^^^^^^^
 
 .. doxygenenum:: Buttons_id_t
-.. doxygenenum:: Button_state_t
+.. doxygenenum:: Button_event_t

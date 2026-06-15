@@ -50,7 +50,7 @@ Create directory or file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - :cpp:func:`DD_SD_card::make_dir`
-- :cpp:func:`DD_SD_card::create_file`
+- :cpp:func:`DD_SD_card::make_file`
 - :cpp:func:`DD_SD_card::open_file` — also creates and opens an empty file if it does not exist.
 
 Rename
@@ -71,8 +71,11 @@ Directory or file info
 - :cpp:func:`DD_SD_card::is_dir` - check if a path refers to a directory
 - :cpp:func:`DD_SD_card::current_dir` - absolute path of the currently opened directory
 - :cpp:func:`DD_SD_card::list_dir` - returns an ``std::vector`` of elements in the current directory
-- :cpp:func:`DD_SD_card::get_file_size`
-- :cpp:func:`DD_SD_card::get_file_reference` - returns an ``FS::File*`` pointer to an opened file
+- :cpp:func:`DD_SD_card::file_size`
+- :cpp:func:`DD_SD_card::file_ref` - returns an ``FS::File*`` pointer to an opened file
+  
+.. note::
+    Currently oppened file can be referenced using ``current_file()`` macros.
 
 Common examples
 ^^^^^^^^^^^^^^^^^^^
@@ -87,7 +90,7 @@ Common examples
         // Dirs and files creation
         ddeck.game_files.make_dir("dir1");
         ddeck.game_files.make_dir("dir1/dir2");
-        ddeck.game_files.create_file("dir1/dir2/file.txt");
+        ddeck.game_files.make_file("dir1/dir2/file.txt");
 
         // Renaming and deletion
         ddeck.game_files.open_dir("dir1/dir2");
@@ -100,7 +103,7 @@ Common examples
 
         // Listing dir
         Serial.println("Current dir contents: ");
-        std::vector < File_name_t > dir = ddeck.game_files.list_dir();
+        std::vector < Dir_entry_t > dir = ddeck.game_files.list_dir();
         for(uint16_t i = 0; i < dir.size(); i++){
             Serial.print( (dir[i].type == IS_FILE) ? "FILE:\t" : "DIR:\t");
             Serial.println(dir[i].name);
@@ -118,8 +121,8 @@ Common examples
         
         ddeck.game_files.open_file("dir2/file.txt");
         Serial.println("file.txt size: ");
-        Serial.println(ddeck.game_files.get_file_size());                 // Awaiting: 0 (empty file)
-        File *file_ref = ddeck.game_files.get_file_reference();
+        Serial.println(ddeck.game_files.file_size());                 // Awaiting: 0 (empty file)
+        File *file_ref = ddeck.game_files.file_ref();
         ddeck.game_files.close_file();
     }
 
@@ -132,7 +135,7 @@ Reading and writing files
     For functions with a read/write ``position`` parameter, pass ``-1`` to use the current cursor position. ``-1`` is the default value.
 
 .. note::
-    Only **static** data types can be written to or read from files using :cpp:func:`DD_SD_card::file_read_variable` and :cpp:func:`DD_SD_card::file_write`. Pointer contents are **not** handled.
+    Only **static** data types can be written to or read from files using :cpp:func:`DD_SD_card::read_variable` and :cpp:func:`DD_SD_card::write`. Pointer contents are **not** handled.
 
 Most functions return a ``bool`` status indicating whether the operation was **successful** (``0`` - FAILED, ``1`` - SUCCESS). These values **should not be ignored** to avoid reading from or writing to invalid data locations.
 
@@ -142,11 +145,11 @@ Reading
 - :cpp:func:`DD_SD_card::seek` - change cursor position
 - :cpp:func:`DD_SD_card::pos` - get cursor position
 - :cpp:func:`DD_SD_card::file_available` - check if the cursor is at EOF
-- :cpp:func:`DD_SD_card::file_read` - read an N-byte data chunk
-- :cpp:func:`DD_SD_card::file_read_variable` - read **static** data type
-- :cpp:func:`DD_SD_card::file_read_string`- read the entire file as ``String``
-- :cpp:func:`DD_SD_card::file_getline` - read a line as ``String`` until **newline**
-- :cpp:func:`DD_SD_card::file_read_PNG` - decode PNG into ``Image_raw16_t``
+- :cpp:func:`DD_SD_card::read` - read an N-byte data chunk
+- :cpp:func:`DD_SD_card::read_variable` - read **static** data type
+- :cpp:func:`DD_SD_card::read_as_string`- read the entire file as ``String``
+- :cpp:func:`DD_SD_card::getline` - read a line as ``String`` until **newline**
+- :cpp:func:`DD_SD_card::read_PNG` - decode PNG into ``Image_raw16_t``
 - :cpp:func:`DD_SD_card::read_raw16` - read a RAW image
 
 
@@ -157,9 +160,10 @@ Writing
 - :cpp:func:`DD_SD_card::seek` - change cursor position
 - :cpp:func:`DD_SD_card::pos` - get cursor position
 - :cpp:func:`DD_SD_card::save_file` - save current changes without closing file
-- :cpp:func:`DD_SD_card::file_write` - write an N-byte data chunk
-- :cpp:func:`DD_SD_card::file_print` - print a ``String``
-- :cpp:func:`DD_SD_card::file_println` - print a ``String`` with a newline
+- :cpp:func:`DD_SD_card::write` - write an N-byte data chunk
+- :cpp:func:`DD_SD_card::print` - print a ``String``
+- :cpp:func:`DD_SD_card::println` - print a ``String`` with a newline
+- :cpp:func:`DD_SD_card::printf` - print a formated string
 - :cpp:func:`DD_SD_card::write_raw16` - write a RAW image
 
 
@@ -181,16 +185,16 @@ Overall
         ddeck.game_files.open_file("test.bin", "w");              // Open for write
 
         char array[4] = {'a', 'b', 'c', 'd'};
-        ddeck.game_files.file_write(array, 4);                    // Writing data chunk
+        ddeck.game_files.write(array, 4);                    // Writing data chunk
 
         ddeck.game_files.save_file();                             // Save in the middle of writing
         
-        ddeck.game_files.file_println();                          // String + new line
+        ddeck.game_files.println();                          // String + new line
 
         MyData_t example = {1000, vec2(10, 5)};
-        ddeck.game_files.file_write(&example, sizeof(example));   // Write some data type to file
+        ddeck.game_files.write(&example, sizeof(example));   // Write some data type to file
 
-        ddeck.game_files.file_print(": struct data");             // Print string
+        ddeck.game_files.print(": struct data");             // Print string
 
         ddeck.game_files.close_file();                            // Close saves automatically
 
@@ -198,15 +202,15 @@ Overall
         // ================READING FILE===================
         ddeck.game_files.open_file("test.bin");                   // Open for read
 
-        Serial.println( ddeck.game_files.file_read_string() + "\n");  // Read all file as string
+        Serial.println( ddeck.game_files.read_as_string() + "\n");  // Read all file as string
         
         ddeck.game_files.seek(0);                                 // Return cursor to 0
-        Serial.println( ddeck.game_files.file_getline() );        // Read as string until newline
+        Serial.println( ddeck.game_files.getline() );        // Read as string until newline
 
         Serial.println( ddeck.game_files.pos() );                 // Current cursor position
 
         // Read some data type from file
-        MyData_t *from_file = ddeck.game_files.file_read_variable < MyData_t > ();
+        MyData_t *from_file = ddeck.game_files.read_variable < MyData_t > ();
         if(from_file != nullptr){                                   // Check if read successfully
             Serial.println(from_file->score);
             Serial.print(from_file->pos.x);
@@ -215,7 +219,7 @@ Overall
         }
 
         while(ddeck.game_files.file_available())                  // Read data until EOF
-            Serial.print((char) *ddeck.game_files.file_read());   // Write each byte as char
+            Serial.print((char) *ddeck.game_files.read());   // Write each byte as char
     }
 
 
@@ -225,9 +229,9 @@ Dynamic data types
 .. code-block:: cpp
     
     String name = "cat";
-    ddeck.game_files.file_write(&name, sizeof(name));                         // Ambiglous
+    ddeck.game_files.write(&name, sizeof(name));                         // Ambiglous
     // ...
-    String *read_name = ddeck.game_files.file_read_variable < String > ();    // Ambiglous
+    String *read_name = ddeck.game_files.read_variable < String > ();    // Ambiglous
 
     // Because String buffer is dynamic, it won't be stored in file
 
@@ -242,14 +246,14 @@ Images
             return;
         // Decode PNG from file (with alpha enabled)
         Image_raw16_t png;
-        ddeck.game_files.file_read_PNG(png, true);
+        ddeck.game_files.read_PNG(png, true);
         ddeck.game_files.close_file();
 
         // Write and read RAW images
         ddeck.game_files.open_file("decoded.bin", "a");   // Open for rw
         ddeck.game_files.write_raw16(png, 0);
         Image_raw16_t from_decoded;
-        ddeck.game_files.file_read_raw16(from_decoded, 0);
+        ddeck.game_files.read_raw16(from_decoded, 0);
         ddeck.game_files.close_file();
 
         Serial.print("Image width:\t");

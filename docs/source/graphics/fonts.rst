@@ -90,7 +90,7 @@ Load VLW file
 Load VLW file
 ^^^^^^^^^^^^^^^^^^
 
-To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``ddeck.game_files`` and passed to :cpp:func:`DD_canvas_t::loadFont` via :cpp:func:`DD_SD_card::get_file_reference`.
+To load a font from a ``.vlw`` file, place it in the game folder on the SD card. The file is opened using ``ddeck.game_files`` and passed to :cpp:func:`DD_canvas_t::loadFont` via :cpp:func:`DD_SD_card::file_ref`.
 
 .. note::
     Loading a font from the SD card takes time because it must be transferred to RAM. It is recommended to load fonts during initialization.
@@ -108,7 +108,7 @@ You can :download:`download font for this example <cambria 20.vlw>`
         // open VLW file
         ddeck.game_files.open_file("cambria 20.vlw");
         // load font to slot 1 from an opened file
-        ddeck.canvas->loadFont(ddeck.game_files.get_file_reference(), 1);
+        ddeck.canvas->loadFont(ddeck.game_files.file_ref(), 1);
         ddeck.game_files.close_file();
 
         ddeck.clear_canvas();

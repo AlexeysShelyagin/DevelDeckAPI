@@ -149,6 +149,6 @@ Functions
 .. doxygenfunction:: DD_accel::set_current_as_zero
 .. doxygenfunction:: DD_accel::set_as_zero
 .. doxygenfunction:: DD_accel::get_angles()
-.. doxygenfunction:: DD_accel::get_angles(vec3 &accel)
+.. doxygenfunction:: DD_accel::get_angles(vec3 accel)
 .. doxygenfunction:: DD_accel::get_accel
 .. doxygenfunction:: DD_accel::auto_calibrate

@@ -81,7 +81,9 @@ Functions
 ``ddeck.canvas``
 `````````````````````
 
+.. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw16_t*)
 .. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw16_t&)
+.. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw8_t*)
 .. doxygenfunction:: DD_canvas_t::pushImage(int32_t, int32_t, Image_raw8_t&)
 .. doxygenfunction:: DD_canvas_t::pushMaskedImage
 .. doxygenfunction:: DD_canvas_t::drawPNGFromFile
@@ -89,6 +91,9 @@ Functions
 ``ddeck.game_files``
 ``````````````````````````
 
-.. doxygenfunction:: DD_SD_card::file_read_PNG
-.. doxygenfunction:: DD_SD_card::file_read_raw16
-.. doxygenfunction:: DD_SD_card::file_write_raw16
+.. doxygenfunction:: DD_SD_card::read_PNG(Image_raw16_t*, bool)
+.. doxygenfunction:: DD_SD_card::read_PNG(Image_raw16_t&, bool)
+.. doxygenfunction:: DD_SD_card::read_raw16(Image_raw16_t*, int)
+.. doxygenfunction:: DD_SD_card::read_raw16(Image_raw16_t&, int)
+.. doxygenfunction:: DD_SD_card::write_raw16(Image_raw16_t*, int)
+.. doxygenfunction:: DD_SD_card::write_raw16(Image_raw16_t&, int)

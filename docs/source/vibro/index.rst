@@ -24,7 +24,7 @@ Vibration
 
 The function :cpp:func:`DD_vibro::enable` enables vibration with specified strength going **forever**, until :cpp:func:`DD_buzzer::stop` is called.
 
-The function :cpp:func:`DD_vibro::enable_for_time` activates vibration for a specified duration (in milliseconds) and automatically stops after the time expires. This is useful for short feedback events such as button press feedback or in-game actions.
+The function :cpp:func:`DD_vibro::pulse` activates vibration for a specified duration (in milliseconds) and automatically stops after the time expires. This is useful for short feedback events such as button press feedback or in-game actions.
 
 Common examples
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -47,7 +47,7 @@ Common examples
     // Damage tactile feedback
    void player_hit(uint8_t damage){
       uint8_t vibro_strength = damage * 25;     // e.g. damage is 1 to 10 points
-      ddeck.buzzer.enable_for_time(
+      ddeck.buzzer.pulse(
         40,                                     // 40ms
         vibro_strength                          // vibro strength depends on damage  
     );
@@ -60,7 +60,7 @@ Common examples
 Periodic Vibration
 -----------------------
 
-The function :cpp:func:`DD_vibro::enable_periodic` allows generating
+The function :cpp:func:`DD_vibro::multipulse` allows generating
 a repeating vibration pattern with pauses between pulses.
 
 Function parameters:
@@ -78,7 +78,7 @@ Common examples
 .. code-block:: cpp
 
     void phone_call_effect(){
-        ddeck.vibro.enable_periodic(
+        ddeck.vibro.multipulse(
             400,        // 400ms pulse
             600,        // 600ms delay beween pulses
             10,         // repeat 10 times
@@ -96,5 +96,5 @@ Functions
 
 .. doxygenfunction:: DD_vibro::enable
 .. doxygenfunction:: DD_vibro::disable
-.. doxygenfunction:: DD_vibro::enable_for_time
-.. doxygenfunction:: DD_vibro::enable_periodic
+.. doxygenfunction:: DD_vibro::pulse
+.. doxygenfunction:: DD_vibro::multipulse

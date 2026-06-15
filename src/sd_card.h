@@ -287,7 +287,7 @@ public:
     /**
      * @brief Write data to file
      * 
-     * @note Use file_write(`&var`, sizeof(`var`)) to write variable of any type
+     * @note Use write(`&var`, sizeof(`var`)) to write variable of any type
      * 
      * @param data pointer to data variable
      * @param size size of data chunk (in bytes)
@@ -314,10 +314,8 @@ public:
     /**
      * @brief Print formated string into file
      * 
-     * @tparam Args 
-     * @param format 
-     * @param args 
-     * @return size_t 
+     * @param format string to format
+     * @param args any number of arguments to paste into string
      */
     template<typename... Args>
     size_t printf(const char *format, Args&&... args);

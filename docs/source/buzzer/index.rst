@@ -71,9 +71,9 @@ Sequences can be stored either in a ``std::vector`` or in a ``uint16_t[]`` array
 Vector sequence
 ^^^^^^^^^^^^^^^^
 
-In this approach, the sequence is stored in ``std::vector < Buzzer_element_t >``
+In this approach, the sequence is stored in ``std::vector < Buzz_tone_t >``
 
-The :cpp:struct:`Buzzer_element_t` structure contains  ``freq`` and ``timing`` fields.
+The :cpp:struct:`Buzz_tone_t` structure contains  ``freq`` and ``duration`` fields.
 
 This method is useful for dynamically building or modifying melodies.
 
@@ -82,15 +82,15 @@ Piano example
 .. code-block:: cpp
 
    // Define sequence vector to store melody
-   std::vector < Buzzer_element_t > notes;
+   std::vector < Buzz_tone_t > notes;
 
    void loop(){
       // Reading player inputs
       while(ddeck.buttons.event_available()){
          uint8_t *event = ddeck.buttons.get_button_event();
          
-         Buzzer_element_t note;
-         note.timing = 200;   // Each note lasts 200 ms
+         Buzz_tone_t note;
+         note.duration = 200;   // Each note lasts 200 ms
 
 
          // Add different notes to sequence on player button choise
@@ -194,13 +194,13 @@ Functions
 .. doxygenfunction:: DD_buzzer::play_tone
 .. doxygenfunction:: DD_buzzer::stop
 .. doxygenfunction:: DD_buzzer::play_for_time
-.. doxygenfunction:: DD_buzzer::play_sequence(std::vector<Buzzer_element_t> sequence)
-.. doxygenfunction:: DD_buzzer::play_sequence(uint16_t *data, uint32_t size)
+.. doxygenfunction:: DD_buzzer::play_sequence(std::vector<Buzz_tone_t>&)
+.. doxygenfunction:: DD_buzzer::play_sequence(uint16_t*, uint32_t, bool)
 .. doxygenfunction:: DD_buzzer::change_volume
 .. doxygenfunction:: DD_buzzer::get_volume
 
 Structures
 ^^^^^^^^^^^^^^^^
-.. doxygenstruct:: Buzzer_element_t
+.. doxygenstruct:: Buzz_tone_t
    :members:
    :undoc-members:
