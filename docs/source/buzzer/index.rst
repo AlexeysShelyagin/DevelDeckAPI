@@ -38,7 +38,7 @@ Common examples
 .. code-block:: cpp
 
    while(ddeck.buttons.event_available()){
-      uint8_t *event = ddeck.buttons.get_button_event();
+      But_events_t event = ddeck.buttons.get_button_event();
 
       if(event[A_BUT_ID] == BUT_PRESSED)
          ddeck.buzzer.play_tone(400);
@@ -87,7 +87,7 @@ Piano example
    void loop(){
       // Reading player inputs
       while(ddeck.buttons.event_available()){
-         uint8_t *event = ddeck.buttons.get_button_event();
+         But_events_t event = ddeck.buttons.get_button_event();
          
          Buzz_tone_t note;
          note.duration = 200;   // Each note lasts 200 ms

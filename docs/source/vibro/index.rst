@@ -32,7 +32,7 @@ Common examples
 .. code-block:: cpp
 
    while(ddeck.buttons.event_available()){
-      uint8_t *event = ddeck.buttons.get_button_event();
+      But_events_t event = ddeck.buttons.get_button_event();
 
       if(event[A_BUT_ID] == BUT_PRESSED)
          ddeck.vibro.enable(255);

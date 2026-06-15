@@ -52,7 +52,7 @@ uint8_t DD_UI::main_menu(bool game_active, bool game_select_active, uint8_t init
 
     while(!quit){
         while(ddeck.buttons.event_available()){
-            uint8_t* event = ddeck.buttons.get_event();
+            But_events_t event = ddeck.buttons.get_event();
 
             if(event[LEFT_BUT_ID] == BUT_PRESSED)
                 cursor = buttons[cursor].left_id;
@@ -551,7 +551,7 @@ uint8_t DD_UI::message_box(String msg, std::vector < String > actions, uint16_t 
     
     while(!quit){
         while(ddeck.buttons.event_available()){
-            uint8_t* event = ddeck.buttons.get_event();
+            But_events_t event = ddeck.buttons.get_event();
             
             if(event[LEFT_BUT_ID] == BUT_PRESSED){
                 cursor = buttons[cursor].left_id;
