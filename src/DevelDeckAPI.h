@@ -85,7 +85,7 @@ class DevelDeck{
     String game_path;
     
     DD_display *disp;
-    uint8_t brightness = DEFAULT_BRIGHTNESS;
+    uint8_t brightness = DISP_DEFAULT_BRIGHTNESS;
     
     DD_SD_card sd_card;
 
@@ -211,7 +211,7 @@ public:
     /**
      * @brief Changes the display backlight brightness
      * 
-     * @param brightness_  value in range from 0 to `BRIGHTNESS_LEVELS`
+     * @param brightness_  value in range from 0 to `DISP_BRIGHTNESS_LEVELS`
      */
     void set_display_brightness(uint8_t brightness_);
 

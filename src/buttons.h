@@ -21,9 +21,9 @@ typedef uint8_t* But_events_t;
 class DD_buttons{
     std::queue < uint8_t > events;
 
-    uint8_t previous_state = INVERT_BUTTONS_STATE * 0xFF;
+    uint8_t previous_state = DD_BUTTONS_INV * 0xFF;
 public:
-    uint64_t last_event_time[BUTTONS_N];
+    uint64_t last_event_time[DD_BUTTONS_N];
 
     DD_buttons() = default;
 
@@ -60,7 +60,7 @@ public:
     /**
      * @brief Get buttons data for the next event in queue. After call the event is considered as handled
      * 
-     * @return But_events_t: array of `BUTTONS_N` elements with state of each button according to its id
+     * @return But_events_t: array of `DD_BUTTONS_N` elements with state of each button according to its id
      */
     But_events_t get_event();
 

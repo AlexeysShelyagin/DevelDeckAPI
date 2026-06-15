@@ -75,9 +75,9 @@ void DD_vibro::pulse(uint16_t time, uint8_t strength_){
 	xTaskCreatePinnedToCore(
 		vibro_task,
 		"vib",
-		VIBRO_STACK_SIZE,
+		DD_STACK_SIZE_VIBRO,
 		task_params,
-		VIBRO_TASK_PRIORITY,
+		DD_TASK_PRIORITY_VIBRO,
 		&task_handler,
 		DIFFERENT_CORE
 	);
@@ -93,9 +93,9 @@ void DD_vibro::multipulse(uint16_t time_enabled, uint16_t time_disabled, uint8_t
 	xTaskCreatePinnedToCore(
 		vibro_task,
 		"vib",
-		VIBRO_STACK_SIZE,
+		DD_STACK_SIZE_VIBRO,
 		task_params,
-		VIBRO_TASK_PRIORITY,
+		DD_TASK_PRIORITY_VIBRO,
 		&task_handler,
 		DIFFERENT_CORE
 	);
